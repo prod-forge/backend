@@ -1,0 +1,31 @@
+### GET request to example server
+GET http://localhost:3000/api/v1/todos
+
+### Health endpoint
+GET http://localhost:3000/health
+
+### GET request to example server
+GET http://localhost:3000/api/v1/todos?sortBy=title&order=asc
+Authorization: Bearer ZWViZWNiNTktZjMwMS00ODY5LTg3ZWQtNmFmNTY2NDEyNjY2
+
+### GET Todo
+GET http://localhost:3000/api/v1/todos/773d9cb3-e716-41c6-b8ef-6e6b56ba7e1d
+Authorization: Bearer ZWViZWNiNTktZjMwMS00ODY5LTg3ZWQtNmFmNTY2NDEyNjY2
+
+### DELETE Todo
+DELETE http://localhost:3000/api/v1/todos/773d9cb3-e716-41c6-b8ef-6e6b56ba7e1d
+Authorization: Bearer ZWViZWNiNTktZjMwMS00ODY5LTg3ZWQtNmFmNTY2NDEyNjY2
+
+### GET request to example server
+GET http://localhost:3000/api/v1/todos/999
+Authorization: Bearer ZWViZWNiNTktZjMwMS00ODY5LTg3ZWQtNmFmNTY2NDEyNjY2
+
+###
+POST http://localhost:3000/api/v1/todos
+Content-Type: application/json
+Authorization: Bearer ZWViZWNiNTktZjMwMS00ODY5LTg3ZWQtNmFmNTY2NDEyNjY2
+
+{
+  "title": "name",
+  "description": "Some todo"
+}

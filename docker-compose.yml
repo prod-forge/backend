@@ -1,0 +1,105 @@
+version: "3.9"
+
+services:
+  production:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: production
+    restart: always
+    labels:
+      logging: ${APP_NAME}
+    ports:
+      - "3000:3000"
+    networks:
+      - database
+
+  database:
+    container_name: postgres
+    image: postgres:18.3
+    env_file:
+      - .env.common
+      - .env
+    environment:
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+    volumes:
+      - database:/data/postgres
+    ports:
+      - "5332:5432"
+    networks:
+      - database
+    restart: unless-stopped
+    command:
+      - postgres
+      - -c
+      - shared_preload_libraries=pg_stat_statements
+      - -c
+      - pg_stat_statements.max=10000
+      - -c
+      - pg_stat_statements.track=all
+
+  cache:
+    image: redis:8.6-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - cache:/data
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    restart: unless-stopped
+
+  promtail:
+    image: grafana/promtail
+    container_name: promtail
+    command: -config.file=/etc/promtail/config.yml
+    ports:
+      - "9080:9080"
+    volumes:
+      - ./promtail-config.yml:/etc/promtail/config.yml
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - loki
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3001:3000"
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+
+  loki:
+    image: grafana/loki:2.9.3
+    container_name: loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/config.yml
+    volumes:
+      - ./loki/config.yml:/etc/loki/config.yml
+      - loki-data:/loki
+
+networks:
+  database:
+    driver: bridge
+
+volumes:
+  grafana-data:
+  loki-data:
+  database:
+  cache:
+    driver: local

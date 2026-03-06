@@ -1,0 +1,26 @@
+{
+  "git": {
+    "requireCleanWorkingDir": true,
+    "requireBranch": "main",
+    "tagName": "v${version}",
+    "commitMessage": "release(release): v${version}",
+    "tagAnnotation": "Release v${version}",
+    "push": true
+  },
+  "github": {
+    "release": true
+  },
+  "npm": {
+    "publish": false
+  },
+  "hooks": {
+    "before:init": "npm run lint",
+    "after:bump": "npm run build"
+  },
+  "plugins": {
+    "@release-it/conventional-changelog": {
+      "preset": "angular",
+      "infile": "CHANGELOG.md"
+    }
+  }
+}

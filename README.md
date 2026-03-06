@@ -48,8 +48,8 @@ This project is split into multiple repositories:
 | Backend        | Production-ready backend application |
 | Infrastructure | Terraform infrastructure for AWS     |
 
-- Backend → (link)
-- Infrastructure → (link)
+- [Backend](https://github.com/prod-forge/backend)
+- [Infrastructure](https://github.com/prod-forge/terraform)
 
 ## Overview
 
@@ -259,6 +259,15 @@ With this approach, all commits from a feature branch are combined into **a sing
 This preserves a clean project history while still allowing developers to work with multiple commits inside feature
 branches.
 
+How to automate this in Github:
+
+> - Open the repository on GitHub.
+> - Go to Settings → General.
+> - Scroll down to the Pull Requests section.
+> - In the Merge button section, disable any unnecessary options:
+> - Leave only Allow squash merging enabled.
+> - Disable Allow merge commits and Allow rebase merging if you want to prevent other merge types.
+
 ### Workflow
 
 Follow the same steps used in a rebase workflow during development:
@@ -313,3 +322,176 @@ This applies to:
 - infrastructure changes
 
 Consistent branch naming also makes it easy to analyze sprint results and track how issues were resolved.
+
+## Architecture Decisions
+
+Choosing the right architecture is rarely a purely technical decision.
+
+In real-world projects, architectural choices are influenced by many external factors such as:
+
+- client requirements
+- regulatory constraints
+- legacy systems
+- security policies
+- team expertise
+- long-term maintainability
+
+### Client constraints
+
+The most important factor is almost always **the client's requirements and environment**.
+
+In regulated industries such as **Healthcare**, **Insurance**, or **Finance**, even small technical decisions may
+require formal approval.
+
+For example, in one healthcare project I worked on, introducing a new library required a review process that lasted
+several months. This was necessary due to strict compliance and security requirements.
+
+In such environments, architectural decisions cannot be made purely from an engineering perspective. They must consider:
+
+- compliance policies
+- security audits
+- internal approval processes
+- compatibility with existing systems
+
+These constraints often influence the technology stack far more than developer preferences.
+
+### Understanding the product
+
+Before making any architectural decisions, it is critical to fully understand the product itself.
+
+This usually requires close collaboration with:
+
+- the client
+- product owners
+- business analysts
+- other engineering teams
+
+The goal is to clearly answer one fundamental question:
+
+**What problem are we actually solving?**
+
+Architecture should always support the product's goals, not the other way around.
+
+### Technology selection principles
+
+In addition to functional requirements, I follow several non-functional principles when selecting technologies and
+frameworks.
+
+#### 1. Team familiarity
+
+Technology should be familiar to the team working on the project.
+
+Using niche or obscure frameworks often creates unnecessary friction:
+
+- onboarding new engineers becomes harder
+- hiring becomes more difficult
+- more time is spent fighting the tooling instead of solving business problems
+
+Choosing well-known and widely adopted technologies usually results in more predictable development.
+
+#### 2. Community ecosystem
+
+Large and active communities provide significant advantages:
+
+- better documentation
+- more third-party libraries
+- faster problem resolution
+- more production experience shared by other teams
+
+Strong community support dramatically reduces long-term engineering risks.
+
+#### 3. Opinionated structure
+
+Frameworks with a well-defined structure can help maintain architectural consistency.
+
+For example, **NestJS** encourages a layered architecture and clear module boundaries. While it does not prevent
+alternative patterns, it provides a strong starting point for organizing large codebases.
+
+In contrast, more flexible frameworks such as **Express** allow multiple architectural styles, which can lead to
+inconsistencies across projects if strong conventions are not established.
+
+#### 4. Stability over hype
+
+New technologies are often presented as revolutionary solutions.
+
+However, the JavaScript ecosystem has seen many frameworks that gained short-term popularity and then disappeared.
+
+For production systems, stability is often more valuable than novelty.
+
+Well-established technologies usually offer:
+
+- better long-term support
+- more mature tooling
+- fewer unexpected risks
+
+# 2. The Code
+
+Code Quality Tooling as the very first step when starting a new project. We need to set up tools and agree on coding
+guidelines to ensure the future code fully complies with our requirements.
+
+## Code Quality
+
+Maintaining consistent code quality is essential for long-term project sustainability.
+
+In this project, code quality is protected by a **five-layer defense system**.
+
+### Layer 1 — Code formatting and consistency
+
+The first layer ensures that the entire codebase follows consistent formatting rules.
+
+We use two tools for this purpose:
+
+- **EditorConfig** — ensures consistent formatting across different editors and IDEs
+- **Prettier** — enforces automatic code formatting
+
+These tools eliminate stylistic discussions during code reviews and ensure a uniform code style across the project.
+
+### Layer 2 — Static analysis with ESLint
+
+The second layer introduces stricter rules through **ESLint**.
+
+While ESLint can be configured in many different ways, this project uses the following plugins:
+
+- `typescript-eslint` — TypeScript-specific linting rules
+- `eslint-plugin-regexp` — validation and best practices for regular expressions
+- `eslint-plugin-prettier` — integration with Prettier
+- `eslint-plugin-perfectionist` — sorting of imports and object properties
+- `eslint-plugin-package-json` — validation rules for `package.json`
+- `eslint-plugin-check-file` — file naming conventions
+- `@eslint/json` — additional validation for JSON files
+- `@eslint/js` — JavaScript linting support for auxiliary scripts
+
+Even in TypeScript projects, it is useful to lint JavaScript files that may exist in tooling scripts or configuration
+files.
+
+ESLint should be integrated with your IDE so that checks run automatically **on save or paste**.
+
+This ensures developers receive immediate feedback during development.
+
+### Layer 3 — Pre-commit protection
+
+The third layer prevents problematic code from entering the repository.
+
+This is implemented using **Husky** and **lint-staged**.
+
+Before each commit:
+
+- ESLint checks are executed
+- formatting is validated
+- only modified files are analyzed
+
+This ensures that commits do not break the CI pipeline or introduce formatting issues.
+
+### Layer 4 - Commitlint configuration
+
+### Layer 5 — Continuous Integration checks
+
+The final layer runs full validation during the **CI pipeline**.
+
+At this stage the entire codebase is analyzed to ensure:
+
+- linting rules pass
+- formatting rules are satisfied
+- tests run successfully
+
+This final check acts as a safeguard before any changes are merged into the main branch.

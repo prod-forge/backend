@@ -1,0 +1,2 @@
+export const REDIS_THROTTLER = 'REDIS_THROTTLER';
+export const REDIS_CACHE = 'REDIS_CACHE';

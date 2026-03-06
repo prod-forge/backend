@@ -1,0 +1,10 @@
+# Changelog
+
+# 0.1.0 (2026-03-06)
+
+### Features
+
+- add application code ([c65f1a9](https://github.com/prod-forge/backend/commit/c65f1a9c01ddf15aaf7c24027731b8ef61f7019d))
+- add git workflow section to the readme ([eca8d2a](https://github.com/prod-forge/backend/commit/eca8d2a7654513eed9926e66fd8b879ef9156a51))
+- add quality gate tools ([51532a8](https://github.com/prod-forge/backend/commit/51532a8ff76fe774a401822793f4017971564fb2))
+- release script ([cb49b39](https://github.com/prod-forge/backend/commit/cb49b392161d47bba9518aae417630565a7ae5ef))

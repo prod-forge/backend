@@ -1,0 +1,20 @@
+name: "Generate .env"
+description: "Create .env file for CI jobs"
+
+inputs:
+  DATABASE_SSL:
+    required: true
+    description: SSL For Database
+  LOG_PRETTY:
+    required: true
+    description: Prettifier for logs output
+
+
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      run: |
+        cat <<EOF > .env
+        DATABASE_SSL=${{ inputs.DATABASE_SSL }}
+        EOF

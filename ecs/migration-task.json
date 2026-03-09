@@ -1,0 +1,27 @@
+{
+  "family": "express-task-migration",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "__EXECUTION_ROLE_ARN__",
+  "taskRoleArn": "__TASK_ROLE_ARN__",
+  "containerDefinitions": [
+    {
+      "name": "migration",
+      "image": "__IMAGE__",
+      "essential": true,
+      "command": ["npm", "run", "db:migration:deploy"],
+      "environment": __ENVIRONMENT__,
+      "secrets": __SECRETS__,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/express-task-migration",
+          "awslogs-region": "eu-central-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}

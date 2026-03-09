@@ -1,0 +1,71 @@
+name: Show ECS Revisions
+
+on:
+  workflow_dispatch:
+
+env:
+  AWS_REGION: eu-central-1
+  TASK_NAME: express-task
+  ECS_CLUSTER: express-cluster
+  ECS_SERVICE: express-service
+  GITHUB_ARN: arn:aws:iam::096497994622:role/github-actions-ecs-ecr-role
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  show-revision:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.GITHUB_ARN }}
+          aws-region: eu-central-1
+
+      - name: Get current task definition
+        id: current
+        run: |
+          CURRENT_TASK=$(aws ecs describe-services \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }} \
+            --query 'services[0].taskDefinition' \
+            --output text)
+
+          echo "CURRENT_TASK=$CURRENT_TASK" >> $GITHUB_ENV
+
+      - name: Show last 3 revisions with versions
+        run: |
+          echo ""
+          echo "==== Last 3 ECS Task Definition Revisions ===="
+          echo ""
+
+          REVISIONS=$(aws ecs list-task-definitions \
+            --sort DESC \
+            --max-items 3 \
+            --query 'taskDefinitionArns[*]' \
+            --output text)
+
+          for REV in $REVISIONS
+          do
+            IMAGE=$(aws ecs describe-task-definition \
+              --task-definition $REV \
+              --query 'taskDefinition.containerDefinitions[0].image' \
+              --output text) || continue
+
+            VERSION=$(echo $IMAGE | awk -F: '{print $2}')
+
+            if [ "$REV" = "$CURRENT_TASK" ]; then
+              echo "⭐ CURRENT → $REV  |  version: $VERSION"
+            else
+              echo "   $REV  |  version: $VERSION"
+            fi
+          done
+
+          echo ""
+          echo "=============================================="
+
+      

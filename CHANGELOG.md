@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.5](https://github.com/prod-forge/backend/compare/v0.2.0...v0.1.5) (2026-03-10)
+
+### Bug Fixes
+
+- release cycle error ([6c1ee37](https://github.com/prod-forge/backend/commit/6c1ee3770fe059c0e6663155996ff74e39e8391b))
+
 ## [0.1.4](https://github.com/prod-forge/backend/compare/v0.2.0...v0.1.4) (2026-03-10)
 
 ### Bug Fixes

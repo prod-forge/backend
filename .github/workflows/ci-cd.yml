@@ -1,7 +1,9 @@
-name: Release Docker Image to AWS ECR
+name: CI/CD
 
 on:
   push:
+    branches:
+      - main
     tags:
       - 'v*'
 
@@ -14,6 +16,7 @@ env:
   ECS_SERVICE: prod-forge-todolist-service
   GITHUB_ARN: arn:aws:iam::096497994622:role/github-actions-ecs-ecr-role
   TASK_MIGRATION_LOGS: /ecs/prod-forge-todolist-task-migration
+  KEEP: 3
 
 permissions:
   id-token: write
@@ -21,102 +24,65 @@ permissions:
 
 jobs:
   lint:
-    if: github.ref_type == 'tag'
-
     name: Linting
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Use Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Generate Prisma types
-        run: npm run db:generate
-
-      - name: Linting
-        run: npm run lint
+      - run: npm ci
+      - run: npm run db:generate
+      - run: npm run lint
 
   unit-tests:
     needs: lint
     name: Unit Tests
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Use Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Generate Prisma types
-        run: npm run db:generate
-
-      - name: Unit Tests
-        run: npm test
+      - run: npm ci
+      - run: npm run db:generate
+      - run: npm test
 
   e2e-tests:
     needs: unit-tests
     name: E2E Tests
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Use Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: 'npm'
+      - run: npm ci
+      - run: npm run db:generate
+      - run: npm run test:e2e
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Generate Prisma types
-        run: npm run db:generate
-
-      - name: Run e2e tests
-        run: npm run test:e2e
+  # ─── TAG ONLY ──────────────────────────────────────────────
 
   publish:
+    if: github.ref_type == 'tag'
     needs: e2e-tests
     environment: prod
     runs-on: ubuntu-latest
-
     outputs:
       version: ${{ steps.extract.outputs.version }}
       ecr_url: ${{ steps.ecr.outputs.ecr_url }}
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ env.GITHUB_ARN }}
           aws-region: ${{ env.AWS_REGION }}
-
-      - name: Log in to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v1
+      - uses: aws-actions/amazon-ecr-login@v1
         with:
           mask-password: true
-
       - name: Get ECR URL
         id: ecr
         run: |
@@ -124,24 +90,14 @@ jobs:
             --repository-names ${{ env.ECR_REPO }} \
             --query 'repositories[0].repositoryUri' \
             --output text)
-
           echo "ecr_url=$ECR_URL" >> $GITHUB_OUTPUT
-
       - name: Extract version from tag
         id: extract
         run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-
-      - name: Generate .env
-        uses: ./.github/actions/generate-env
+      - uses: ./.github/actions/generate-env
         with:
           DATABASE_SSL: true
           LOG_PRETTY: false
-
-      - name: Debug files
-        run: |
-          ls -la
-          cat .env || echo ".env not found"
-
       - name: Build and push Docker image
         run: |
           docker buildx build \
@@ -152,75 +108,53 @@ jobs:
             -t ${{ steps.ecr.outputs.ecr_url }}:${{ steps.extract.outputs.version }} \
             --push \
             .
-
-      - name: Show pushed image
-        run: |
-          echo "${{ steps.ecr.outputs.ecr_url }}:${{ steps.extract.outputs.version }}"
+      - run: echo "${{ steps.ecr.outputs.ecr_url }}:${{ steps.extract.outputs.version }}"
 
   migrations:
+    if: github.ref_type == 'tag'
     needs: publish
     runs-on: ubuntu-latest
-
     env:
       version: ${{ needs.publish.outputs.version }}
       ecr_url: ${{ needs.publish.outputs.ecr_url }}
-
     steps:
       - uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ env.GITHUB_ARN }}
           aws-region: ${{ env.AWS_REGION }}
-
       - name: Get current task definition
         run: |
           aws ecs describe-task-definition \
             --task-definition ${{ env.TASK_NAME }} \
             --query taskDefinition > task.json
-
       - name: Fetch dynamic values from AWS
         id: fetch-aws-values
         run: |
-          # Extract role ARNs from existing task definition
           EXECUTION_ROLE_ARN=$(jq -r '.executionRoleArn' task.json)
           TASK_ROLE_ARN=$(jq -r '.taskRoleArn' task.json)
-
-          # Compact JSON to single line to avoid multiline issues
           ENVIRONMENT=$(jq -c '.containerDefinitions[0].environment' task.json)
           SECRETS=$(jq -c '.containerDefinitions[0].secrets' task.json)
-
           echo "execution_role_arn=$EXECUTION_ROLE_ARN" >> $GITHUB_OUTPUT
           echo "task_role_arn=$TASK_ROLE_ARN"           >> $GITHUB_OUTPUT
-
-          # Multiline-safe output using EOF delimiter
           echo "environment<<EOF"  >> $GITHUB_OUTPUT
           echo "$ENVIRONMENT"      >> $GITHUB_OUTPUT
           echo "EOF"               >> $GITHUB_OUTPUT
-
           echo "secrets<<EOF"      >> $GITHUB_OUTPUT
           echo "$SECRETS"          >> $GITHUB_OUTPUT
           echo "EOF"               >> $GITHUB_OUTPUT
-
       - name: Render migration task definition
         run: |
-          EXECUTION_ROLE_ARN="${{ steps.fetch-aws-values.outputs.execution_role_arn }}"
-          TASK_ROLE_ARN="${{ steps.fetch-aws-values.outputs.task_role_arn }}"
-          ENVIRONMENT='${{ steps.fetch-aws-values.outputs.environment }}'
-          SECRETS='${{ steps.fetch-aws-values.outputs.secrets }}'
-
           cat ecs/migration-task.json \
           | sed "s|__IMAGE__|${{ env.ecr_url }}:${{ env.version }}|g" \
-          | sed "s|__EXECUTION_ROLE_ARN__|$EXECUTION_ROLE_ARN|g" \
-          | sed "s|__TASK_ROLE_ARN__|$TASK_ROLE_ARN|g" \
+          | sed "s|__EXECUTION_ROLE_ARN__|${{ steps.fetch-aws-values.outputs.execution_role_arn }}|g" \
+          | sed "s|__TASK_ROLE_ARN__|${{ steps.fetch-aws-values.outputs.task_role_arn }}|g" \
           | sed "s|__NAME__|${{ env.TASK_MIGRATION_NAME }}|g" \
           | sed "s|__REGION__|${{ env.AWS_REGION }}|g" \
           | sed "s|__TASK_MIGRATION_LOGS__|${{ env.TASK_MIGRATION_LOGS }}|g" \
-          | sed "s|__ENVIRONMENT__|$ENVIRONMENT|g" \
-          | sed "s|__SECRETS__|$SECRETS|g" \
+          | sed "s|__ENVIRONMENT__|${{ steps.fetch-aws-values.outputs.environment }}|g" \
+          | sed "s|__SECRETS__|${{ steps.fetch-aws-values.outputs.secrets }}|g" \
           > task-def-rendered.json
-
       - name: Register new migration task definition
         id: register
         run: |
@@ -229,7 +163,6 @@ jobs:
             --query 'taskDefinition.taskDefinitionArn' \
             --output text)
           echo "task_def_arn=$TASK_DEF_ARN" >> $GITHUB_OUTPUT
-
       - name: Run migration task
         id: run-task
         run: |
@@ -238,10 +171,8 @@ jobs:
             --services ${{ env.ECS_SERVICE }} \
             --query 'services[0].networkConfiguration.awsvpcConfiguration' \
             --output json)
-
           SUBNETS=$(echo "$NET_JSON" | jq -r '.subnets | join(",")')
           SG=$(echo "$NET_JSON" | jq -r '.securityGroups[0]')
-
           TASK_ARN=$(aws ecs run-task \
             --cluster ${{ env.ECS_CLUSTER }} \
             --launch-type FARGATE \
@@ -249,15 +180,12 @@ jobs:
             --network-configuration "awsvpcConfiguration={subnets=[$SUBNETS],securityGroups=[$SG],assignPublicIp=ENABLED}" \
             --query 'tasks[0].taskArn' \
             --output text)
-
           echo "task_arn=$TASK_ARN" >> $GITHUB_OUTPUT
-
       - name: Wait for migration to finish
         run: |
           aws ecs wait tasks-stopped \
             --cluster ${{ env.ECS_CLUSTER }} \
             --tasks ${{ steps.run-task.outputs.task_arn }}
-
       - name: Verify migration result
         run: |
           EXIT_CODE=$(aws ecs describe-tasks \
@@ -265,39 +193,30 @@ jobs:
             --tasks ${{ steps.run-task.outputs.task_arn }} \
             --query 'tasks[0].containers[0].exitCode' \
             --output text)
-
           if [ "$EXIT_CODE" != "0" ]; then
             echo "Migration failed ❌"
             exit 1
           fi
-
           echo "Migration successful ✅"
 
   deploy:
-    needs:
-      - publish
-      - migrations
+    if: github.ref_type == 'tag'
+    needs: [ publish, migrations ]
     runs-on: ubuntu-latest
-
     env:
       version: ${{ needs.publish.outputs.version }}
       ecr_url: ${{ needs.publish.outputs.ecr_url }}
-
     steps:
       - uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ env.GITHUB_ARN }}
           aws-region: ${{ env.AWS_REGION }}
-
       - name: Get current task definition
         run: |
           aws ecs describe-task-definition \
             --task-definition ${{ env.TASK_NAME }} \
             --query taskDefinition > task.json
-
       - name: Update image
         run: |
           cat task.json \
@@ -305,7 +224,6 @@ jobs:
               '.containerDefinitions[0].image = "${{ env.ecr_url }}:${{ env.version }}"
                | del(.taskDefinitionArn,.revision,.status,.requiresAttributes,.compatibilities,.registeredAt,.registeredBy)' \
             > new-task.json
-
       - name: Register new revision
         id: revision
         run: |
@@ -314,9 +232,7 @@ jobs:
             --cli-input-json file://new-task.json \
             --query "taskDefinition.revision" \
             --output text)
-
           echo "revision=$REVISION" >> $GITHUB_OUTPUT
-
       - name: Deploy new version
         run: |
           aws ecs update-service \
@@ -324,72 +240,49 @@ jobs:
             --service ${{ env.ECS_SERVICE }} \
             --task-definition ${{ env.TASK_NAME }}:${{ steps.revision.outputs.revision }} \
             --no-cli-pager
-
       - name: Wait for deployment to finish
         run: |
           aws ecs wait services-stable \
             --cluster ${{ env.ECS_CLUSTER }} \
             --services ${{ env.ECS_SERVICE }}
-
           echo "Deployment completed successfully 🚀"
 
   cleanup:
+    if: github.ref_type == 'tag'
     needs: deploy
     runs-on: ubuntu-latest
-
     steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ env.GITHUB_ARN }}
           aws-region: ${{ env.AWS_REGION }}
-
-      ##############################################
-      # Cleanup express-task (keep last 3)
-      ##############################################
-
-      - name: Cleanup express-task (keep last 3)
+      - name: Cleanup prod-forge-todolist-task (keep last 3)
         run: |
-          echo "Fetching ACTIVE revisions for $TASK_NAME"
-
           REVISIONS=$(aws ecs list-task-definitions \
-            --family-prefix $TASK_NAME \
+            --family-prefix ${{ env.TASK_NAME }} \
             --status ACTIVE \
             --sort DESC \
             --query 'taskDefinitionArns' \
             --output text)
-
           COUNT=0
-
           for REV in $REVISIONS; do
             COUNT=$((COUNT+1))
-
             if [ $COUNT -gt ${{ env.KEEP }} ]; then
-              echo "Deregistering old revision: $REV"
-              aws ecs deregister-task-definition \
-                --task-definition $REV
+              echo "Deregistering: $REV"
+              aws ecs deregister-task-definition --task-definition $REV
             else
               echo "Keeping: $REV"
             fi
           done
-
-      ##############################################
-      # Cleanup express-task-migration (remove all)
-      ##############################################
-
-      - name: Cleanup express-task-migration (remove all ACTIVE)
+      - name: Cleanup migration tasks (remove all)
         run: |
-          echo "Fetching ACTIVE revisions for $TASK_MIGRATION_NAME"
-
           REVISIONS=$(aws ecs list-task-definitions \
-            --family-prefix $TASK_MIGRATION_NAME \
+            --family-prefix ${{ env.TASK_MIGRATION_NAME }} \
             --status ACTIVE \
             --sort DESC \
             --query 'taskDefinitionArns' \
             --output text)
-
           for REV in $REVISIONS; do
             echo "Deregistering migration revision: $REV"
-            aws ecs deregister-task-definition \
-              --task-definition $REV
+            aws ecs deregister-task-definition --task-definition $REV
           done

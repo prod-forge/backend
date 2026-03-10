@@ -12,6 +12,7 @@ env:
   ECS_CLUSTER: prod-forge-todolist-backend-cluster
   ECS_SERVICE: prod-forge-todolist-backend-service
   GITHUB_ARN: arn:aws:iam::096497994622:role/github-actions-ecs-ecr-role
+  TASK_MIGRATION_LOGS: /ecs/prod-forge-todolist-task-migration
 
 permissions:
   id-token: write
@@ -212,6 +213,9 @@ jobs:
           | sed "s|__IMAGE__|${{ env.ecr_url }}:${{ env.version }}|g" \
           | sed "s|__EXECUTION_ROLE_ARN__|$EXECUTION_ROLE_ARN|g" \
           | sed "s|__TASK_ROLE_ARN__|$TASK_ROLE_ARN|g" \
+          | sed "s|__NAME__|${{ env.TASK_MIGRATION_NAME }}|g" \
+          | sed "s|__REGION__|${{ env.AWS_REGION }}|g" \
+          | sed "s|__TASK_MIGRATION_LOGS__|${{ env.TASK_MIGRATION_LOGS }}|g" \
           | sed "s|__ENVIRONMENT__|$ENVIRONMENT|g" \
           | sed "s|__SECRETS__|$SECRETS|g" \
           > task-def-rendered.json

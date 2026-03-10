@@ -1,0 +1,71 @@
+{
+  "title": "NestJS Logs Dashboard",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "5s",
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "app",
+        "type": "query",
+        "datasource": "Loki",
+        "query": "label_values(appName)",
+        "refresh": 1
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "logs",
+      "title": "Application Logs",
+      "datasource": "Loki",
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "{appName=\"$app\"} | json | label_format level=\"{{.levelName}}\" | line_format \"[{{.ctx}}] {{.msg}} [correlationId: {{.correlationId}}] {{.timestamp}}\"",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Logs per Level",
+      "datasource": "Loki",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 12 },
+      "targets": [
+        {
+          "expr": "sum by (level) (count_over_time({appName=\"$app\"}[$__interval]))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "logs",
+      "title": "Errors Only",
+      "datasource": "Loki",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 20 },
+      "targets": [
+        {
+          "expr": "{appName=\"$app\"} | json | levelName=\"error\"",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "logs",
+      "title": "HTTP Requests",
+      "datasource": "Loki",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 20 },
+      "targets": [
+        {
+          "expr": "{appName=\"$app\"} |= \"method\"",
+          "refId": "A"
+        }
+      ]
+    }
+  ]
+}

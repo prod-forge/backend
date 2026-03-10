@@ -1,0 +1,149 @@
+{
+  "title": "🚀 Prisma Database Performance",
+  "tags": ["nestjs", "prisma", "database", "prometheus"],
+  "timezone": "browser",
+  "schemaVersion": 37,
+  "version": 2,
+  "refresh": "5s",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "🔥 RPS (queries/sec)",
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "expr": "sum(rate(prisma_queries_total[1m]))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "⏱️ Avg latency (ms)",
+      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "expr": "sum(rate(prisma_query_duration_ms_sum[1m])) / sum(rate(prisma_query_duration_ms_count[1m]))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "⚡ P95 latency (ms)",
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(prisma_query_duration_ms_bucket[5m])) by (le))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "❌ Error rate (%)",
+      "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "expr": "sum(rate(prisma_query_errors_total[1m])) / sum(rate(prisma_queries_total[1m])) * 100",
+          "refId": "A"
+        }
+      ]
+    },
+
+    {
+      "type": "timeseries",
+      "title": "📈 Latency P50 / P95 / P99",
+      "gridPos": { "x": 0, "y": 4, "w": 24, "h": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum(rate(prisma_query_duration_ms_bucket[5m])) by (le))",
+          "legendFormat": "P50"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(prisma_query_duration_ms_bucket[5m])) by (le))",
+          "legendFormat": "P95"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(prisma_query_duration_ms_bucket[5m])) by (le))",
+          "legendFormat": "P99"
+        }
+      ]
+    },
+
+    {
+      "type": "table",
+      "title": "🧠 Latency by model (avg ms)",
+      "gridPos": { "x": 0, "y": 12, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(prisma_query_duration_ms_sum[5m])) by (model) / sum(rate(prisma_query_duration_ms_count[5m])) by (model)",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "title": "📊 Queries by model (RPS)",
+      "gridPos": { "x": 12, "y": 12, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(prisma_queries_total[1m])) by (model)",
+          "refId": "A"
+        }
+      ]
+    },
+
+    {
+      "type": "timeseries",
+      "title": "🏎️ Queries per request (N+1 detector)",
+      "gridPos": { "x": 0, "y": 20, "w": 24, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(prisma_queries_per_request_total[1m])) by (endpoint)",
+          "legendFormat": "{{endpoint}}"
+        }
+      ]
+    },
+
+    {
+      "type": "table",
+      "title": "💀 Top N+1 endpoints",
+      "gridPos": { "x": 0, "y": 28, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "topk(10, sum(rate(prisma_queries_per_request_total[1m])) by (endpoint))",
+          "refId": "A"
+        }
+      ]
+    },
+
+    {
+      "type": "stat",
+      "title": "🧠 Avg queries per request",
+      "gridPos": { "x": 12, "y": 28, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "expr": "sum(rate(prisma_queries_per_request_total[1m])) / sum(rate(prisma_queries_total[1m]))",
+          "refId": "A"
+        }
+      ]
+    },
+
+    {
+      "type": "timeseries",
+      "title": "🔥 Load vs Latency correlation",
+      "gridPos": { "x": 18, "y": 28, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "expr": "sum(rate(prisma_queries_total[1m]))",
+          "legendFormat": "RPS"
+        },
+        {
+          "expr": "sum(rate(prisma_query_duration_ms_sum[1m])) / sum(rate(prisma_query_duration_ms_count[1m]))",
+          "legendFormat": "Latency"
+        }
+      ]
+    }
+  ]
+}

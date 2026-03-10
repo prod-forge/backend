@@ -1,5 +1,5 @@
 {
-  "family": "express-task-migration",
+  "family": "__NAME__",
   "networkMode": "awsvpc",
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "256",
@@ -17,8 +17,8 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/express-task-migration",
-          "awslogs-region": "eu-central-1",
+          "awslogs-group": "__TASK_MIGRATION_LOGS__",
+          "awslogs-region": "__REGION__",
           "awslogs-stream-prefix": "ecs"
         }
       }

@@ -9,9 +9,9 @@ env:
   AWS_REGION: eu-central-1
   ECR_REPO: prod-forge-todolist
   TASK_MIGRATION_NAME: prod-forge-todolist-migration-task
-  TASK_NAME: prod-forge-todolist-backend-task
-  ECS_CLUSTER: prod-forge-todolist-backend-cluster
-  ECS_SERVICE: prod-forge-todolist-backend-service
+  TASK_NAME: prod-forge-todolist-task
+  ECS_CLUSTER: prod-forge-todolist-cluster
+  ECS_SERVICE: prod-forge-todolist-service
   GITHUB_ARN: arn:aws:iam::096497994622:role/github-actions-ecs-ecr-role
   TASK_MIGRATION_LOGS: /ecs/prod-forge-todolist-task-migration
 

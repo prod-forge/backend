@@ -1,5 +1,12 @@
 # Changelog
 
+# [0.2.0](https://github.com/prod-forge/backend/compare/v0.1.0...v0.2.0) (2026-03-10)
+
+### Features
+
+- add ci cd ([aeab543](https://github.com/prod-forge/backend/commit/aeab543f232ffcba5f457fca3a4c50e7f2a1f783))
+- update deployment process ([355e581](https://github.com/prod-forge/backend/commit/355e5813384a14ad155b48df2b422413c790f7cb))
+
 # 0.1.0 (2026-03-06)
 
 ### Features

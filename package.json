@@ -1,6 +1,6 @@
 {
   "name": "prod-forge-todolist-backend",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Real-world backend architecture patterns, production mistakes and lessons learned building scalable systems.",
   "repository": {
     "type": "git",

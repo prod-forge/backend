@@ -1,12 +1,16 @@
-name: CI
+name: Verification pipeline for each PR
 
 on:
   push:
     branches:
       - main
 
+env:
+  NODE_VERSION: 24
+
 jobs:
   lint:
+    if: "!startsWith(github.event.head_commit.message, 'chore(release)')"
     name: Linting
     runs-on: ubuntu-latest
 
@@ -17,7 +21,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: Install dependencies
@@ -41,7 +45,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: Install dependencies
@@ -65,7 +69,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: Install dependencies

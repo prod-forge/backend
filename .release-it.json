@@ -3,7 +3,7 @@
     "requireCleanWorkingDir": true,
     "requireBranch": "main",
     "tagName": "v${version}",
-    "commitMessage": "release(release): v${version}",
+    "commitMessage": "chore(release): v${version}",
     "tagAnnotation": "Release v${version}",
     "push": true
   },

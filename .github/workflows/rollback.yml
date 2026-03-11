@@ -4,14 +4,14 @@ on:
   workflow_dispatch:
     inputs:
       task_revision:
-        description: 'Task definition revision (например my-service:23)'
+        description: 'Task definition revision (for example: my-service:23)'
         required: true
 
 env:
   AWS_REGION: eu-central-1
-  TASK_NAME: express-task
-  ECS_CLUSTER: express-cluster
-  ECS_SERVICE: express-service
+  TASK_NAME: prod-forge-todolist-task
+  ECS_CLUSTER: prod-forge-todolist-cluster
+  ECS_SERVICE: prod-forge-todolist-service
   GITHUB_ARN: arn:aws:iam::096497994622:role/github-actions-ecs-ecr-role
 
 permissions:
@@ -43,9 +43,9 @@ jobs:
       - name: Wait for deployment to finish
         run: |
           echo "Waiting for ECS deployment to stabilize..."
-          
+
           aws ecs wait services-stable \
             --cluster ${{ env.ECS_CLUSTER }} \
             --services ${{ env.ECS_SERVICE }}
-          
+
           echo "Deployment completed successfully!"

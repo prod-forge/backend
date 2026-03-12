@@ -1230,3 +1230,335 @@ Key principles demonstrated here:
 - keep the core application functional
 
 This strategy significantly improves the reliability of production systems.
+
+# Testing
+
+## Unit Tests
+
+According to the testing pyramid, most of the application logic should be covered by unit tests.
+
+The ideal scenario is to test each business logic service independently.
+
+Every service test should include:
+
+- positive cases — expected successful behavior
+- negative cases — validation failures and error scenarios
+
+Testing both scenarios ensures that the service behaves correctly under different conditions.
+
+### Mocking Dependencies
+
+To isolate services during testing, dependencies should be mocked.
+
+Mocks allow tests to simulate interactions with external systems without requiring real infrastructure.
+
+All basic dependency mocks are located in:
+
+```shell
+src/mocks/
+```
+
+This directory contains simple mock implementations used to emulate common dependencies during unit tests.
+
+## End-to-End Tests (E2E)
+
+End-to-end tests verify the behavior of the application as a complete system.
+
+To emulate external dependencies such as databases and caches, this project uses Testcontainers.
+
+Testcontainers dynamically starts real infrastructure services inside Docker containers during the test run.
+
+In this project they are used to start:
+
+- PostgreSQL
+- Redis
+
+This ensures that the application is tested in an environment that closely resembles production.
+
+### Test Environment Setup
+
+The E2E test environment is initialized through several setup files.
+
+```shell
+setup.global.ts
+```
+
+Responsible for preparing the test environment.
+
+Tasks performed here include:
+
+- starting Testcontainers
+- initializing the database
+- running migrations
+- optionally loading seeds or fixtures
+
+```shell
+bootstrap.app.ts
+```
+
+Creates a fresh application instance for each test scenario.
+
+This ensures that tests remain isolated and do not affect each other.
+
+```shell
+teardown.global.ts
+```
+
+Responsible for cleaning up after tests.
+
+Tasks include:
+
+- closing open connections
+- shutting down Testcontainers
+- releasing system resources
+
+### Writing Effective E2E Tests
+
+E2E tests should treat the application as a black box.
+
+Instead of directly calling internal services, tests interact with the application through its public interface — the
+HTTP API.
+
+The typical testing workflow looks like this:
+
+1. start the application with test dependencies
+2. send HTTP requests to the API
+3. verify the responses
+
+In this project, HTTP requests are executed using Supertest.
+
+This approach allows tests to simulate real client interactions with the system while maintaining full control over the
+test environment.
+
+### Test specs design style
+
+I can recommend the following format for writing test specs:
+
+```markdown
+// User Registration
+
+- Negative Cases
+  - Should validate email uniqueness
+  - Should throw error for invalid data
+
+- Positive Cases
+  - Should create a new user with valid data
+  - Should hash password before saving
+  - Should send welcome email after successful registration
+```
+
+We'll have a general description for the feature being tested. It's divided into negative and positive cases. We'll
+describe the negative ones first, then the positive ones.
+
+## Summary
+
+The testing approach used in this project combines:
+
+- unit tests for fast validation of business logic
+- mocked dependencies for isolation
+- Testcontainers for realistic integration testing
+- E2E tests for validating the application as a whole
+
+Together, these layers provide confidence that the system behaves correctly across both isolated components and full
+application workflows.
+
+# Logging & Observability
+
+Logging is one of the most important parts of building production systems.
+
+Once an application is deployed to production, logs become the primary feedback channel that allows engineers to
+understand what is happening inside the system.
+
+The better your logging strategy is designed, the easier it becomes to:
+
+- diagnose production issues
+- investigate incidents
+- understand system behavior
+- track request flows
+
+## Application Logging
+
+In this project the logging system is built on top of Pino, a high-performance Node.js logger.
+
+The logger uses structured logging with built-in log levels.
+
+Each log entry contains the following fields:
+
+- application name
+- timestamp
+- correlation ID
+- log level
+- message
+- context
+
+Example log structure:
+
+```json
+{
+  "level": 30,
+  "timestamp": "2026-03-12T16:05:49.626Z",
+  "env": "development",
+  "appName": "Todo_inst1",
+  "correlationId": "4209c5e7-bf00-45d1-87c9-ef9db57f8da5",
+  "levelName": "info",
+  "pid": 61190,
+  "ctx": "loggingMiddleware",
+  "method": "GET",
+  "msg": "Request income"
+}
+```
+
+This format is intentionally designed to be machine-readable, which allows logs to be easily parsed and visualized in
+tools such as Grafana.
+
+## What Should Be Logged
+
+Logging every layer of the application is not recommended.
+
+For example, logging every database query error is usually unnecessary if the error is correctly handled and never
+reaches the global exception handler.
+
+A good rule of thumb is:
+
+_Log application-level events, not internal implementation details._
+
+Typical examples of useful logs:
+
+- incoming requests
+- business operations
+- important state changes
+- unexpected errors
+
+During development, it can still be useful to enable additional logs (for example ORM query logging) in order to debug
+SQL queries generated by the ORM.
+
+## GDPR Considerations
+
+Logging must always respect privacy and security regulations.
+
+Sensitive user data should never be logged.
+
+Avoid logging:
+
+- email addresses
+- usernames
+- passwords
+- credit card information
+- authentication tokens
+
+Logs are usually stored for a period of time and often accessible to multiple systems.
+If logs are compromised, any sensitive information stored inside them may also be exposed.
+
+For the same reason, when sending errors to monitoring systems such as Sentry, it is recommended to only attach minimal
+user context:
+
+```typescript
+Sentry.setUser({ userId });
+```
+
+Using only a userId allows engineers to identify the affected user in the database without exposing personal data.
+
+## Correlation ID
+
+A Correlation ID is used to connect all logs that belong to the same request.
+
+Each incoming request receives a unique identifier which is propagated through the entire application.
+
+This allows engineers to reconstruct the full request flow when debugging issues.
+
+For example:
+
+```shell
+Request → Controller → Service → Database → Response
+```
+
+All logs generated during this flow will contain the same correlationId.
+
+This becomes extremely useful when investigating production errors.
+
+## Context
+
+In the context, we can write, for example, the name of the method in which this log is executed, or something that will
+make it clear WHERE it was logged.
+
+## Observability Stack
+
+This project includes a basic observability stack that allows engineers to monitor logs and system metrics.
+
+The stack consists of the following components:
+
+- Promtail – log collector
+- Loki – log storage and indexing
+- Grafana – visualization and dashboards
+- Prometheus – metrics collection system
+
+## Logging Pipeline
+
+The logging workflow in this project looks like this:
+
+1. The application writes logs to stdout inside the container.
+2. Promtail collects logs from the container runtime.
+3. Promtail sends logs to Loki.
+4. Loki indexes and stores logs.
+5. Grafana queries Loki to visualize logs and build dashboards.
+
+```shell
+Application → stdout → Promtail → Loki → Grafana
+```
+
+This approach follows the cloud-native logging model, where applications do not manage log files directly.
+
+## Dashboards
+
+Preconfigured dashboards can be found in:
+
+```shell
+observability/dashboards
+```
+
+<p align="center">
+  <img alt="Dashboard" src="https://github.com/prod-forge/backend/blob/main/assets/grafana-dashboard.jpeg" width="640px" height="397px">
+</p>
+
+These dashboards provide visualization for:
+
+- application logs
+- system metrics
+- database activity
+
+They serve as a starting point for building more advanced monitoring setups.
+
+## Metrics with Prometheus
+
+In addition to logs, the application also exposes metrics using Prometheus.
+
+Prometheus periodically scrapes metrics from the application endpoint (usually /metrics).
+
+These metrics can include:
+
+- request counts
+- request latency
+- error rates
+- database metrics
+- custom application metrics
+
+NestJS integrates well with Prometheus through middleware that exposes metrics in the Prometheus format.
+
+Example metric:
+
+```shell
+http_requests_total{method="GET",route="/tasks",status="200"} 42
+```
+
+Grafana can then use Prometheus as a data source to build dashboards and alerts based on these metrics.
+
+## Why Observability Matters
+
+Combining structured logging, metrics, and monitoring dashboards allows teams to quickly:
+
+- detect production issues
+- investigate failures
+- analyze system performance
+- track error rates
+
+A well-designed observability system is essential for operating production-grade applications.

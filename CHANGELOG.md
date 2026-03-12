@@ -1,5 +1,11 @@
 # Changelog
 
+# [0.2.0](https://github.com/prod-forge/backend/compare/v0.1.6...v0.2.0) (2026-03-12)
+
+### Features
+
+- update readme, update exception filter, ci ([7bc29bf](https://github.com/prod-forge/backend/commit/7bc29bf971433f079a03cc4a36fb792d73dc03a4))
+
 ## [0.1.6](https://github.com/prod-forge/backend/compare/v0.1.5...v0.1.6) (2026-03-11)
 
 ### Bug Fixes

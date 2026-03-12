@@ -118,7 +118,7 @@ export const appSetup = (app: INestApplication): void => {
   );
 
   // Filters
-  app.useGlobalFilters(new GlobalExceptionFilter(logger, configApi, configSentry));
+  app.useGlobalFilters(new GlobalExceptionFilter(logger, configSentry));
 
   // Shutdown hooks
   app.enableShutdownHooks();

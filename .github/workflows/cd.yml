@@ -13,7 +13,6 @@ env:
   TASK_NAME: prod-forge-todolist-task
   ECS_CLUSTER: prod-forge-todolist-cluster
   ECS_SERVICE: prod-forge-todolist-service
-  GITHUB_ARN: arn:aws:iam::096497994622:role/github-actions-ecs-ecr-role
   TASK_MIGRATION_LOGS: /ecs/prod-forge-todolist-task-migration
   KEEP: 3
 
@@ -23,15 +22,16 @@ permissions:
 
 jobs:
   lint:
-    name: Linting
+    environment: prod
     runs-on: ubuntu-latest
+    name: Linting
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
 
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -47,15 +47,16 @@ jobs:
 
   unit-tests:
     needs: lint
-    name: Unit Tests
+    environment: prod
     runs-on: ubuntu-latest
+    name: Unit Tests
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
 
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -71,15 +72,16 @@ jobs:
 
   e2e-tests:
     needs: unit-tests
-    name: E2E Tests
+    environment: prod
     runs-on: ubuntu-latest
+    name: E2E Tests
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
 
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -100,13 +102,14 @@ jobs:
         run: npm run test:e2e
 
   build:
-    name: Build Application
-    runs-on: ubuntu-latest
     needs: e2e-tests
+    environment: prod
+    runs-on: ubuntu-latest
+    name: Build Application
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
 
       - name: Generate .env
         uses: ./.github/actions/generate-env
@@ -128,12 +131,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
-          role-to-assume: ${{ env.GITHUB_ARN }}
+          role-to-assume: arn:aws:iam::${{ vars.USER_ID }}:role/github-actions-ecs-ecr-role
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Log in to Amazon ECR
@@ -182,21 +185,22 @@ jobs:
           echo "${{ steps.ecr.outputs.ecr_url }}:${{ steps.extract.outputs.version }}"
 
   migrations:
-    if: github.ref_type == 'tag'
     needs: publish
+    environment: prod
     runs-on: ubuntu-latest
+    name: Run Migrations
 
     env:
       version: ${{ needs.publish.outputs.version }}
       ecr_url: ${{ needs.publish.outputs.ecr_url }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
-          role-to-assume: ${{ env.GITHUB_ARN }}
+          role-to-assume: arn:aws:iam::${{ vars.USER_ID }}:role/github-actions-ecs-ecr-role
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Get current task definition
@@ -299,23 +303,24 @@ jobs:
           echo "Migration successful ✅"
 
   deploy:
-    if: github.ref_type == 'tag'
     needs:
       - publish
       - migrations
+    environment: prod
     runs-on: ubuntu-latest
+    name: Deploy ECS
 
     env:
       version: ${{ needs.publish.outputs.version }}
       ecr_url: ${{ needs.publish.outputs.ecr_url }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
-          role-to-assume: ${{ env.GITHUB_ARN }}
+          role-to-assume: arn:aws:iam::${{ vars.USER_ID }}:role/github-actions-ecs-ecr-role
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Get current task definition
@@ -360,20 +365,21 @@ jobs:
           echo "Deployment completed successfully 🚀"
 
   cleanup:
-    if: github.ref_type == 'tag'
     needs: deploy
+    environment: prod
     runs-on: ubuntu-latest
+    name: Clean outdated revisions
 
     steps:
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
-          role-to-assume: ${{ env.GITHUB_ARN }}
+          role-to-assume: arn:aws:iam::${{ vars.USER_ID }}:role/github-actions-ecs-ecr-role
           aws-region: ${{ env.AWS_REGION }}
 
-      ##############################################
+      ###############################################
       # Cleanup prod-forge-todolist-task (keep last 3)
-      ##############################################
+      ###############################################
 
       - name: Cleanup prod-forge-todolist-task (keep last 3)
         run: |
@@ -400,9 +406,9 @@ jobs:
             fi
           done
 
-      ##############################################
+      #########################################################
       # Cleanup prod-forge-todolist-migration-task (remove all)
-      ##############################################
+      #########################################################
 
       - name: Cleanup prod-forge-todolist-migration-task (remove all ACTIVE)
         run: |

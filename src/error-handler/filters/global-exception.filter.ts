@@ -5,7 +5,6 @@ import * as Sentry from '@sentry/node';
 import { Request, Response } from 'express';
 import { Counter } from 'prom-client';
 
-import { apiConfig } from '../../config/api.config';
 import { sentryConfig } from '../../config/sentry.config';
 import { HEALTH_ENDPOINT } from '../../constants/url.contants';
 import { LoggerService } from '../../logger/logger.service';
@@ -24,8 +23,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
   constructor(
     private readonly loggerService: LoggerService,
-    @Inject(apiConfig.KEY)
-    private configApi: ConfigType<typeof apiConfig>,
     @Inject(sentryConfig.KEY)
     private configSentry: ConfigType<typeof sentryConfig>,
   ) {}
@@ -80,6 +77,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       Sentry.captureException(exception, {
         extra: {
           body: req.body,
+          correlationId,
           params: req.params,
           query: req.query,
         },
@@ -87,30 +85,18 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     }
     const infraError = exception instanceof HttpException;
 
-    if (infraError) {
-      this.loggerService.error({
-        ctx: GlobalExceptionFilter.name,
-        details: exception.getResponse(),
-        method: req.method,
-        msg: exception.message,
-        path: req.url,
-        stack: exception instanceof Error ? exception.stack : undefined,
-      });
-    } else {
-      this.loggerService.error({
-        code: error.code,
-        ctx: GlobalExceptionFilter.name,
-        details: error.details,
-        method: req.method,
-        msg: error.message,
-        path: req.url,
-        stack: exception instanceof Error ? exception.stack : undefined,
-      });
-    }
+    this.loggerService.error({
+      code: error.code,
+      ctx: GlobalExceptionFilter.name,
+      details: infraError ? exception.getResponse() : error.details,
+      method: req.method,
+      msg: error.message,
+      path: req.url,
+      stack: exception instanceof Error ? exception.stack : undefined,
+    });
 
     res.status(error.status).json({
       code: error.code,
-      correlationId,
       message: error.message,
       status: error.status,
       ...(typeof error.details !== 'undefined' ? { details: frontendMapper(error.details) } : {}),

@@ -1,4 +1,4 @@
-name: Show ECS Revisions
+name: Show ECS 3 Last Revisions
 
 on:
   workflow_dispatch:
@@ -8,7 +8,6 @@ env:
   TASK_NAME: prod-forge-todolist-task
   ECS_CLUSTER: prod-forge-todolist-cluster
   ECS_SERVICE: prod-forge-todolist-service
-  GITHUB_ARN: arn:aws:iam::096497994622:role/github-actions-ecs-ecr-role
 
 permissions:
   id-token: write
@@ -16,14 +15,17 @@ permissions:
 
 jobs:
   show-revision:
+    environment: prod
     runs-on: ubuntu-latest
+    name: Show ECS 3 Last Revisions
+
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
-          role-to-assume: ${{ env.GITHUB_ARN }}
+          role-to-assume: arn:aws:iam::${{ vars.USER_ID }}:role/github-actions-ecs-ecr-role
           aws-region: eu-central-1
 
       - name: Get current task definition
@@ -44,6 +46,7 @@ jobs:
           echo ""
 
           REVISIONS=$(aws ecs list-task-definitions \
+            --family-prefix ${{ env.TASK_NAME }} \
             --sort DESC \
             --max-items 3 \
             --query 'taskDefinitionArns[*]' \

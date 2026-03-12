@@ -17,4 +17,5 @@ runs:
       run: |
         cat <<EOF > .env
         DATABASE_SSL=${{ inputs.DATABASE_SSL }}
+        LOG_PRETTY=${{ inputs.LOG_PRETTY }}
         EOF

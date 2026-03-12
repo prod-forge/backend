@@ -124,6 +124,7 @@ jobs:
     needs: build
     environment: prod
     runs-on: ubuntu-latest
+    name: Publish to ECR
 
     outputs:
       version: ${{ steps.extract.outputs.version }}

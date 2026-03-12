@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       task_revision:
-        description: 'Task definition revision (for example: my-service:23)'
+        description: 'Task definition revision (for example: 23)'
         required: true
 
 env:

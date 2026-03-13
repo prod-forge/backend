@@ -1246,6 +1246,9 @@ Every service test should include:
 
 Testing both scenarios ensures that the service behaves correctly under different conditions.
 
+Test only public methods. There's no point in covering the module's implementation with tests; we're only interested in
+the execution results.
+
 ### Mocking Dependencies
 
 To isolate services during testing, dependencies should be mocked.
@@ -1562,3 +1565,298 @@ Combining structured logging, metrics, and monitoring dashboards allows teams to
 - track error rates
 
 A well-designed observability system is essential for operating production-grade applications.
+
+# Documentation
+
+For most backend services, maintaining a large and complex documentation system is unnecessary.
+
+Full documentation portals (for example using Docusaurus) make sense when you are building:
+
+- public APIs
+- SDKs
+- shared libraries used by multiple teams
+- developer platforms
+
+In such cases, detailed documentation with usage examples, integration guides, and edge cases becomes essential.
+
+However, for a typical backend service or internal API, maintaining a separate documentation platform often becomes a
+burden. Documentation can quickly become outdated because developers must constantly synchronize:
+
+- code changes
+- integration examples
+- API behavior
+- documentation links
+
+For most projects, a simpler approach works better.
+
+## Recommended Documentation Structure
+
+This project keeps documentation lightweight and close to the codebase.
+
+Key documentation files include:
+
+### README.md
+
+The main entry point for developers. It should explain:
+
+- project purpose
+- architecture overview
+- setup instructions
+- development workflow
+
+### Swagger / OpenAPI
+
+Swagger serves as the primary API documentation for developers and QA engineers.
+
+It provides:
+
+- endpoint descriptions
+- request/response schemas
+- validation rules
+- example requests
+
+In this project, Swagger also includes custom decorators that simplify repetitive patterns such as pagination.
+
+It is important to document not only successful responses, but also error responses, so that API consumers understand
+all possible outcomes.
+
+## Additional Useful Documents
+
+### CHANGELOG.md
+
+Tracks the evolution of the project:
+
+- new features
+- bug fixes
+- breaking changes
+
+This file helps developers understand how the system evolved over time.
+
+### Incident Log
+
+Production incidents are rare, but when they occur they should always be documented.
+
+An incident log typically includes:
+
+- when the incident occurred
+- what caused the issue
+- how it was resolved
+- what measures were introduced to prevent it in the future
+
+This becomes especially important if a system was compromised or experienced a serious outage.
+
+Incident documentation is extremely useful for:
+
+- internal audits
+- improving operational processes
+- long-term system reliability
+
+### Feature Change Log
+
+In some teams, business analysts maintain documentation describing how product features evolve over time.
+
+This documentation records:
+
+- the original behavior of a feature
+- what changes were introduced
+- why the change was made
+
+From an engineering perspective, this helps developers better understand the business logic behind the product.
+
+### Roadmap
+
+When working on small projects without clearly defined processes or a clear understanding of future business objectives
+expressed in Jira tasks, we can use a roadmap.md document that includes a set of features we will be implementing in the
+near future.
+
+# Performance
+
+Performance optimization is a complex topic and heavily depends on the specific project and workload.
+
+However, there are several general principles that apply to most backend systems.
+
+## Avoid Returning Unnecessary Data
+
+Do not return large payloads if they are not required.
+
+This improves:
+
+- API performance
+- bandwidth usage
+- security (less data exposure)
+
+## Use Pagination for Collections
+
+Endpoints that return collections should always support pagination.
+
+This prevents:
+
+- large database queries
+- excessive memory usage
+- slow responses
+
+Pagination also makes APIs easier to consume.
+
+## Use Database Indexes (When Needed)
+
+Indexes can significantly improve database performance for frequently queried fields.
+
+However, they should be used carefully.
+
+Too many indexes can negatively affect:
+
+- write performance
+- storage usage
+
+Indexes should be introduced only when necessary.
+
+## Response Compression
+
+In some cases it may be beneficial to compress responses using gzip.
+
+Example configuration:
+
+```typescript
+app.use(compression({ threshold: 1024 }));
+```
+
+In this example compression is applied only to responses larger than 1 KB.
+
+Compression can reduce network traffic, but it should be used only when it provides real benefits.
+
+# Security
+
+Security is a broad topic that depends heavily on the specific system architecture and threat model.
+
+However, several baseline practices should be implemented in any backend API.
+
+## Request Validation
+
+All incoming data should be validated using DTOs.
+
+NestJS provides a built-in validation pipeline based on class-validator.
+
+Example global validation configuration:
+
+```typescript
+app.useGlobalPipes(
+  new ValidationPipe({
+    exceptionFactory: (errors: ValidationError[] = []) => {
+      throw new DtoValidationErrors(parseValidationErrors(errors));
+    },
+    forbidNonWhitelisted: true,
+    stopAtFirstError: true,
+    transform: true,
+    transformOptions: { enableImplicitConversion: false },
+    validationError: { target: false, value: false },
+    whitelist: true,
+  }),
+);
+```
+
+This configuration ensures:
+
+- unknown properties are rejected
+- validation stops at the first error
+- input data is safely transformed
+- sensitive validation details are hidden
+
+## Response Data Sanitization
+
+Outgoing responses should also be sanitized.
+
+DTOs can be used to ensure that only explicitly allowed fields are returned.
+
+Example:
+
+```typescript
+return plainToInstance(TodoResponseDto, created, {
+  excludeExtraneousValues: true,
+});
+```
+
+This prevents accidental exposure of internal fields.
+
+## Security Headers
+
+Basic HTTP security headers can be enabled using Helmet.
+
+Example configuration:
+
+```typescript
+if (environmentService.isProduction()) {
+  app.use(
+    helmet({
+      hsts: {
+        includeSubDomains: true,
+        maxAge: 31536000,
+        preload: true,
+      },
+    }),
+  );
+}
+```
+
+Helmet helps protect against several common web vulnerabilities.
+
+## CORS Configuration
+
+CORS should be configured carefully to restrict which origins are allowed to access the API.
+
+Example:
+
+```typescript
+app.enableCors({
+  credentials: true,
+  origin: (origin, cb) => {
+    if (!origin) {
+      return configApi.apiAllowNonBrowserOrigins ? cb(null, true) : cb(null, false);
+    }
+
+    return configApi.apiAllowedOrigins.includes(origin) ? cb(null, true) : cb(null, false);
+  },
+});
+```
+
+This allows only trusted origins to access the API.
+
+## Rate Limiting
+
+The project uses **@nestjs/throttler** to limit incoming request rates.
+
+This helps protect the API from:
+
+- abuse
+- brute-force attacks
+- accidental traffic spikes
+
+Rate limiting can be disabled in development environments to avoid interfering with testing.
+
+## File Upload Security
+
+If your API accepts file uploads, additional validation and sanitization are required.
+
+Simply validating file type is not enough.
+
+For example, SVG files may contain embedded JavaScript code. If such files are processed by server-side tools (e.g.,
+rendering libraries), malicious code could potentially be executed.
+
+Therefore uploaded files should always be:
+
+- validated
+- sanitized
+- safely processed
+
+## Summary
+
+Building a secure and performant backend system requires attention to multiple layers:
+
+- clear documentation
+- efficient data handling
+- proper request validation
+- strict response filtering
+- secure HTTP configuration
+- rate limiting
+- safe file processing
+
+Applying these practices creates a solid baseline for production-ready APIs.

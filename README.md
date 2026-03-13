@@ -206,28 +206,66 @@ This separation helps with:
 
 ---
 
-## Git Workflow
+# Development Workflow
 
-A consistent Git workflow is critical for team collaboration.
+To support a reliable release pipeline, the development workflow should follow several conventions.
 
-When starting work on a feature, developers should:
+## Task Management
 
-1. Pull the latest changes from `main`
-2. Create a new branch using a predefined naming convention
+Every feature or fix should be associated with a clearly defined task in the project backlog.
 
-Example:
+Each task should include:
+
+- description
+- acceptance criteria
+- issue identifier (e.g. Jira ticket)
+
+## Git Flow
+
+The project follows a simplified Git Flow approach.
+
+Typical workflow:
+
+```text
+feature branch → pull request → code review → merge to dev/stage
+```
+
+## Branch Naming Convention
+
+Branches follow a predictable naming format:
 
 ```shell
-feature-123-add-user-endpoint
-bug-245-fix-auth-error
+feat/XXXX-short-description
 ```
 
 Where:
 
-- `123` is the issue ID (for example from Jira)
-- the rest describes the change
+- feat indicates the type of change
+- XXXX references the task ID (e.g. Jira ticket)
+- short-description briefly explains the change
 
-### Feature workflow
+Example:
+
+```shell
+feat/1023-user-authentication
+```
+
+This makes it easier to trace changes back to project tasks.
+
+## Commit Conventions
+
+Commit messages follow commitlint / conventional commit standards.
+
+This improves readability and allows automatic changelog generation.
+
+Example:
+
+```text
+feat(auth): add JWT authentication
+fix(api): handle missing query parameters
+```
+
+## Feature workflow
 
 1. Create a feature branch
 2. Implement the change
@@ -237,7 +275,7 @@ Where:
 6. Merge into `main`
 7. Send the task to testing
 
-### Bug fixing workflow
+## Bug fixing workflow
 
 If a defect is discovered:
 
@@ -252,7 +290,20 @@ bug-123-fix-null-pointer
 4. Pass code review
 5. Merge after approval
 
-### Squash Merge Strategy
+## Code review
+
+Code review is **mandatory for all changes**.
+
+This applies to:
+
+- features
+- bug fixes
+- refactoring
+- infrastructure changes
+
+Consistent branch naming also makes it easy to analyze sprint results and track how issues were resolved.
+
+## Squash Merge Strategy
 
 In this project we use a **hybrid merge strategy** that combines the advantages of both **rebase** and **merge**.
 
@@ -278,7 +329,7 @@ How to automate this in Github:
 > - Leave only Allow squash merging enabled.
 > - Disable Allow merge commits and Allow rebase merging if you want to prevent other merge types.
 
-### Workflow
+## Workflow
 
 Follow the same steps used in a rebase workflow during development:
 
@@ -289,7 +340,7 @@ Follow the same steps used in a rebase workflow during development:
 Once the feature is ready to be merged, switch back to the `main` branch and run:
 
 ```shell
-git merge --squash feature-123-add-user-endpoint
+git merge --squash feat/123-add-user-endpoint
 ```
 
 This command prepares the merge but **does not create a commit automatically**.
@@ -306,7 +357,7 @@ As a result:
 - the `main` branch remains **linear**
 - the commit history stays **easy to understand**
 
-### Why this matters
+## Why this matters
 
 A clean and structured commit history becomes extremely valuable when the project grows.
 
@@ -319,19 +370,6 @@ This approach allows us to:
 
 The more **atomic and structured** the commits in the `main` branch are, the easier it becomes to manage releases and
 maintain the project over time.
-
-### Code review
-
-Code review is **mandatory for all changes**.
-
-This applies to:
-
-- features
-- bug fixes
-- refactoring
-- infrastructure changes
-
-Consistent branch naming also makes it easy to analyze sprint results and track how issues were resolved.
 
 # Architecture Decisions
 
@@ -1860,3 +1898,287 @@ Building a secure and performant backend system requires attention to multiple l
 - safe file processing
 
 Applying these practices creates a solid baseline for production-ready APIs.
+
+# Release Management
+
+Releasing software is not just a technical step — it is a structured process that ensures new functionality can be
+delivered safely, predictably, and repeatedly.
+
+A well-defined release process allows teams to:
+
+- deliver features consistently
+- minimize production risks
+- maintain clear version history
+- quickly rollback when necessary
+
+This section describes how releases are managed in this project.
+
+## Release Strategy
+
+One of the most important questions in release management is:
+
+> When should we release?
+
+The answer often depends on the development methodology used by the team.
+
+If the project follows Scrum, the recommended strategy is to produce a release at the end of every sprint.
+
+This approach allows teams to:
+
+- gather feedback early
+- validate product assumptions
+- reduce the risk of large, unstable releases
+
+A key requirement for successful sprint releases is proper scope management.
+
+Sprint goals must be realistic. If a task is too large to complete within a sprint, it should be split into smaller
+increments that gradually expand the feature.
+
+Example:
+
+Instead of implementing a complex recommendation system in a single sprint:
+
+Sprint 1:
+
+- simple product recommendation based on a single factor
+
+Sprint 2:
+
+- improved ranking algorithm
+
+Sprint 3:
+
+- personalization using user behavior
+
+This incremental approach ensures that users receive value early while the system evolves over time.
+
+## Creating a Release
+
+When all features planned for the sprint are merged into the release branch (e.g. dev, stage, or main), the release
+process can begin.
+
+Releases are created using the following command:
+
+```shell
+npm run release
+```
+
+This project uses the **release-it** library to automate release tasks.
+
+## Release Automation
+
+The release-it tool automates several important steps:
+
+- version bumping
+- changelog generation
+- git tagging
+- pushing release commits
+
+Before starting the release, a checklist is shown to ensure the project is ready.
+
+Example checklist:
+
+- All changes are committed
+- All tasks related to the release are closed
+- CHANGELOG is updated
+- Migration guide is prepared (if needed)
+
+After confirmation:
+
+1. release-it determines the next version
+2. generates the changelog from git history
+3. creates a git tag
+4. pushes the release commit
+
+## Versioning
+
+The project follows Semantic Versioning (SemVer).
+
+Version format:
+
+```text
+vMAJOR.MINOR.PATCH
+```
+
+Example:
+
+```text
+v1.0.0
+```
+
+Rules:
+
+### MAJOR
+
+Breaking changes in API or behavior.
+
+### MINOR
+
+New backward-compatible features.
+
+### PATCH
+
+Bug fixes and small improvements.
+
+The v prefix is required so that GitHub Actions can detect the release tag and trigger the deployment pipeline.
+
+## Continuous Integration (CI)
+
+Continuous Integration ensures that every change introduced to the repository is automatically validated.
+
+This project uses GitHub Actions for CI.
+
+The CI pipeline runs automatically when code is pushed to important branches.
+
+Typical CI stages include:
+
+### Linting
+
+Ensures the code follows project style and formatting rules.
+
+This step prevents:
+
+- style violations
+- formatting issues
+- some common mistakes
+
+### Unit Tests
+
+Unit tests verify the correctness of business logic.
+
+They are fast to run and should always be part of the CI pipeline.
+
+### End-to-End Tests
+
+E2E tests validate the full application workflow.
+
+Because they may take longer to run, many teams run them:
+
+- on release builds
+- before merging into main or stage
+
+### Build
+
+The final CI step verifies that the application can be successfully built.
+
+In this project the application is built as a Docker container.
+
+If the build fails, the release cannot proceed.
+
+### Optional Quality Gates
+
+Some teams also include additional checks such as:
+
+- static analysis (SonarQube)
+- dependency vulnerability scanning
+- code coverage thresholds
+
+These checks help maintain long-term code quality.
+
+## Continuous Deployment (CD)
+
+Continuous Deployment is responsible for delivering the new version to production infrastructure.
+
+The CD pipeline extends the CI pipeline with deployment steps.
+
+Typical deployment workflow:
+
+1. Build Docker image
+2. Tag image using the release version
+3. Push image to AWS ECR
+4. Run one-time ECS task to apply database migrations
+5. Deploy new ECS task definition
+6. Update ECS service
+7. Cleanup
+
+Once AWS replaces the running containers with the new version, the deployment is complete.
+
+### Database Migration Step
+
+Database migrations are executed as a one-time ECS task.
+
+This ensures:
+
+- migrations run in the same environment as the application
+- the deployment process remains fully automated
+
+Because migrations follow a forward-only strategy, schema updates should not break the currently running version of the
+application.
+
+This allows safe rolling deployments.
+
+### Revision Cleanup
+
+After a successful deployment, old ECS task revisions are cleaned up.
+
+However, the system keeps the last three revisions.
+
+This allows fast rollback if needed.
+
+## Rollback Strategy
+
+Rollback is one of the most critical parts of production operations.
+
+If something goes wrong after deployment, the system must be able to restore the previous working version quickly.
+
+This project keeps the three most recent ECS revisions available.
+
+Rollback does not require modifying code or pushing new commits.
+
+Instead, rollback is performed using GitHub Actions workflows.
+
+### Step 1 — Show Available Revisions
+
+Workflow:
+
+```text
+Show ECS 3 Last Revisions
+```
+
+This displays the last three ECS task revisions.
+
+### Step 2 — Rollback
+
+Workflow:
+
+```text
+Rollback ECS Revision
+```
+
+To rollback:
+
+1. copy the desired revision number
+2. run the rollback workflow
+3. paste the revision number
+
+AWS will redeploy the selected revision.
+
+Rollback typically takes less than one minute.
+
+### Important Note About Migrations
+
+Database migrations follow a forward-only approach.
+
+Down migrations are intentionally avoided because they can lead to:
+
+- data corruption
+- inconsistent schema states
+
+Because of this rule:
+
+- breaking database changes should be avoided
+- large schema modifications should only happen in major releases
+
+This ensures that application rollbacks remain safe.
+
+## Summary
+
+The release management workflow in this project provides:
+
+- structured development practices
+- automated release generation
+- reliable CI/CD pipelines
+- safe database migration strategy
+- fast rollback capability
+
+Together these practices ensure that the system can evolve safely while maintaining high deployment confidence.

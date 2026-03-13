@@ -208,6 +208,10 @@ This separation helps with:
 
 # Development Workflow
 
+<p align="center">
+  <img alt="Development Workflow" src="https://github.com/prod-forge/backend/blob/main/assets/development-workflow.png" width="512px" height="386px">
+</p>
+
 To support a reliable release pipeline, the development workflow should follow several conventions.
 
 ## Task Management
@@ -374,7 +378,7 @@ maintain the project over time.
 # Architecture Decisions
 
 <p align="center">
-  <img alt="Architecture Decisions" src="https://github.com/prod-forge/backend/blob/main/assets/arch-decision.png" width="512px" height="768px">
+  <img alt="Architecture Decisions" src="https://github.com/prod-forge/backend/blob/main/assets/arch-decision.png" width="512px" height="541px">
 </p>
 
 Choosing the right architecture is rarely a purely technical decision.
@@ -549,6 +553,10 @@ At this stage the entire codebase is analyzed to ensure:
 This final check acts as a safeguard before any changes are merged into the main branch.
 
 # Configuration Management
+
+<p align="center">
+  <img alt="Configuration Management" src="https://github.com/prod-forge/backend/blob/main/assets/configuration-management.png" width="508px" height="523px">
+</p>
 
 Managing application configuration is often more complex than it appears.
 
@@ -763,7 +771,11 @@ This configuration strategy provides several advantages:
 
 As the project grows, this structure allows the configuration system to scale without becoming difficult to maintain.
 
-# Database Manager
+# Database Management
+
+<p align="center">
+  <img alt="Database Management" src="https://github.com/prod-forge/backend/blob/main/assets/database-management.png" width="510px" height="467px">
+</p>
 
 Database management is treated as a separate operational layer inside the application.
 
@@ -895,6 +907,10 @@ ECS tasks.
 Each operational task remains isolated and predictable.
 
 # Project Structure
+
+<p align="center">
+  <img alt="Project Structure" src="https://github.com/prod-forge/backend/blob/main/assets/project-structure.png" width="512px" height="406px">
+</p>
 
 A well-structured project is critical for long-term maintainability and scalability.
 
@@ -1900,6 +1916,10 @@ Building a secure and performant backend system requires attention to multiple l
 Applying these practices creates a solid baseline for production-ready APIs.
 
 # Release Management
+
+<p align="center">
+  <img alt="Release Management" src="https://github.com/prod-forge/backend/blob/main/assets/release-management.png" width="512px" height="281px">
+</p>
 
 Releasing software is not just a technical step — it is a structured process that ensures new functionality can be
 delivered safely, predictably, and repeatedly.

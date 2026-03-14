@@ -2,11 +2,9 @@
   <img alt="Logo" src="https://github.com/prod-forge/backend/blob/main/assets/prod-forge-logo.png" width="264px" height="243px">
 </p>
 
-# Prod Forge
-
 Most tutorials teach you how to write an app. Almost none of them teach you how to **run it in production.**
 
-**Prod Forge** is an open-source guide that covers everything around the code — the part most projects skip:
+**Prod Forge** is an open-source guide that covers everything around the code - the part most projects skip:
 repository strategy, team workflows, CI/CD, observability, security, release management, and rollback.
 
 To make it concrete, we build a simple Todo List API and treat it **as if real users depend on it.**
@@ -17,7 +15,7 @@ To make it concrete, we build a simple Todo List API and treat it **as if real u
 
 | Repository                                                | Description                 |
 | --------------------------------------------------------- | --------------------------- |
-| [Backend](https://github.com/prod-forge/backend)          | NestJS API — the main guide |
+| [Backend](https://github.com/prod-forge/backend)          | NestJS API - the main guide |
 | [Infrastructure](https://github.com/prod-forge/terraform) | Terraform on AWS            |
 
 ## Stack
@@ -137,7 +135,7 @@ code.
 For this project, Terraform infrastructure is maintained in a dedicated repository:
 
 → **Prod Forge Infrastructure**
-(link to terraform repo)
+[Terraform](https://github.com/prod-forge/terraform)
 
 This separation helps with:
 
@@ -423,8 +421,8 @@ Well-established technologies usually offer:
 
 # 2. The Code
 
-Code Quality Tooling as the very first step when starting a new project. We need to set up tools and agree on coding
-guidelines to ensure the future code fully complies with our requirements.
+The first thing to set up when starting a new project is code quality tooling. Before writing any feature code, the team
+needs agreed-upon tools and standards that all future code must comply with.
 
 ## Code Quality
 
@@ -432,31 +430,31 @@ Maintaining consistent code quality is essential for long-term project sustainab
 
 In this project, code quality is protected by a **five-layer defense system**.
 
-### Layer 1 — Code formatting and consistency
+### Layer 1. Code formatting and consistency
 
 The first layer ensures that the entire codebase follows consistent formatting rules.
 
 We use two tools for this purpose:
 
-- **EditorConfig** — ensures consistent formatting across different editors and IDEs
-- **Prettier** — enforces automatic code formatting
+- **EditorConfig** - ensures consistent formatting across different editors and IDEs
+- **Prettier** - enforces automatic code formatting
 
 These tools eliminate stylistic discussions during code reviews and ensure a uniform code style across the project.
 
-### Layer 2 — Static analysis with ESLint
+### Layer 2. Static analysis with ESLint
 
 The second layer introduces stricter rules through **ESLint**.
 
 While ESLint can be configured in many different ways, this project uses the following plugins:
 
-- `typescript-eslint` — TypeScript-specific linting rules
-- `eslint-plugin-regexp` — validation and best practices for regular expressions
-- `eslint-plugin-prettier` — integration with Prettier
-- `eslint-plugin-perfectionist` — sorting of imports and object properties
-- `eslint-plugin-package-json` — validation rules for `package.json`
-- `eslint-plugin-check-file` — file naming conventions
-- `@eslint/json` — additional validation for JSON files
-- `@eslint/js` — JavaScript linting support for auxiliary scripts
+- `typescript-eslint` - TypeScript-specific linting rules
+- `eslint-plugin-regexp` - validation and best practices for regular expressions
+- `eslint-plugin-prettier` - integration with Prettier
+- `eslint-plugin-perfectionist` - sorting of imports and object properties
+- `eslint-plugin-package-json` - validation rules for `package.json`
+- `eslint-plugin-check-file` - file naming conventions
+- `@eslint/json` - additional validation for JSON files
+- `@eslint/js` - JavaScript linting support for auxiliary scripts
 
 Even in TypeScript projects, it is useful to lint JavaScript files that may exist in tooling scripts or configuration
 files.
@@ -465,7 +463,7 @@ ESLint should be integrated with your IDE so that checks run automatically **on 
 
 This ensures developers receive immediate feedback during development.
 
-### Layer 3 — Pre-commit protection
+### Layer 3. Pre-commit protection
 
 The third layer prevents problematic code from entering the repository.
 
@@ -479,9 +477,25 @@ Before each commit:
 
 This ensures that commits do not break the CI pipeline or introduce formatting issues.
 
-### Layer 4 - Commitlint configuration
+### Layer 4. Commitlint configuration
 
-### Layer 5 — Continuous Integration checks
+Consistent commit messages are an important part of maintaining a readable and traceable project history. Clear commit
+messages help developers understand what changed, why it changed, and make it easier to navigate the codebase over time.
+
+In this project we use commitlint to enforce a standardized commit message format. This ensures that all commits follow
+the same structure and remain meaningful.
+
+Standardized commits also allow us to automatically generate a clean and structured changelog using tools like
+release-it during the release process.
+
+This approach improves:
+
+- readability of the git history
+- traceability of changes
+- automated changelog generation
+- overall release management workflow
+
+### Layer 5. Continuous Integration checks
 
 The final layer runs full validation during the **CI pipeline**.
 
@@ -720,7 +734,7 @@ As the project grows, this structure allows the configuration system to scale wi
 
 Database management is treated as a separate operational layer inside the application.
 
-Working with a database is not just about connecting an ORM — it includes a set of operational tasks such as:
+Working with a database is not just about connecting an ORM - it includes a set of operational tasks such as:
 
 - generating migrations
 - applying migrations
@@ -825,7 +839,7 @@ In container environments such as AWS ECS, this allows fast rollbacks by simply 
 Database migrations are executed during the deployment pipeline using a one-run ECS task.
 
 This means a temporary ECS task is launched using the same Docker image as the backend application, but instead of
-starting the server it performs a single operation — applying migrations.
+starting the server it performs a single operation - applying migrations.
 
 In practice, this is equivalent to launching a short-lived container that runs:
 
@@ -842,7 +856,7 @@ This approach provides several advantages:
 - no manual database access is required
 - deployment pipelines remain deterministic
 
-If additional operations are required — for example running database seeds — they can be executed using separate one-run
+If additional operations are required - for example running database seeds - they can be executed using separate one-run
 ECS tasks.
 
 Each operational task remains isolated and predictable.
@@ -1165,7 +1179,7 @@ This project demonstrates a simple fault-tolerance strategy using Redis as an ex
 
 ## Redis as a Non-Critical Dependency
 
-n this architecture, Redis is treated as a non-critical component.
+In this architecture, Redis is treated as a non-critical component.
 
 If Redis becomes unavailable, the system continues functioning using fallback strategies instead of crashing.
 
@@ -1236,13 +1250,13 @@ The ideal scenario is to test each business logic service independently.
 
 Every service test should include:
 
-- positive cases — expected successful behavior
-- negative cases — validation failures and error scenarios
+- positive cases - expected successful behavior
+- negative cases - validation failures and error scenarios
 
 Testing both scenarios ensures that the service behaves correctly under different conditions.
 
-Test only public methods. There's no point in covering the module's implementation with tests; we're only interested in
-the execution results.
+Only public methods should be tested. The internal implementation of a module is not the concern of a test — only the
+observable outcome matters.
 
 ### Mocking Dependencies
 
@@ -1314,7 +1328,7 @@ Tasks include:
 
 E2E tests should treat the application as a black box.
 
-Instead of directly calling internal services, tests interact with the application through its public interface — the
+Instead of directly calling internal services, tests interact with the application through its public interface - the
 HTTP API.
 
 The typical testing workflow looks like this:
@@ -1330,7 +1344,7 @@ test environment.
 
 ### Test specs design style
 
-I can recommend the following format for writing test specs:
+The following format is recommended for writing test specs:
 
 ```markdown
 // User Registration
@@ -1476,8 +1490,8 @@ This becomes extremely useful when investigating production errors.
 
 ## Context
 
-In the context, we can write, for example, the name of the method in which this log is executed, or something that will
-make it clear WHERE it was logged.
+The ctx field identifies where in the application the log was generated — for example, the name of the middleware,
+service, or handler that produced the entry.
 
 ## Observability Stack
 
@@ -1660,9 +1674,8 @@ From an engineering perspective, this helps developers better understand the bus
 
 ### Roadmap
 
-When working on small projects without clearly defined processes or a clear understanding of future business objectives
-expressed in Jira tasks, we can use a roadmap.md document that includes a set of features we will be implementing in the
-near future.
+For projects without a formal backlog or task tracker, a roadmap.md file can serve as a lightweight planning document
+listing upcoming features and directions.
 
 # Performance
 
@@ -1846,7 +1859,6 @@ Therefore uploaded files should always be:
 
 Building a secure and performant backend system requires attention to multiple layers:
 
-- clear documentation
 - efficient data handling
 - proper request validation
 - strict response filtering
@@ -1862,7 +1874,7 @@ Applying these practices creates a solid baseline for production-ready APIs.
   <img alt="Release Management" src="https://github.com/prod-forge/backend/blob/main/assets/release-management.png" width="512px" height="281px">
 </p>
 
-Releasing software is not just a technical step — it is a structured process that ensures new functionality can be
+Releasing software is not just a technical step - it is a structured process that ensures new functionality can be
 delivered safely, predictably, and repeatedly.
 
 A well-defined release process allows teams to:
@@ -2088,7 +2100,7 @@ Rollback does not require modifying code or pushing new commits.
 
 Instead, rollback is performed using GitHub Actions workflows.
 
-### Step 1 — Show Available Revisions
+### Step 1 - Show Available Revisions
 
 Workflow:
 
@@ -2098,7 +2110,7 @@ Show ECS 3 Last Revisions
 
 This displays the last three ECS task revisions.
 
-### Step 2 — Rollback
+### Step 2 - Rollback
 
 Workflow:
 
@@ -2149,14 +2161,14 @@ Together these practices ensure that the system can evolve safely while maintain
 Building software is not just about writing code.
 
 Most engineers learn the craft of coding early in their careers. But the gap between writing working code and running a
-reliable system in production is wide — and rarely documented in one place.
+reliable system in production is wide - and rarely documented in one place.
 
 This project is an attempt to close that gap.
 
 Not by providing a magic template you can clone and ship. But by walking through every decision that happens before,
 during, and after the code is written.
 
-The stack used here — NestJS, Postgres, Redis, Terraform, AWS — is not the point. These are just tools. The principles
+The stack used here - NestJS, Postgres, Redis, Terraform, AWS - is not the point. These are just tools. The principles
 behind them apply to almost any production backend, regardless of language or cloud provider.
 
 What matters is the thinking:
@@ -2197,4 +2209,4 @@ This project exists as a reminder not to skip them.
 
 We welcome any kind of contribution, please read the guidelines:
 
-[]()
+[CONTRIBUTING](https://github.com/prod-forge/backend/blob/main/CONTRIBUTING.md)

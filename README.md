@@ -2,94 +2,35 @@
   <img alt="Logo" src="https://github.com/prod-forge/backend/blob/main/assets/prod-forge-logo.png" width="264px" height="243px">
 </p>
 
-**Prod Forge** is an open-source guide to building production-ready software systems.
+# Prod Forge
 
-The goal of this project is not to create another boilerplate or demo application.
+Most tutorials teach you how to write an app. Almost none of them teach you how to **run it in production.**
 
-Instead, it focuses on **everything that happens around the code** when building real products:
+**Prod Forge** is an open-source guide that covers everything around the code — the part most projects skip:
+repository strategy, team workflows, CI/CD, observability, security, release management, and rollback.
 
-- architecture decisions
-- team workflows
-- infrastructure setup
-- observability
-- release engineering
-- production safety
+To make it concrete, we build a simple Todo List API and treat it **as if real users depend on it.**
 
-Most tutorials focus on writing the application itself.
-
-This project focuses on **what happens before and after the code is written.**
-
-## The idea
-
-To demonstrate these practices, we build a **simple Todo List application**.
-
-The application itself is intentionally simple.
-
-However, we treat it **as if it were a real production system**, implementing modern engineering practices used in
-real-world projects.
-
-This includes:
-
-- production-ready backend architecture
-- infrastructure as code
-- observability
-- CI/CD pipelines
-- release management
-- monitoring and alerting
-- rollback strategies
-- security practices
-
-The goal is to show **how to move from a simple idea to a production-ready system.**
+---
 
 ## Project structure
 
-This project is split into multiple repositories:
+| Repository                                                | Description                 |
+| --------------------------------------------------------- | --------------------------- |
+| [Backend](https://github.com/prod-forge/backend)          | NestJS API — the main guide |
+| [Infrastructure](https://github.com/prod-forge/terraform) | Terraform on AWS            |
 
-| Repository     | Description                          |
-| -------------- | ------------------------------------ |
-| Backend        | Production-ready backend application |
-| Infrastructure | Terraform infrastructure for AWS     |
-
-- [Backend](https://github.com/prod-forge/backend)
-- [Infrastructure](https://github.com/prod-forge/terraform)
-
-## Overview
+## Stack
 
 <p align="center">
   <img alt="Architecture" src="https://github.com/prod-forge/backend/blob/main/assets/architecture_diagram.png">
 </p>
 
-This repository demonstrates how to build a **production-ready backend system** using modern engineering practices.
-
-The application itself is intentionally simple — a Todo List API.
-
-However, the focus of this project is **not the application logic**.
-
-The focus is on everything required to run a backend system in production.
-
-## Stack
-
-The backend uses a modern and commonly used production stack:
-
-- NestJS
-- Prisma
-- PostgreSQL
-- Redis
-- Docker
-
-Observability stack:
-
-- Prometheus
-- Grafana
-- Loki
-
-Quality and workflow:
-
-- ESLint
-- Prettier
-- Husky
-- Commitlint
-- CI/CD pipelines
+| Layer         | Tools                                          |
+| ------------- | ---------------------------------------------- |
+| Backend       | NestJS · Prisma · PostgreSQL · Redis · Docker  |
+| Observability | Prometheus · Grafana · Loki                    |
+| Quality       | ESLint · Prettier · Husky · Commitlint · CI/CD |
 
 # 1. The Beginning
 
@@ -286,7 +227,7 @@ If a defect is discovered:
 1. Create a bugfix branch
 
 ```shell
-bug-123-fix-null-pointer
+fix/123-fix-null-pointer
 ```
 
 2. Implement the fix
@@ -2202,3 +2143,58 @@ The release management workflow in this project provides:
 - fast rollback capability
 
 Together these practices ensure that the system can evolve safely while maintaining high deployment confidence.
+
+# Conclusion
+
+Building software is not just about writing code.
+
+Most engineers learn the craft of coding early in their careers. But the gap between writing working code and running a
+reliable system in production is wide — and rarely documented in one place.
+
+This project is an attempt to close that gap.
+
+Not by providing a magic template you can clone and ship. But by walking through every decision that happens before,
+during, and after the code is written.
+
+The stack used here — NestJS, Postgres, Redis, Terraform, AWS — is not the point. These are just tools. The principles
+behind them apply to almost any production backend, regardless of language or cloud provider.
+
+What matters is the thinking:
+
+- Why does repository structure affect team velocity?
+- Why does commit discipline make releases safer?
+- Why does observability matter before something breaks?
+- Why does a rollback plan need to exist before you need it?
+
+These are not advanced topics. They are basic requirements for any system that real users depend on.
+The goal of Prod Forge is to make these practices visible, understandable, and reusable.
+
+## What comes next
+
+This project is actively evolving.
+Planned additions include:
+
+- Frontend repository with the same level of production treatment
+- Mobile App repository with the same level of production treatment
+- Kubernetes-based infrastructure as an alternative to ECS
+
+If there is something missing that you would find valuable, open an issue or start a discussion.
+
+## A final thought
+
+The best time to set up these practices is at the beginning of a project.
+
+The second best time is now.
+
+A system without observability is a system you cannot debug under pressure. A team without a defined workflow is a team
+that slows down as it grows. A deployment without a rollback plan is a deployment that will eventually cause an incident
+with no recovery path.
+
+None of these things are difficult to set up. They are just easy to skip.
+This project exists as a reminder not to skip them.
+
+### Contributing
+
+We welcome any kind of contribution, please read the guidelines:
+
+[]()

@@ -79,6 +79,10 @@ The release-it tool automates several important steps:
 
 Before starting the release, a checklist is shown to ensure the project is ready.
 
+<p align="center">
+  <img alt="Before Script" src="https://github.com/prod-forge/backend/blob/main/assets/release-before-script.png" width="524px" height="144px">
+</p>
+
 Example checklist:
 
 - All changes are committed
@@ -126,6 +130,10 @@ Bug fixes and small improvements.
 The v prefix is required so that GitHub Actions can detect the release tag and trigger the deployment pipeline.
 
 ## Continuous Integration (CI)
+
+<p align="center">
+  <img alt="CI" src="https://github.com/prod-forge/backend/blob/main/assets/ci-verification.png" width="1220px" height="86px">
+</p>
 
 Continuous Integration ensures that every change introduced to the repository is automatically validated.
 
@@ -179,6 +187,10 @@ Some teams also include additional checks such as:
 These checks help maintain long-term code quality.
 
 ## Continuous Deployment (CD)
+
+<p align="center">
+  <img alt="CD" src="https://github.com/prod-forge/backend/blob/main/assets/ci-deploy.png" width="1284px" height="46px">
+</p>
 
 Continuous Deployment is responsible for delivering the new version to production infrastructure.
 
@@ -236,6 +248,10 @@ This allows fast rollback if needed.
 
 ## Rollback Strategy
 
+<p align="center">
+  <img alt="Rollback Strategy" src="https://github.com/prod-forge/backend/blob/main/assets/rollback-strategy.png" width="320px" height="232px">
+</p>
+
 Rollback is one of the most critical parts of production operations.
 
 If something goes wrong after deployment, the system must be able to restore the previous working version quickly.
@@ -255,6 +271,10 @@ Show ECS 3 Last Revisions
 ```
 
 This displays the last three ECS task revisions.
+
+<p align="center">
+  <img alt="Revisions" src="https://github.com/prod-forge/backend/blob/main/assets/revisions.png" width="980px" height="228px">
+</p>
 
 ### Step 2 - Rollback
 

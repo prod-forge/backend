@@ -1,5 +1,9 @@
 # Logging & Observability
 
+<p align="center">
+  <img alt="Logging & Observability" src="https://github.com/prod-forge/backend/blob/main/assets/logging-observability.png" width="767px" height="338px">
+</p>
+
 Logging is one of the most important parts of building production systems.
 
 Once an application is deployed to production, logs become the primary feedback channel that allows engineers to

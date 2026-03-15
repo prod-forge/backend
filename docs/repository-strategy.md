@@ -1,7 +1,7 @@
 # Repository Strategy
 
 <p align="center">
-  <img alt="Repository Strategy" src="https://github.com/prod-forge/backend/blob/main/assets/repo-strategy.png" width="512px" height="768px">
+  <img alt="Repository Strategy" src="https://github.com/prod-forge/backend/blob/main/assets/repo-strategy.png" width="512px" height="488px">
 </p>
 
 One of the first architectural decisions when starting a project is choosing the repository structure.

@@ -1,0 +1,13 @@
+- Architecture Decisions
+  - Cost Analyze
+- Development Workflow
+  - Feature Flags
+- Performance
+  - More Performance Optimizations
+- Logging & Observability
+  - More metrics
+  - Global Dashboard
+  - Database Metrics
+- Testing
+  - A/B Testing
+  - Load Testing

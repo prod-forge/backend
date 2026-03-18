@@ -76,14 +76,3 @@ Instead, they would need to:
 - or depend on a versioned release
 
 This creates clear **ownership boundaries** between teams.
-
-## Conclusion
-
-In this project, we follow a **single repository per service approach**.
-
-My general rule of thumb:
-
-- **Growing teams and production systems → separate repositories**
-- **Pet projects, MVPs, small teams → monorepo**
-
-Both approaches are valid, but repository boundaries become increasingly important as the number of teams grows.

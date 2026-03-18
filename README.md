@@ -2,12 +2,12 @@
   <img alt="Logo" src="https://github.com/prod-forge/backend/blob/main/assets/prod-forge-logo.png" width="264px" height="243px">
 </p>
 
-Most tutorials teach you how to write an app. Almost none of them teach you how to **run it in production.**
+AI made writing backend code easy but running it in production is still hard.
 
-**Prod Forge** is an open-source guide that covers everything around the code - the part most projects skip:
-repository strategy, team workflows, CI/CD, observability, security, release management, and rollback.
+**Prod Forge** is an open-source reference that focuses on everything beyond the code:
+CI/CD, infrastructure, observability, deployment, migrations, and rollback.
 
-To make it concrete, we build a simple Todo List API and treat it **as if real users depend on it.**
+A simple Todo API, built as if it were a real production system.
 
 ---
 
@@ -28,7 +28,7 @@ To make it concrete, we build a simple Todo List API and treat it **as if real u
 | -------------- | ---------------------------------------------- |
 | Backend        | NestJS · Prisma · PostgreSQL · Redis · Docker  |
 | Infrastructure | AWS · ECR · ECS · RDS · ElasticCache           |
-| Observability  | Prometheus · Grafana · Loki                    |
+| Observability  | Prometheus · Grafana · Loki · Promtail         |
 | Quality        | ESLint · Prettier · Husky · Commitlint · CI/CD |
 
 # Table of contents
@@ -37,7 +37,9 @@ To make it concrete, we build a simple Todo List API and treat it **as if real u
   - [When Monorepos Work Well](https://github.com/prod-forge/backend/blob/main/docs/repository-strategy.md#when-monorepos-work-well)
   - [A Real-World Problem With Monorepos](https://github.com/prod-forge/backend/blob/main/docs/repository-strategy.md#a-real-world-problem-with-monorepos)
   - [Why Repository Boundaries Matter](https://github.com/prod-forge/backend/blob/main/docs/repository-strategy.md#why-repository-boundaries-matter)
-  - [Conclusion](https://github.com/prod-forge/backend/blob/main/docs/repository-strategy.md#conclusion)
+
+<!-- -->
+
 - [2. Architecture Decisions](https://github.com/prod-forge/backend/blob/main/docs/architecture-decisions.md)
   - [Client Constraints](https://github.com/prod-forge/backend/blob/main/docs/architecture-decisions.md#client-constraints)
   - [Understanding The Product](https://github.com/prod-forge/backend/blob/main/docs/architecture-decisions.md#understanding-the-product)
@@ -46,6 +48,9 @@ To make it concrete, we build a simple Todo List API and treat it **as if real u
     - [2. Community Ecosystem](https://github.com/prod-forge/backend/blob/main/docs/architecture-decisions.md#2-community-ecosystem)
     - [3. Opinionated Structure](https://github.com/prod-forge/backend/blob/main/docs/architecture-decisions.md#3-opinionated-structure)
     - [4. Stability Over Hype](https://github.com/prod-forge/backend/blob/main/docs/architecture-decisions.md#4-stability-over-hype)
+
+<!-- -->
+
 - [3. Development Workflow](https://github.com/prod-forge/backend/blob/main/docs/development-workflow.md)
   - [Task Management](https://github.com/prod-forge/backend/blob/main/docs/development-workflow.md#task-management)
   - [Git Flow](https://github.com/prod-forge/backend/blob/main/docs/development-workflow.md#git-flow)
@@ -56,12 +61,18 @@ To make it concrete, we build a simple Todo List API and treat it **as if real u
   - [Code Review](https://github.com/prod-forge/backend/blob/main/docs/development-workflow.md#code-review)
   - [Squash Merge Strategy](https://github.com/prod-forge/backend/blob/main/docs/development-workflow.md#squash-merge-strategy)
   - [Squash Merge Workflow](https://github.com/prod-forge/backend/blob/main/docs/development-workflow.md#squash-merge-workflow)
+
+<!-- -->
+
 - [4. Code Quality](https://github.com/prod-forge/backend/blob/main/docs/code-quality.md)
   - [Layer 1. Code Formatting And Consistency](https://github.com/prod-forge/backend/blob/main/docs/code-quality.md#layer-1-code-formatting-and-consistency)
   - [Layer 2. Static Analysis With ESLint](https://github.com/prod-forge/backend/blob/main/docs/code-quality.md#layer-2-static-analysis-with-eslint)
   - [Layer 3. Pre-commit Protection](https://github.com/prod-forge/backend/blob/main/docs/code-quality.md#layer-3-pre-commit-protection)
   - [Layer 4. Commitlint Configuration](https://github.com/prod-forge/backend/blob/main/docs/code-quality.md#layer-4-commitlint-configuration)
   - [Layer 5. Continuous Integration Checks](https://github.com/prod-forge/backend/blob/main/docs/code-quality.md#layer-5-continuous-integration-checks)
+
+<!-- -->
+
 - [5. Documentation](https://github.com/prod-forge/backend/blob/main/docs/documentation.md)
   - [Recommended Documentation Structure](https://github.com/prod-forge/backend/blob/main/docs/documentation.md#recommended-documentation-structure)
     - [README.md](https://github.com/prod-forge/backend/blob/main/docs/documentation.md#readmemd)
@@ -71,6 +82,9 @@ To make it concrete, we build a simple Todo List API and treat it **as if real u
     - [Incident Log](https://github.com/prod-forge/backend/blob/main/docs/documentation.md#incident-log)
     - [Feature Change Log](https://github.com/prod-forge/backend/blob/main/docs/documentation.md#feature-change-log)
     - [Roadmap](https://github.com/prod-forge/backend/blob/main/docs/documentation.md#roadmap)
+
+<!-- -->
+
 - [6. Configuration Management](https://github.com/prod-forge/backend/blob/main/docs/configuration-management.md)
   - [Environment Configuration Strategy](https://github.com/prod-forge/backend/blob/main/docs/configuration-management.md#environment-configuration-strategy)
   - [Secret Management](https://github.com/prod-forge/backend/blob/main/docs/configuration-management.md#secret-management)
@@ -78,23 +92,35 @@ To make it concrete, we build a simple Todo List API and treat it **as if real u
   - [Structured Configuration Modules](https://github.com/prod-forge/backend/blob/main/docs/configuration-management.md#structured-configuration-modules)
   - [Accessing Configuration](https://github.com/prod-forge/backend/blob/main/docs/configuration-management.md#accessing-configuration)
   - [Why This Approach Works Well](https://github.com/prod-forge/backend/blob/main/docs/configuration-management.md#why-this-approach-works-well)
+
+<!-- -->
+
 - [7. Database Management](https://github.com/prod-forge/backend/blob/main/docs/database-management.md)
   - [Database Scripts](https://github.com/prod-forge/backend/blob/main/docs/database-management.md#database-scripts)
   - [Database Manager in Docker](https://github.com/prod-forge/backend/blob/main/docs/database-management.md#database-manager-in-docker)
   - [Why Not a Separate Database Service?](https://github.com/prod-forge/backend/blob/main/docs/database-management.md#why-not-a-separate-database-service)
   - [Working with Migrations](https://github.com/prod-forge/backend/blob/main/docs/database-management.md#working-with-migrations)
     - [Running Migrations in CI/CD](https://github.com/prod-forge/backend/blob/main/docs/database-management.md#running-migrations-in-cicd)
+
+<!-- -->
+
 - [8. Project Structure](https://github.com/prod-forge/backend/blob/main/docs/project-structure.md)
   - [API Layer](https://github.com/prod-forge/backend/blob/main/docs/project-structure.md#api-layer)
     - [Thin Controllers](https://github.com/prod-forge/backend/blob/main/docs/project-structure.md#thin-controllers)
   - [Data Validation and Sanitization](https://github.com/prod-forge/backend/blob/main/docs/project-structure.md#data-validation-and-sanitization)
   - [Unified API Responses](https://github.com/prod-forge/backend/blob/main/docs/project-structure.md#unified-api-responses)
+
+<!-- -->
+
 - [9. Fault Tolerance](https://github.com/prod-forge/backend/blob/main/docs/fault-tolerance.md)
   - [Non-Critical Dependency](https://github.com/prod-forge/backend/blob/main/docs/fault-tolerance.md#non-critical-dependency)
     - [Fallback Strategies](https://github.com/prod-forge/backend/blob/main/docs/fault-tolerance.md#fallback-strategies)
       - [Caching Strategy](https://github.com/prod-forge/backend/blob/main/docs/fault-tolerance.md#caching-strategy)
       - [Throttling Strategy](https://github.com/prod-forge/backend/blob/main/docs/fault-tolerance.md#throttling-strategy)
   - [Graceful Degradation](https://github.com/prod-forge/backend/blob/main/docs/fault-tolerance.md#graceful-degradation)
+
+<!-- -->
+
 - [10. Error Handling](https://github.com/prod-forge/backend/blob/main/docs/error-handling.md)
   - [Types of Errors](https://github.com/prod-forge/backend/blob/main/docs/error-handling.md#types-of-errors)
     - [Business Logic Errors](https://github.com/prod-forge/backend/blob/main/docs/error-handling.md#business-logic-errors)
@@ -107,6 +133,9 @@ To make it concrete, we build a simple Todo List API and treat it **as if real u
     - [Correlation ID](https://github.com/prod-forge/backend/blob/main/docs/error-handling.md#correlation-id)
     - [User Context](https://github.com/prod-forge/backend/blob/main/docs/error-handling.md#user-context)
   - [Logging and Metrics](https://github.com/prod-forge/backend/blob/main/docs/error-handling.md#logging-and-metrics)
+
+<!-- -->
+
 - [11. Logging & Observability](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md)
   - [Application Logging](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#application-logging)
   - [What Should Be Logged](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#what-should-be-logged)
@@ -118,6 +147,9 @@ To make it concrete, we build a simple Todo List API and treat it **as if real u
   - [Dashboards](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#dashboards)
   - [Metrics with Prometheus](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#metrics-with-prometheus)
   - [Why Observability Matters](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#why-observability-matters)
+
+<!-- -->
+
 - [12. Testing](https://github.com/prod-forge/backend/blob/main/docs/testing.md)
   - [Unit Tests](https://github.com/prod-forge/backend/blob/main/docs/testing.md#unit-tests)
     - [Mocking Dependencies](https://github.com/prod-forge/backend/blob/main/docs/testing.md#mocking-dependencies)
@@ -125,11 +157,17 @@ To make it concrete, we build a simple Todo List API and treat it **as if real u
     - [Test Environment Setup](https://github.com/prod-forge/backend/blob/main/docs/testing.md#test-environment-setup)
     - [Writing Effective E2E Tests](https://github.com/prod-forge/backend/blob/main/docs/testing.md#writing-effective-e2e-tests)
   - [Test Specs Design Style](https://github.com/prod-forge/backend/blob/main/docs/testing.md#test-specs-design-style)
+
+<!-- -->
+
 - [13. Performance](https://github.com/prod-forge/backend/blob/main/docs/performance.md)
   - [Avoid Returning Unnecessary Data](https://github.com/prod-forge/backend/blob/main/docs/performance.md#avoid-returning-unnecessary-data)
   - [Use Pagination for Collections](https://github.com/prod-forge/backend/blob/main/docs/performance.md#use-pagination-for-collections)
   - [Use Database Indexes (When Needed)](https://github.com/prod-forge/backend/blob/main/docs/performance.md#use-database-indexes-when-needed)
   - [Response Compression](https://github.com/prod-forge/backend/blob/main/docs/performance.md#response-compression)
+
+<!-- -->
+
 - [14. Security](https://github.com/prod-forge/backend/blob/main/docs/security.md)
   - [Request Validation](https://github.com/prod-forge/backend/blob/main/docs/security.md#request-validation)
   - [Response Data Sanitization](https://github.com/prod-forge/backend/blob/main/docs/security.md#response-data-sanitization)
@@ -137,6 +175,9 @@ To make it concrete, we build a simple Todo List API and treat it **as if real u
   - [CORS Configuration](https://github.com/prod-forge/backend/blob/main/docs/security.md#cors-configuration)
   - [Rate Limiting](https://github.com/prod-forge/backend/blob/main/docs/security.md#rate-limiting)
   - [File Upload Security](https://github.com/prod-forge/backend/blob/main/docs/security.md#file-upload-security)
+
+<!-- -->
+
 - [15. Release Management](https://github.com/prod-forge/backend/blob/main/docs/release-management.md)
   - [Release Strategy](https://github.com/prod-forge/backend/blob/main/docs/release-management.md#release-strategy)
   - [Creating a Release](https://github.com/prod-forge/backend/blob/main/docs/release-management.md#creating-a-release)

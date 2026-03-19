@@ -113,11 +113,15 @@ Built around a simple Todo API, but designed as a real-world production system.
 <!-- -->
 
 - [9. Fault Tolerance](https://github.com/prod-forge/backend/blob/main/docs/fault-tolerance.md)
+  - [Fault vs Failure](https://github.com/prod-forge/backend/blob/main/docs/fault-tolerance.md#fault-vs-failure)
   - [Non-Critical Dependency](https://github.com/prod-forge/backend/blob/main/docs/fault-tolerance.md#non-critical-dependency)
     - [Fallback Strategies](https://github.com/prod-forge/backend/blob/main/docs/fault-tolerance.md#fallback-strategies)
       - [Caching Strategy](https://github.com/prod-forge/backend/blob/main/docs/fault-tolerance.md#caching-strategy)
       - [Throttling Strategy](https://github.com/prod-forge/backend/blob/main/docs/fault-tolerance.md#throttling-strategy)
-  - [Graceful Degradation](https://github.com/prod-forge/backend/blob/main/docs/fault-tolerance.md#graceful-degradation)
+  - [Types of Fault Tolerance](https://github.com/prod-forge/backend/blob/main/docs/fault-tolerance.md#types-of-fault-tolerance)
+    - [High Availability](https://github.com/prod-forge/backend/blob/main/docs/fault-tolerance.md#high-availability)
+    - [Graceful Degradation](https://github.com/prod-forge/backend/blob/main/docs/fault-tolerance.md#graceful-degradation)
+  - [Critical Dependency](https://github.com/prod-forge/backend/blob/main/docs/fault-tolerance.md#critical-dependency)
 
 <!-- -->
 

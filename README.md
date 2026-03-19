@@ -2,12 +2,12 @@
   <img alt="Logo" src="https://github.com/prod-forge/backend/blob/main/assets/prod-forge-logo.png" width="264px" height="243px">
 </p>
 
-AI made writing backend code easy but running it in production is still hard.
+AI made writing backend code easy - running it in production is still hard.
 
-**Prod Forge** is an open-source reference that focuses on everything beyond the code:
-CI/CD, infrastructure, observability, deployment, migrations, and rollback.
+**Prod Forge** is an open-source reference that shows how to build and operate a production-ready backend: CI/CD,
+infrastructure, observability, migrations, and rollback.
 
-A simple Todo API, built as if it were a real production system.
+Built around a simple Todo API, but designed as a real-world production system.
 
 ---
 

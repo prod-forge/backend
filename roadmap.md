@@ -1,3 +1,6 @@
+- Code Refactoring
+  - Configs refactoring
+  - Services refactoring
 - Architecture Decisions
   - Cost Analyze
 - Development Workflow
@@ -11,3 +14,6 @@
 - Testing
   - A/B Testing
   - Load Testing
+- Health
+  - Terminus
+  - Graceful shutdown

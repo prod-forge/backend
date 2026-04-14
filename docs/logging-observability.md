@@ -202,3 +202,62 @@ Combining structured logging, metrics, and monitoring dashboards allows teams to
 - track error rates
 
 A well-designed observability system is essential for operating production-grade applications.
+
+## Health Checks and Terminus
+
+Health checks are used by orchestrators to decide whether a service instance should receive traffic.
+
+They should not represent a full system status, but instead answer:
+can this instance handle requests right now?
+
+In NestJS applications, health checks are commonly implemented with @nestjs/terminus, which provides structured health
+indicators and standardized responses.
+
+### Critical vs Optional Dependencies
+
+Dependencies should be split into:
+
+- critical — required for request handling (e.g. database)
+- optional — non-blocking (e.g. cache like Redis)
+
+Failure of a critical dependency must stop traffic.
+Failure of an optional dependency should only degrade functionality.
+
+### /health (Critical)
+
+Includes only critical dependencies.
+
+Used by the orchestrator.
+Must return non-200 if a critical dependency fails.
+
+#### Readiness
+
+Readiness indicates whether a service instance can safely receive traffic. It is used by orchestrators to decide if the
+instance should stay in the load balancer. Unlike general health checks, readiness includes only critical dependencies
+and lifecycle signals like shutdown state.
+
+```ts
+this.shutdownHealthService.check('shutdown');
+```
+
+### /health/deps (All)
+
+Includes all dependencies (critical + optional).
+
+Used for debugging and monitoring.
+May report failures without affecting traffic.
+
+#### Optional Dependencies Handling
+
+Optional checks should not throw errors.
+
+Instead, they should report degraded state:
+
+```ts
+return {
+  redis: {
+    status: 'down',
+    message: 'optional dependency',
+  },
+};
+```

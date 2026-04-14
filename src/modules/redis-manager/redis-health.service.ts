@@ -15,26 +15,36 @@ export class RedisHealthService {
     const clients = this.redisManager.getClients();
 
     try {
-      const state = (await Promise.all(clients.map(async (client) => client.ping()))).every(
-        (res: string) => res === 'PONG',
-      );
-      if (state) {
+      const results = await Promise.allSettled(clients.map((client) => client.ping()));
+
+      const isUp = results.every((r) => r.status === 'fulfilled' && r.value === 'PONG');
+
+      if (isUp) {
         return {
           [serviceName]: { status: 'up' },
         };
       }
+      this.logger.warn({
+        ctx: 'RedisHealthService',
+        msg: 'Redis degraded',
+      });
 
       return {
         [serviceName]: {
-          message: 'Redis is unavailable (optional dependency)',
+          message: 'Redis unavailable (optional)',
           status: 'down',
         },
       };
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
+      this.logger.error({
+        ctx: 'RedisHealthService',
+        details: e,
+        msg: 'Redis health check failed',
+      });
+
       return {
         [serviceName]: {
-          message: 'Redis is unavailable (optional dependency)',
+          message: 'Redis unavailable (optional)',
           status: 'down',
         },
       };

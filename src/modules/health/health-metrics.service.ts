@@ -15,7 +15,7 @@ export class HealthMetricsService {
   async updateMetrics(): Promise<void> {
     let result;
     try {
-      result = await this.healthChecks.run();
+      result = await this.healthChecks.runCritical();
     } catch (e) {
       if (e instanceof Object) {
         const { response } = e as { response: Record<string, unknown> };

@@ -4,6 +4,7 @@ import { TerminusModule } from '@nestjs/terminus';
 import { HealthController } from '../../api/health/health.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import { RedisManagerModule } from '../redis-manager/redis-manager.module';
+import { ShutdownModule } from '../shutdown/shutdown.module';
 import { HealthMetricsService } from './health-metrics.service';
 import { HealthChecks } from './health.checks';
 import { ServiceHealthMetric } from './health.metrics';
@@ -17,6 +18,7 @@ import { ServiceHealthMetric } from './health.metrics';
       logger: false,
     }),
     RedisManagerModule,
+    ShutdownModule,
   ],
   providers: [HealthChecks, HealthMetricsService, ServiceHealthMetric],
 })

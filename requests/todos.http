@@ -4,6 +4,9 @@ GET http://localhost:3000/api/v1/todos
 ### Health endpoint
 GET http://localhost:3000/health
 
+### Health endpoint (all deps)
+GET http://localhost:3000/health/deps
+
 ### GET request to example server
 GET http://localhost:3000/api/v1/todos?sortBy=title&order=asc
 Authorization: Bearer ZWViZWNiNTktZjMwMS00ODY5LTg3ZWQtNmFmNTY2NDEyNjY2

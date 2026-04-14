@@ -55,8 +55,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       error = new InternalServerError();
     }
 
-    // Need to skip Health endpoint
-    if (HEALTH_ENDPOINT === req.url.slice(1) && exception instanceof HttpException) {
+    // Need to skip Health endpoints
+    if (req.url.slice(1).indexOf(HEALTH_ENDPOINT) === 0 && exception instanceof HttpException) {
       res.status(200).json(exception.getResponse());
 
       return;

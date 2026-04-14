@@ -3,6 +3,7 @@ import { HealthCheckResult, HealthCheckService, HealthIndicatorResult, PrismaHea
 
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisHealthService } from '../redis-manager/redis-health.service';
+import { ShutdownHealthService } from '../shutdown/shutdown-health.service';
 
 @Injectable()
 export class HealthChecks {
@@ -11,24 +12,20 @@ export class HealthChecks {
     private db: PrismaHealthIndicator,
     private prismaService: PrismaService,
     private redisHealth: RedisHealthService,
+    private shutdownHealthService: ShutdownHealthService,
   ) {}
 
-  async run(): Promise<HealthCheckResult> {
-    try {
-      return await this.health.check([
-        (): Promise<HealthIndicatorResult<'database'>> => this.db.pingCheck('database', this.prismaService),
-        (): Promise<HealthIndicatorResult<'redis'>> => this.redisHealth.pingCheck('redis'),
-      ]);
-    } catch (_error) {
-      const { response } = _error as { response: HealthCheckResult };
-      const { details, error, info } = response;
+  async runAll(): Promise<HealthCheckResult> {
+    return this.health.check([
+      (): Promise<HealthIndicatorResult<'database'>> => this.db.pingCheck('database', this.prismaService),
+      (): Promise<HealthIndicatorResult<'redis'>> => this.redisHealth.pingCheck('redis'),
+    ]);
+  }
 
-      return {
-        details,
-        error,
-        info,
-        status: 'ok',
-      };
-    }
+  async runCritical(): Promise<HealthCheckResult> {
+    return this.health.check([
+      (): Promise<HealthIndicatorResult<'database'>> => this.db.pingCheck('database', this.prismaService),
+      (): HealthIndicatorResult<'shutdown'> => this.shutdownHealthService.check('shutdown'),
+    ]);
   }
 }

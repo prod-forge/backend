@@ -8,9 +8,15 @@ import { HealthChecks } from '../../modules/health/health.checks';
 export class HealthController {
   constructor(private healthChecks: HealthChecks) {}
 
+  @Get('deps')
+  @HealthCheck()
+  deps(): Promise<HealthCheckResult> {
+    return this.healthChecks.runAll();
+  }
+
   @Get()
   @HealthCheck()
-  check(): Promise<HealthCheckResult> {
-    return this.healthChecks.run();
+  ready(): Promise<HealthCheckResult> {
+    return this.healthChecks.runCritical();
   }
 }

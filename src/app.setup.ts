@@ -1,6 +1,12 @@
 import type { ConfigType } from '@nestjs/config';
 
-import { ClassSerializerInterceptor, INestApplication, ValidationPipe, VersioningType } from '@nestjs/common';
+import {
+  ClassSerializerInterceptor,
+  INestApplication,
+  RequestMethod,
+  ValidationPipe,
+  VersioningType,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { useContainer, ValidationError } from 'class-validator';
@@ -83,7 +89,7 @@ export const appSetup = (app: INestApplication): void => {
 
   // Routing layer
   app.setGlobalPrefix(configApi.apiPrefix, {
-    exclude: [HEALTH_ENDPOINT, METRICS_ENDPOINT],
+    exclude: [HEALTH_ENDPOINT, METRICS_ENDPOINT, { method: RequestMethod.ALL, path: `${HEALTH_ENDPOINT}/*` }],
   });
 
   app.enableVersioning({
@@ -112,7 +118,12 @@ export const appSetup = (app: INestApplication): void => {
   app.useGlobalInterceptors(
     new ClassSerializerInterceptor(app.get(Reflector)),
     new UnifiedResponseInterceptor({
-      excludeEndpoints: [`/${METRICS_ENDPOINT}`, `/${METRICS_ENDPOINT}/database`, `/${HEALTH_ENDPOINT}`],
+      excludeEndpoints: [
+        `/${METRICS_ENDPOINT}`,
+        `/${METRICS_ENDPOINT}/database`,
+        `/${HEALTH_ENDPOINT}`,
+        `/${HEALTH_ENDPOINT}/deps`,
+      ],
     }),
     new HttpMetricsInterceptor(),
   );

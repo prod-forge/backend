@@ -151,6 +151,12 @@ Built around a simple Todo API, but designed as a real-world production system.
   - [Dashboards](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#dashboards)
   - [Metrics with Prometheus](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#metrics-with-prometheus)
   - [Why Observability Matters](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#why-observability-matters)
+  - [Health Checks and Terminus](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#health-checks-and-terminus)
+    - [Critical vs Optional Dependencies](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#critical-vs-optional-dependencies)
+    - [/health (Critical)](<https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#/health-(critical)>)
+      - [Readiness](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#readiness)
+    - [/health/deps (All)](<https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#/health/deps-(all)>)
+      - [Optional Dependencies Handling](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#optional-dependencies-handling)
 
 <!-- -->
 

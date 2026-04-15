@@ -121,6 +121,7 @@ Built around a simple Todo API, but designed as a real-world production system.
   - [Types of Fault Tolerance](https://github.com/prod-forge/backend/blob/main/docs/fault-tolerance.md#types-of-fault-tolerance)
     - [High Availability](https://github.com/prod-forge/backend/blob/main/docs/fault-tolerance.md#high-availability)
     - [Graceful Degradation](https://github.com/prod-forge/backend/blob/main/docs/fault-tolerance.md#graceful-degradation)
+  - [In-Flight Requests Handling](https://github.com/prod-forge/backend/blob/main/docs/fault-tolerance.md#in-flight-requests-handling)
   - [Critical Dependency](https://github.com/prod-forge/backend/blob/main/docs/fault-tolerance.md#critical-dependency)
 
 <!-- -->
@@ -153,9 +154,9 @@ Built around a simple Todo API, but designed as a real-world production system.
   - [Why Observability Matters](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#why-observability-matters)
   - [Health Checks and Terminus](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#health-checks-and-terminus)
     - [Critical vs Optional Dependencies](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#critical-vs-optional-dependencies)
-    - [/health (Critical)](<https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#/health-(critical)>)
+    - [/health (Critical)](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#health-critical)
       - [Readiness](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#readiness)
-    - [/health/deps (All)](<https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#/health/deps-(all)>)
+    - [/health/deps (All)](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#health-deps-all)
       - [Optional Dependencies Handling](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#optional-dependencies-handling)
 
 <!-- -->

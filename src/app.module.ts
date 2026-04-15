@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService, ConfigType } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
@@ -20,6 +20,8 @@ import { TodosModule } from './features/todos/todos.module';
 import { LoggerModule } from './logger/logger.module';
 import { EnvironmentModule } from './modules/environment/environment.module';
 import { HealthModule } from './modules/health/health.module';
+import { RequestTrackingMiddleware } from './modules/in-flight-requests/request-tracking.middleware';
+import { RequestTrackingService } from './modules/in-flight-requests/request-tracking.service';
 import { MetricsModule } from './modules/metrics/metrics.module';
 import { RedisManagerModule } from './modules/redis-manager/redis-manager.module';
 import { RedisManagerService } from './modules/redis-manager/redis-manager.service';
@@ -81,10 +83,15 @@ import { VersionModule } from './modules/version/version.module';
     VersionModule,
   ],
   providers: [
+    RequestTrackingService,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(RequestTrackingMiddleware).forRoutes('*');
+  }
+}

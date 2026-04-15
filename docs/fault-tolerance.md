@@ -94,6 +94,22 @@ transparently, and the user does not see that a fallback or recovery mechanism w
 Graceful Degradation - the system remains partially available, but the user may notice issues, such
 as reduced functionality or visible errors, while core parts of the system still work.
 
+## In-Flight Requests Handling
+
+When deploying a new version, there may still be active user requests being processed.
+
+To handle this safely, the application uses an in-flight requests tracking approach.
+
+Each incoming request is tracked via a middleware, which increments an internal counter. Once a request is completed,
+the counter is decremented.
+
+If the counter is greater than zero, it means there are still active requests being processed.
+
+During shutdown, the application does not terminate immediately. Instead, it waits for a configurable timeout (e.g. 30
+seconds) to allow in-flight requests to complete.
+
+If the timeout is exceeded, remaining requests are forcefully terminated.
+
 ## Critical Dependency
 
 The database is a critical dependency. If database is not available, the application will shutdown:

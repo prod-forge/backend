@@ -6,7 +6,7 @@ import { Request, Response } from 'express';
 import { Counter } from 'prom-client';
 
 import { sentryConfig } from '../../config/sentry.config';
-import { HEALTH_ENDPOINT } from '../../constants/url.contants';
+import { HEALTH_ENDPOINT } from '../../constants/url.constants';
 import { LoggerService } from '../../logger/logger.service';
 import { BaseError } from '../errors/_base.error';
 import { InternalServerError } from '../errors/common.errors';

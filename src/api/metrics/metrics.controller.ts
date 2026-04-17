@@ -1,6 +1,6 @@
 import { Controller, Get, Header } from '@nestjs/common';
 
-import { METRICS_ENDPOINT } from '../../constants/url.contants';
+import { METRICS_ENDPOINT } from '../../constants/url.constants';
 import { MetricsService } from '../../modules/metrics/metrics.service';
 
 @Controller(METRICS_ENDPOINT)

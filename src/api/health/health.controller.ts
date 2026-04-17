@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { HealthCheck, HealthCheckResult } from '@nestjs/terminus';
 
-import { HEALTH_ENDPOINT } from '../../constants/url.contants';
+import { HEALTH_ENDPOINT } from '../../constants/url.constants';
 import { HealthChecks } from '../../modules/health/health.checks';
 
 @Controller(HEALTH_ENDPOINT)

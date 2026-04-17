@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 
 import { LogConfigInterface } from '../../config/interfaces/log-config.interface';
-import { HEALTH_ENDPOINT, METRICS_ENDPOINT } from '../../constants/url.contants';
+import { HEALTH_ENDPOINT, METRICS_ENDPOINT } from '../../constants/url.constants';
 import { LoggerService } from '../logger.service';
 
 export const loggingMiddleware =

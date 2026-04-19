@@ -15,7 +15,7 @@ import { redisConfig } from './config/redis.config';
 import { sentryConfig } from './config/sentry.config';
 import { swaggerConfig } from './config/swagger.config';
 import { throttlerConfig } from './config/throttler.config';
-import { METRICS_ENDPOINT } from './constants/url.contants';
+import { METRICS_ENDPOINT } from './constants/url.constants';
 import { TodosModule } from './features/todos/todos.module';
 import { LoggerModule } from './logger/logger.module';
 import { EnvironmentModule } from './modules/environment/environment.module';

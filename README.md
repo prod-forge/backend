@@ -64,7 +64,23 @@ Built around a simple Todo API, but designed as a real-world production system.
 
 <!-- -->
 
-- [4. Code Quality](https://github.com/prod-forge/backend/blob/main/docs/code-quality.md)
+- [4. AI-Assisted Development](https://github.com/prod-forge/backend/blob/main/docs/ai-development.md)
+  - [Quality Gates First](https://github.com/prod-forge/backend/blob/main/docs/ai-development.md#quality-gates-first)
+  - [Architecture Before Generation](https://github.com/prod-forge/backend/blob/main/docs/ai-development.md#architecture-before-generation)
+  - [AI Instructions](https://github.com/prod-forge/backend/blob/main/docs/ai-development.md#ai-instructions)
+  - [Task Decomposition](https://github.com/prod-forge/backend/blob/main/docs/ai-development.md#task-decomposition)
+  - [Common AI Problems](https://github.com/prod-forge/backend/blob/main/docs/ai-development.md#common-ai-problems)
+  - [Cost Optimization](https://github.com/prod-forge/backend/blob/main/docs/ai-development.md#cost-optimization)
+  - [Quality Control](https://github.com/prod-forge/backend/blob/main/docs/ai-development.md#quality-control)
+    - [Commit Frequently](https://github.com/prod-forge/backend/blob/main/docs/ai-development.md#commit-frequently)
+    - [Validate Edge Cases](https://github.com/prod-forge/backend/blob/main/docs/ai-development.md#validate-edge-cases)
+    - [Mandatory Code Review](https://github.com/prod-forge/backend/blob/main/docs/ai-development.md#mandatory-code-review)
+    - [Never Trust AI Blindly](https://github.com/prod-forge/backend/blob/main/docs/ai-development.md#never-trust-ai-blindly)
+  - [Recommended Workflow](https://github.com/prod-forge/backend/blob/main/docs/ai-development.md#recommended-workflow)
+
+<!-- -->
+
+- [5. Code Quality](https://github.com/prod-forge/backend/blob/main/docs/code-quality.md)
   - [Layer 1. Code Formatting And Consistency](https://github.com/prod-forge/backend/blob/main/docs/code-quality.md#layer-1-code-formatting-and-consistency)
   - [Layer 2. Static Analysis With ESLint](https://github.com/prod-forge/backend/blob/main/docs/code-quality.md#layer-2-static-analysis-with-eslint)
   - [Layer 3. Pre-commit Protection](https://github.com/prod-forge/backend/blob/main/docs/code-quality.md#layer-3-pre-commit-protection)
@@ -73,7 +89,7 @@ Built around a simple Todo API, but designed as a real-world production system.
 
 <!-- -->
 
-- [5. Documentation](https://github.com/prod-forge/backend/blob/main/docs/documentation.md)
+- [6. Documentation](https://github.com/prod-forge/backend/blob/main/docs/documentation.md)
   - [Recommended Documentation Structure](https://github.com/prod-forge/backend/blob/main/docs/documentation.md#recommended-documentation-structure)
     - [README.md](https://github.com/prod-forge/backend/blob/main/docs/documentation.md#readmemd)
     - [Swagger / OpenAPI](https://github.com/prod-forge/backend/blob/main/docs/documentation.md#swagger--openapi)
@@ -85,7 +101,7 @@ Built around a simple Todo API, but designed as a real-world production system.
 
 <!-- -->
 
-- [6. Configuration Management](https://github.com/prod-forge/backend/blob/main/docs/configuration-management.md)
+- [7. Configuration Management](https://github.com/prod-forge/backend/blob/main/docs/configuration-management.md)
   - [Environment Configuration Strategy](https://github.com/prod-forge/backend/blob/main/docs/configuration-management.md#environment-configuration-strategy)
   - [Secret Management](https://github.com/prod-forge/backend/blob/main/docs/configuration-management.md#secret-management)
   - [NestJS Configuration Setup](https://github.com/prod-forge/backend/blob/main/docs/configuration-management.md#nestjs-configuration-setup)
@@ -95,7 +111,7 @@ Built around a simple Todo API, but designed as a real-world production system.
 
 <!-- -->
 
-- [7. Database Management](https://github.com/prod-forge/backend/blob/main/docs/database-management.md)
+- [8. Database Management](https://github.com/prod-forge/backend/blob/main/docs/database-management.md)
   - [Database Scripts](https://github.com/prod-forge/backend/blob/main/docs/database-management.md#database-scripts)
   - [Database Manager in Docker](https://github.com/prod-forge/backend/blob/main/docs/database-management.md#database-manager-in-docker)
   - [Why Not a Separate Database Service?](https://github.com/prod-forge/backend/blob/main/docs/database-management.md#why-not-a-separate-database-service)
@@ -104,7 +120,7 @@ Built around a simple Todo API, but designed as a real-world production system.
 
 <!-- -->
 
-- [8. Project Structure](https://github.com/prod-forge/backend/blob/main/docs/project-structure.md)
+- [9. Project Structure](https://github.com/prod-forge/backend/blob/main/docs/project-structure.md)
   - [API Layer](https://github.com/prod-forge/backend/blob/main/docs/project-structure.md#api-layer)
     - [Thin Controllers](https://github.com/prod-forge/backend/blob/main/docs/project-structure.md#thin-controllers)
   - [Data Validation and Sanitization](https://github.com/prod-forge/backend/blob/main/docs/project-structure.md#data-validation-and-sanitization)
@@ -112,7 +128,7 @@ Built around a simple Todo API, but designed as a real-world production system.
 
 <!-- -->
 
-- [9. Fault Tolerance](https://github.com/prod-forge/backend/blob/main/docs/fault-tolerance.md)
+- [10. Fault Tolerance](https://github.com/prod-forge/backend/blob/main/docs/fault-tolerance.md)
   - [Fault vs Failure](https://github.com/prod-forge/backend/blob/main/docs/fault-tolerance.md#fault-vs-failure)
   - [Non-Critical Dependency](https://github.com/prod-forge/backend/blob/main/docs/fault-tolerance.md#non-critical-dependency)
     - [Fallback Strategies](https://github.com/prod-forge/backend/blob/main/docs/fault-tolerance.md#fallback-strategies)
@@ -126,7 +142,7 @@ Built around a simple Todo API, but designed as a real-world production system.
 
 <!-- -->
 
-- [10. Error Handling](https://github.com/prod-forge/backend/blob/main/docs/error-handling.md)
+- [11. Error Handling](https://github.com/prod-forge/backend/blob/main/docs/error-handling.md)
   - [Types of Errors](https://github.com/prod-forge/backend/blob/main/docs/error-handling.md#types-of-errors)
     - [Business Logic Errors](https://github.com/prod-forge/backend/blob/main/docs/error-handling.md#business-logic-errors)
     - [Database Errors](https://github.com/prod-forge/backend/blob/main/docs/error-handling.md#database-errors)
@@ -141,7 +157,7 @@ Built around a simple Todo API, but designed as a real-world production system.
 
 <!-- -->
 
-- [11. Logging & Observability](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md)
+- [12. Logging & Observability](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md)
   - [Application Logging](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#application-logging)
   - [What Should Be Logged](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#what-should-be-logged)
   - [GDPR Considerations](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#gdpr-considerations)
@@ -161,7 +177,7 @@ Built around a simple Todo API, but designed as a real-world production system.
 
 <!-- -->
 
-- [12. Testing](https://github.com/prod-forge/backend/blob/main/docs/testing.md)
+- [13. Testing](https://github.com/prod-forge/backend/blob/main/docs/testing.md)
   - [Unit Tests](https://github.com/prod-forge/backend/blob/main/docs/testing.md#unit-tests)
     - [Mocking Dependencies](https://github.com/prod-forge/backend/blob/main/docs/testing.md#mocking-dependencies)
   - [End-to-End Tests (E2E)](https://github.com/prod-forge/backend/blob/main/docs/testing.md#end-to-end-tests-e2e)
@@ -171,7 +187,7 @@ Built around a simple Todo API, but designed as a real-world production system.
 
 <!-- -->
 
-- [13. Performance](https://github.com/prod-forge/backend/blob/main/docs/performance.md)
+- [14. Performance](https://github.com/prod-forge/backend/blob/main/docs/performance.md)
   - [Avoid Returning Unnecessary Data](https://github.com/prod-forge/backend/blob/main/docs/performance.md#avoid-returning-unnecessary-data)
   - [Use Pagination for Collections](https://github.com/prod-forge/backend/blob/main/docs/performance.md#use-pagination-for-collections)
   - [Use Database Indexes (When Needed)](https://github.com/prod-forge/backend/blob/main/docs/performance.md#use-database-indexes-when-needed)
@@ -179,7 +195,7 @@ Built around a simple Todo API, but designed as a real-world production system.
 
 <!-- -->
 
-- [14. Security](https://github.com/prod-forge/backend/blob/main/docs/security.md)
+- [15. Security](https://github.com/prod-forge/backend/blob/main/docs/security.md)
   - [Request Validation](https://github.com/prod-forge/backend/blob/main/docs/security.md#request-validation)
   - [Response Data Sanitization](https://github.com/prod-forge/backend/blob/main/docs/security.md#response-data-sanitization)
   - [Security Headers](https://github.com/prod-forge/backend/blob/main/docs/security.md#security-headers)
@@ -189,7 +205,7 @@ Built around a simple Todo API, but designed as a real-world production system.
 
 <!-- -->
 
-- [15. Release Management](https://github.com/prod-forge/backend/blob/main/docs/release-management.md)
+- [16. Release Management](https://github.com/prod-forge/backend/blob/main/docs/release-management.md)
   - [Release Strategy](https://github.com/prod-forge/backend/blob/main/docs/release-management.md#release-strategy)
   - [Creating a Release](https://github.com/prod-forge/backend/blob/main/docs/release-management.md#creating-a-release)
     - [Release Automation](https://github.com/prod-forge/backend/blob/main/docs/release-management.md#release-automation)

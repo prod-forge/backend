@@ -32,6 +32,7 @@ import { HealthMetricsService } from './modules/health/health-metrics.service';
 import { healthUpdateMiddleware } from './modules/health/middlewares/health-update.middleware';
 import { HttpMetricsInterceptor } from './modules/metrics/interceptors/http-metrics.interceptor';
 import { sentryContextMiddleware } from './modules/sentry/middlewares/sentry-context.middleware';
+import { SentryInterceptor } from './modules/sentry/sentry.interceptor';
 
 export const appSetup = (app: INestApplication): void => {
   const configService = app.get(ConfigService);
@@ -116,6 +117,7 @@ export const appSetup = (app: INestApplication): void => {
 
   // Interceptors
   app.useGlobalInterceptors(
+    new SentryInterceptor(),
     new ClassSerializerInterceptor(app.get(Reflector)),
     new UnifiedResponseInterceptor({
       excludeEndpoints: [

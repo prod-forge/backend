@@ -1,4 +1,6 @@
 {
+  "entry": ["src/main.ts", "test/*.ts", "database-manager/**/*.ts"],
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "tags": ["-lintignore"]
+  "tags": ["-lintignore"],
+  "ignore": ["./src/**/*.enum.ts", "src/error-handler/errors/common.errors.ts", "src/error-handler/utils/safe-exec.ts"]
 }

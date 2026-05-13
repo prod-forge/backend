@@ -45,6 +45,9 @@ jobs:
       - name: Linting
         run: npm run lint
 
+      - name: Run knip
+        run: npm run knip
+
   unit-tests:
     needs: lint
     environment: prod

@@ -84,3 +84,29 @@ At this stage the entire codebase is analyzed to ensure:
 - tests run successfully
 
 This final check acts as a safeguard before any changes are merged into the main branch.
+
+## Layer 6. Dependency Locking
+
+To keep builds stable and predictable, avoid using `^` versions in `package.json`.
+
+Minor dependency updates can still introduce breaking changes and unexpectedly break CI or releases even without code
+changes.
+
+Recommended setup:
+
+- use exact dependency versions
+- commit `package-lock.json`
+- use `npm ci` in CI environments
+- add to `.npmrc`:
+
+```shell
+save-exact=true
+```
+
+For dependency updates, use:
+
+```shell
+npm i -g npm-check-updates
+ncu -u
+npm install
+```

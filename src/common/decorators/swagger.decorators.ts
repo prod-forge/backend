@@ -1,5 +1,4 @@
 import type { Type } from '@nestjs/common';
-import type { ReferenceObject, SchemaObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 
 import { applyDecorators, HttpStatus } from '@nestjs/common';
 import {
@@ -21,6 +20,12 @@ type ErrorClass = Type<BaseError<unknown>> & {
   message: string;
   status: number;
 };
+
+interface ReferenceObject {
+  $ref: string;
+}
+
+type SchemaObject = Record<string, unknown>;
 
 interface SwaggerOptions {
   access: boolean;

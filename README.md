@@ -87,6 +87,7 @@ Every major technical decision is documented and explained.
   - [Layer 3. Pre-commit Protection](https://github.com/prod-forge/backend/blob/main/docs/code-quality.md#layer-3-pre-commit-protection)
   - [Layer 4. Commitlint Configuration](https://github.com/prod-forge/backend/blob/main/docs/code-quality.md#layer-4-commitlint-configuration)
   - [Layer 5. Continuous Integration Checks](https://github.com/prod-forge/backend/blob/main/docs/code-quality.md#layer-5-continuous-integration-checks)
+  - [Layer 6. Dependency Locking](https://github.com/prod-forge/backend/blob/main/docs/code-quality.md#layer-6-dependency-locking)
 
 <!-- -->
 

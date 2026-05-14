@@ -6,7 +6,7 @@ on:
       - 'v*'
 
 env:
-  NODE_VERSION: 24
+  NODE_VERSION: 24.11.0
   AWS_REGION: eu-central-1
   ECR_REPO: prod-forge-todolist
   TASK_MIGRATION_NAME: prod-forge-todolist-migration-task

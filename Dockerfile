@@ -1,5 +1,5 @@
 # -------- Build Stage --------
-FROM node:24-alpine AS builder
+FROM node:24.11.0-alpine AS builder
 
 WORKDIR /app
 
@@ -9,7 +9,7 @@ RUN npm ci
 RUN npm run db:generate
 RUN npm run build
 # -------- Production Stage --------
-FROM node:24-alpine AS production
+FROM node:24.11.0-alpine AS production
 
 # Create an unprivileged user
 RUN addgroup -S nodegroup && adduser -S nodeuser -G nodegroup

@@ -7,7 +7,7 @@ import { RedisManagerService } from './redis-manager.service';
 @Injectable()
 export class RedisHealthService {
   constructor(
-    protected redisManager: RedisManagerService,
+    protected readonly redisManager: RedisManagerService,
     private readonly logger: LoggerService,
   ) {}
 

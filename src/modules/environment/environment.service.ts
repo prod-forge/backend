@@ -9,7 +9,7 @@ import { environmentConfig } from '../../config/environment.config';
 export class EnvironmentService {
   constructor(
     @Inject(environmentConfig.KEY)
-    private config: ConfigType<typeof environmentConfig>,
+    private readonly config: ConfigType<typeof environmentConfig>,
   ) {}
 
   getEnv(): string {

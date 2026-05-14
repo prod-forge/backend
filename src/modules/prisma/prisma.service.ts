@@ -4,7 +4,6 @@ import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { PrismaPg } from '@prisma/adapter-pg';
 
 import { PrismaClient } from '../../../database-manager/generated/client';
-import { appConfig } from '../../config/app.config';
 import { databaseConfig } from '../../config/database.config';
 import { LoggerService } from '../../logger/logger.service';
 
@@ -12,12 +11,9 @@ import { LoggerService } from '../../logger/logger.service';
 export class PrismaService extends PrismaClient implements OnModuleInit {
   constructor(
     @Inject(databaseConfig.KEY)
-    private config: ConfigType<typeof databaseConfig>,
+    private readonly config: ConfigType<typeof databaseConfig>,
 
-    @Inject(appConfig.KEY)
-    private configApp: ConfigType<typeof appConfig>,
-
-    private logger: LoggerService,
+    private readonly logger: LoggerService,
   ) {
     const adapter = new PrismaPg({
       connectionString: config.databaseUrl,

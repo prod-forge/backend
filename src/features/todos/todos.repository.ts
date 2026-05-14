@@ -13,7 +13,7 @@ import { TodoFilter, TodoPagination, TodoSort } from './types/todo.query';
 export class TodosRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(userId: string, dto: CreateTodoDto): Promise<Todo> {
+  create(userId: string, dto: CreateTodoDto): Promise<Todo> {
     return this.prisma.todo.create({ data: { ...dto, userId } });
   }
 

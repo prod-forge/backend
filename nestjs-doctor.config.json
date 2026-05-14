@@ -1,0 +1,6 @@
+{
+  "minScore": 80,
+  "ignore": {
+    "files": ["database-manager/generated/**"]
+  }
+}

@@ -1,1 +1,1 @@
-npm run knip && npm test
+npm run knip && npm run doctor && npm test

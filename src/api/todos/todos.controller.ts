@@ -6,7 +6,7 @@ import type { UserInterface } from '../../shared/interfaces/user.interface';
 
 import { ApiEmpty, ApiErrors, ApiOk, ApiPaginated } from '../../common/decorators/swagger.decorators';
 import { User } from '../../common/decorators/user.decorator';
-import { AuthGuard } from '../../common/guards/auth.guard';
+import { AuthGuard } from '../../common/guards';
 import { DtoValidationErrors } from '../../error-handler/errors/dto-validation.errors';
 import { UserNotFoundError } from '../../error-handler/errors/user.errors';
 import { TodosService } from '../../features/todos/todos.service';

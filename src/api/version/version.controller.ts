@@ -6,7 +6,7 @@ import { VersionService } from '../../modules/version/version.service';
 @Controller('version')
 @Public()
 export class VersionController {
-  constructor(private versionService: VersionService) {}
+  constructor(private readonly versionService: VersionService) {}
 
   @Get()
   check(): { version: string } {

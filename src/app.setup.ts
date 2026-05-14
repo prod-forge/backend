@@ -25,15 +25,12 @@ import { LoggerService } from './logger/logger.service';
 import { correlationIdMiddleware } from './logger/middlewares/correlation-id.middleware';
 import { loggingMiddleware } from './logger/middlewares/logging.middleware';
 import { EnvironmentService } from './modules/environment/environment.service';
-import { HealthMetricsService } from './modules/health/health-metrics.service';
-import { healthUpdateMiddleware } from './modules/health/middlewares/health-update.middleware';
 import { HttpMetricsInterceptor } from './modules/metrics/interceptors/http-metrics.interceptor';
 import { sentryContextMiddleware } from './modules/sentry/middlewares/sentry-context.middleware';
 import { SentryInterceptor } from './modules/sentry/sentry.interceptor';
 
 export const appSetup = (app: INestApplication): void => {
   const configService = app.get(ConfigService);
-  const healthMetricsService = app.get(HealthMetricsService);
   const configApp = configService.getOrThrow<ConfigType<typeof appConfig>>('appConfig');
   const configApi = configService.getOrThrow<ConfigType<typeof apiConfig>>('apiConfig');
   const configLog = configService.getOrThrow<ConfigType<typeof logConfig>>('logConfig');
@@ -53,8 +50,6 @@ export const appSetup = (app: INestApplication): void => {
   if (configSentry.sentryEnabled) {
     app.use(sentryContextMiddleware());
   }
-
-  app.use(healthUpdateMiddleware(healthMetricsService, `/${METRICS_ENDPOINT}`));
 
   app.use(loggingMiddleware(configLog, logger));
 

@@ -46,6 +46,7 @@ Useful tools:
 - Husky
 - lint-staged
 - Knip
+- nestjs-doctor
 
 Your CI pipeline should validate:
 

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { TerminusModule } from '@nestjs/terminus';
 
 import { HealthController } from '../../api/health/health.controller';
@@ -8,6 +8,7 @@ import { ShutdownModule } from '../shutdown/shutdown.module';
 import { HealthMetricsService } from './health-metrics.service';
 import { HealthChecks } from './health.checks';
 import { ServiceHealthMetric } from './health.metrics';
+import { HealthUpdateMiddleware } from './middlewares/health-update.middleware';
 
 @Module({
   controllers: [HealthController],
@@ -20,6 +21,10 @@ import { ServiceHealthMetric } from './health.metrics';
     RedisManagerModule,
     ShutdownModule,
   ],
-  providers: [HealthChecks, HealthMetricsService, ServiceHealthMetric],
+  providers: [HealthChecks, HealthMetricsService, HealthUpdateMiddleware, ServiceHealthMetric],
 })
-export class HealthModule {}
+export class HealthModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(HealthUpdateMiddleware).forRoutes('*');
+  }
+}

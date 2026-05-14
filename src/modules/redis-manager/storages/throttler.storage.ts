@@ -3,10 +3,9 @@ import type { ThrottlerStorageRecord } from '@nestjs/throttler/dist/throttler-st
 import type { Cluster } from 'ioredis';
 import type Redis from 'ioredis';
 
-import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
-import { THROTTLER_REDIS_STORAGE } from '../di/di.types';
+import { ThrottlerRedisStorage } from './throttler-redis.storage';
 
 /**
  * Hybrid Storage: Redis + Memory Fallback
@@ -19,10 +18,7 @@ export class ThrottlerStorage implements ThrottlerStorageRedis {
 
   private memory = new Map<string, ThrottlerStorageRecord>();
 
-  constructor(
-    @Inject(THROTTLER_REDIS_STORAGE)
-    private readonly redisStorage: ThrottlerStorageRedisService,
-  ) {}
+  constructor(private readonly redisStorage: ThrottlerRedisStorage) {}
 
   fallback(
     key: string,

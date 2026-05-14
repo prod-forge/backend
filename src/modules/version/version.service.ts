@@ -8,7 +8,7 @@ import { appConfig } from '../../config/app.config';
 export class VersionService {
   constructor(
     @Inject(appConfig.KEY)
-    private config: ConfigType<typeof appConfig>,
+    private readonly config: ConfigType<typeof appConfig>,
   ) {}
 
   getVersion(): string {

@@ -5,7 +5,7 @@ import { DatabaseMetricInterface } from '../interfaces/database-metric.interface
 
 @Injectable()
 export class DatabaseMetrics {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async getTopSlowQueries(limit = 10): Promise<DatabaseMetricInterface[]> {
     const rows = await this.prisma.$queryRawUnsafe<

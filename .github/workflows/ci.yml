@@ -37,6 +37,9 @@ jobs:
       - name: Run knip
         run: npm run knip
 
+      - name: Run Nestjs-doctor
+        run: npm run doctor
+
   unit-tests:
     needs: lint
     environment: prod

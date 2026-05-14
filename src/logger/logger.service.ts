@@ -24,11 +24,11 @@ interface Message {
 export class LoggerService implements NestLoggerService {
   #appName = 'Company App';
 
-  private logger: Logger;
+  private readonly logger: Logger;
 
   constructor(
     @Inject(logConfig.KEY)
-    private config: ConfigType<typeof logConfig>,
+    private readonly config: ConfigType<typeof logConfig>,
     private readonly environment: EnvironmentService,
   ) {
     const stream = config.logPretty

@@ -22,7 +22,7 @@ export class RedisManagerService {
     };
   }
 
-  async destroy(): Promise<void[]> {
+  destroy(): Promise<void[]> {
     const clients = this.getClients();
 
     return Promise.all(
@@ -30,7 +30,7 @@ export class RedisManagerService {
         try {
           await client.quit();
           client.disconnect();
-          client.removeAllListeners();
+          void client.removeAllListeners();
         } catch (error) {
           if (error instanceof Error) {
             const err = new RedisErrors('Redis has problem with destroy', error);

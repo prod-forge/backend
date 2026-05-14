@@ -7,9 +7,9 @@ import { HealthChecks } from './health.checks';
 @Injectable()
 export class HealthMetricsService {
   constructor(
-    private healthChecks: HealthChecks,
+    private readonly healthChecks: HealthChecks,
     @InjectMetric('service_health_status')
-    private gauge: Gauge<string>,
+    private readonly gauge: Gauge<string>,
   ) {}
 
   async updateMetrics(): Promise<void> {

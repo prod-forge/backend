@@ -8,7 +8,7 @@ import { HealthChecks } from '../../modules/health/health.checks';
 @Controller(HEALTH_ENDPOINT)
 @Public()
 export class HealthController {
-  constructor(private healthChecks: HealthChecks) {}
+  constructor(private readonly healthChecks: HealthChecks) {}
 
   @Get('deps')
   @HealthCheck()

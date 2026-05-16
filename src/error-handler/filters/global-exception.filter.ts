@@ -29,9 +29,9 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
-    const req = ctx.getRequest<Request & { correlationId: string; userId?: string }>();
+    const req = ctx.getRequest<Request & { traceId: string; userId?: string }>();
     const res = ctx.getResponse<Response>();
-    const correlationId = req.correlationId;
+    const traceId = req.traceId;
 
     let error: BaseError<unknown> | null = null;
 
@@ -77,9 +77,9 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       Sentry.captureException(exception, {
         extra: {
           body: req.body,
-          correlationId,
           params: req.params,
           query: req.query,
+          traceId,
         },
       });
     }

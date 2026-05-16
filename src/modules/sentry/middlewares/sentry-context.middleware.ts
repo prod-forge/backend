@@ -7,9 +7,9 @@ import { RequestContext } from '../../../logger/context/request-context';
 export const sentryContextMiddleware =
   () =>
   (req: Request & { userId?: string }, res: Response, next: NextFunction): void => {
-    const correlationId = RequestContext.getCorrelationId();
+    const traceId = RequestContext.getTraceId();
 
-    Sentry.setTag('correlationId', correlationId);
+    Sentry.setTag('traceId', traceId);
     Sentry.setContext('request', {
       method: req.method,
       url: req.url,

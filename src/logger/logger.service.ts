@@ -35,13 +35,13 @@ export class LoggerService implements NestLoggerService {
       ? pretty({
           colorize: true,
 
-          ignore: 'appName,ctx,env,correlationId,levelName',
+          ignore: 'appName,ctx,env,traceId,levelName',
           messageFormat: (log: LogDescriptor, messageKey: string) => {
             const ctx = log.ctx ? `[${log.ctx}]` : '';
             const level = (log.levelLabel as string) ?? log.level;
-            const correlationId = log.correlationId === '' ? '' : `Correlation-ID: ${log.correlationId}`;
+            const traceId = log.traceId === '' ? '' : `Trace-ID: ${log.traceId}`;
 
-            return `${level} ${ctx} ${correlationId} ${log[messageKey]}`;
+            return `${level} ${ctx} ${traceId} ${log[messageKey]}`;
           },
 
           translateTime: 'dd/mm/yyyy, HH:MM:ss',
@@ -67,9 +67,9 @@ export class LoggerService implements NestLoggerService {
   debug(message: Message): void {
     this.logger.debug({
       appName: this.#appName,
-      correlationId: RequestContext.getCorrelationId(),
       levelName: 'debug',
       pid: process.pid,
+      traceId: RequestContext.getTraceId(),
       ...(typeof message === 'string' ? { msg: message } : message),
     });
   }
@@ -77,9 +77,9 @@ export class LoggerService implements NestLoggerService {
   error(message: Message): void {
     this.logger.error({
       appName: this.#appName,
-      correlationId: RequestContext.getCorrelationId(),
       levelName: 'error',
       pid: process.pid,
+      traceId: RequestContext.getTraceId(),
       ...(typeof message === 'string' ? { msg: message } : message),
     });
   }
@@ -87,9 +87,9 @@ export class LoggerService implements NestLoggerService {
   log(message: Message): void {
     this.logger.info({
       appName: this.#appName,
-      correlationId: RequestContext.getCorrelationId(),
       levelName: 'info',
       pid: process.pid,
+      traceId: RequestContext.getTraceId(),
       ...(typeof message === 'string' ? { msg: message } : message),
     });
   }
@@ -101,9 +101,9 @@ export class LoggerService implements NestLoggerService {
   warn(message: Message): void {
     this.logger.warn({
       appName: this.#appName,
-      correlationId: RequestContext.getCorrelationId(),
       levelName: 'warn',
       pid: process.pid,
+      traceId: RequestContext.getTraceId(),
       ...(typeof message === 'string' ? { msg: message } : message),
     });
   }

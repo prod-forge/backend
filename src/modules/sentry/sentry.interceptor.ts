@@ -11,15 +11,15 @@ export class SentryInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const req = context.switchToHttp().getRequest<Request>();
 
-    const correlationId = RequestContext.getCorrelationId();
+    const traceId = RequestContext.getTraceId();
 
     return next.handle().pipe(
       catchError((err: Error) => {
         Sentry.captureException(err, {
           extra: {
             body: req.body,
-            correlationId,
             method: req.method,
+            traceId,
             url: req.url,
           },
         });

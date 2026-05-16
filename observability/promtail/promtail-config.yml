@@ -32,7 +32,7 @@ scrape_configs:
             time: time
             env: env
             appName: appName
-            correlationId: correlationId
+            traceId: traceId
             levelName: levelName
             ctx: ctx
             msg: msg

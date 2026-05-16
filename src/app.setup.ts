@@ -22,8 +22,8 @@ import { DtoValidationErrors } from './error-handler/errors/dto-validation.error
 import { GlobalExceptionFilter } from './error-handler/filters/global-exception.filter';
 import { parseValidationErrors } from './error-handler/parsers/validation-error.parser';
 import { LoggerService } from './logger/logger.service';
-import { correlationIdMiddleware } from './logger/middlewares/correlation-id.middleware';
 import { loggingMiddleware } from './logger/middlewares/logging.middleware';
+import { traceIdMiddleware } from './logger/middlewares/trace-id.middleware';
 import { EnvironmentService } from './modules/environment/environment.service';
 import { HttpMetricsInterceptor } from './modules/metrics/interceptors/http-metrics.interceptor';
 import { sentryContextMiddleware } from './modules/sentry/middlewares/sentry-context.middleware';
@@ -45,7 +45,7 @@ export const appSetup = (app: INestApplication): void => {
   // Context (express middleware)
   app.use(httpContext.middleware);
 
-  app.use(correlationIdMiddleware);
+  app.use(traceIdMiddleware);
 
   if (configSentry.sentryEnabled) {
     app.use(sentryContextMiddleware());

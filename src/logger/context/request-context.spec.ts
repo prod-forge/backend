@@ -3,14 +3,14 @@ import { RequestContext } from './request-context';
 describe('RequestContext', () => {
   describe('negative cases', () => {
     it('returns empty string when no context is set', () => {
-      expect(RequestContext.getCorrelationId()).toBe('');
+      expect(RequestContext.getTraceId()).toBe('');
     });
   });
 
   describe('positive cases', () => {
-    it('returns correlationId set via run', (done) => {
+    it('returns traceId set via run', (done) => {
       RequestContext.run('abc-123', () => {
-        expect(RequestContext.getCorrelationId()).toBe('abc-123');
+        expect(RequestContext.getTraceId()).toBe('abc-123');
         done();
       });
     });
@@ -20,10 +20,10 @@ describe('RequestContext', () => {
 
       RequestContext.run('outer', () => {
         RequestContext.run('inner', () => {
-          inner = RequestContext.getCorrelationId();
+          inner = RequestContext.getTraceId();
         });
 
-        expect(RequestContext.getCorrelationId()).toBe('outer');
+        expect(RequestContext.getTraceId()).toBe('outer');
         expect(inner).toBe('inner');
         done();
       });
@@ -31,11 +31,11 @@ describe('RequestContext', () => {
 
     it('returns empty string outside run callback', (done) => {
       RequestContext.run('temp', () => {
-        expect(RequestContext.getCorrelationId()).toBe('temp');
+        expect(RequestContext.getTraceId()).toBe('temp');
         done();
       });
 
-      expect(RequestContext.getCorrelationId()).toBe('');
+      expect(RequestContext.getTraceId()).toBe('');
     });
   });
 });

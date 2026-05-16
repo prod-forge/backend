@@ -153,7 +153,7 @@ Every major technical decision is documented and explained.
   - [Global Exception Handling](https://github.com/prod-forge/backend/blob/main/docs/error-handling.md#global-exception-handling)
   - [User-Friendly Error Responses](https://github.com/prod-forge/backend/blob/main/docs/error-handling.md#user-friendly-error-responses)
   - [Error Monitoring (Sentry)](https://github.com/prod-forge/backend/blob/main/docs/error-handling.md#error-monitoring-sentry)
-    - [Correlation ID](https://github.com/prod-forge/backend/blob/main/docs/error-handling.md#correlation-id)
+    - [Trace ID](https://github.com/prod-forge/backend/blob/main/docs/error-handling.md#trace-id)
     - [User Context](https://github.com/prod-forge/backend/blob/main/docs/error-handling.md#user-context)
   - [Logging and Metrics](https://github.com/prod-forge/backend/blob/main/docs/error-handling.md#logging-and-metrics)
 
@@ -163,7 +163,7 @@ Every major technical decision is documented and explained.
   - [Application Logging](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#application-logging)
   - [What Should Be Logged](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#what-should-be-logged)
   - [GDPR Considerations](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#gdpr-considerations)
-  - [Correlation ID](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#correlation-id)
+  - [Trace ID](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#trace-id)
   - [Context](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#context)
   - [Observability Stack](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#observability-stack)
   - [Logging Pipeline](https://github.com/prod-forge/backend/blob/main/docs/logging-observability.md#logging-pipeline)

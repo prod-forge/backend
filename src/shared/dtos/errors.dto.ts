@@ -6,12 +6,12 @@ export class ApiErrorDto {
   @ApiProperty({ enum: ErrorCodes })
   code: ErrorCodes;
 
-  @ApiProperty({ example: 'correlation-id', required: false })
-  correlationId?: string;
-
   @ApiProperty({ required: false })
   details?: unknown;
 
   @ApiProperty({ example: 'Error message' })
   message: string;
+
+  @ApiProperty({ example: 'trace-id', required: false })
+  traceId?: string;
 }

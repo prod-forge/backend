@@ -29,9 +29,9 @@ interface MakeHostResult {
 
 const makeHost = (
   opts: {
-    correlationId?: string;
     method?: string;
     route?: { path: string };
+    traceId?: string;
     url?: string;
     userId?: string;
   } = {},
@@ -41,12 +41,12 @@ const makeHost = (
   const res = { status: statusMock };
   const req = {
     body: {},
-    correlationId: opts.correlationId || 'corr-1',
     header: jest.fn().mockReturnValue(undefined),
     method: opts.method || 'GET',
     params: {},
     query: {},
     route: opts.route,
+    traceId: opts.traceId || 'trace-1',
     url: opts.url || '/api/todos',
     userId: opts.userId,
   };

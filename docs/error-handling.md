@@ -119,7 +119,7 @@ Example:
 Sentry.captureException(exception, {
   extra: {
     body: req.body,
-    correlationId,
+    traceId,
     params: req.params,
     query: req.query,
   },
@@ -128,14 +128,14 @@ Sentry.captureException(exception, {
 
 Providing request context helps reproduce and investigate errors.
 
-### Correlation ID
+### Trace ID
 
-The correlation ID is particularly important.
+The trace ID is particularly important.
 
 It connects application logs, metrics, and error reports together, allowing engineers to trace the full lifecycle of a
 request.
 
-With a correlation ID, it becomes possible to track a failure from the initial request to the final error.
+With a trace ID, it becomes possible to track a failure from the initial request to the final error.
 
 ### User Context
 

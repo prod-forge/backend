@@ -39,7 +39,7 @@ Example log structure:
   "timestamp": "2026-03-12T16:05:49.626Z",
   "env": "development",
   "appName": "Todo_inst1",
-  "correlationId": "4209c5e7-bf00-45d1-87c9-ef9db57f8da5",
+  "traceId": "4209c5e7-bf00-45d1-87c9-ef9db57f8da5",
   "levelName": "info",
   "pid": 61190,
   "ctx": "loggingMiddleware",
@@ -98,9 +98,9 @@ Sentry.setUser({ userId });
 
 Using only a userId allows engineers to identify the affected user in the database without exposing personal data.
 
-## Correlation ID
+## Trace ID
 
-A Correlation ID is used to connect all logs that belong to the same request.
+A Trace ID is used to connect all logs that belong to the same request.
 
 Each incoming request receives a unique identifier which is propagated through the entire application.
 
@@ -112,7 +112,7 @@ For example:
 Request → Controller → Service → Database → Response
 ```
 
-All logs generated during this flow will contain the same correlationId.
+All logs generated during this flow will contain the same traceId.
 
 This becomes extremely useful when investigating production errors.
 

@@ -16,6 +16,7 @@ import { sentryConfig } from './config/sentry.config';
 import { swaggerConfig } from './config/swagger.config';
 import { throttlerConfig } from './config/throttler.config';
 import { METRICS_ENDPOINT } from './constants/url.contants';
+import { ClientLogsModule } from './features/client-logs/client-logs.module';
 import { TodosModule } from './features/todos/todos.module';
 import { LoggerModule } from './logger/logger.module';
 import { EnvironmentModule } from './modules/environment/environment.module';
@@ -76,6 +77,7 @@ import { VersionModule } from './modules/version/version.module';
     ShutdownModule,
     EnvironmentModule,
     RedisManagerModule,
+    ClientLogsModule,
     TodosModule,
     HealthModule,
     SentryModule,

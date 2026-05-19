@@ -2,6 +2,8 @@
   <img alt="Logo" src="https://github.com/prod-forge/backend/blob/main/assets/prod-forge-logo.png" width="264px" height="243px">
 </p>
 
+_AI made writing the code easy. Running it in production is still hard._
+
 **Prod Forge** is an open-source reference that shows how to build and operate a production-ready system: AI-assisted
 development, quality gates, CI/CD, infrastructure, observability, migrations, and rollback.
 

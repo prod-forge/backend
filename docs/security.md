@@ -1,7 +1,7 @@
 # Security
 
 <p align="center">
-  <img alt="Security" src="https://github.com/prod-forge/backend/blob/main/assets/security.png" width="682px" height="342px">
+  <img alt="Security" src="https://github.com/prod-forge/backend/blob/main/docs/assets/security.png" width="682px" height="342px">
 </p>
 
 Security is a broad topic that depends heavily on the specific system architecture and threat model.

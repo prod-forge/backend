@@ -1,7 +1,7 @@
 # Performance
 
 <p align="center">
-  <img alt="Performance" src="https://github.com/prod-forge/backend/blob/main/assets/performance.png" width="611px" height="329px">
+  <img alt="Performance" src="https://github.com/prod-forge/backend/blob/main/docs/assets/performance.png" width="611px" height="329px">
 </p>
 
 Performance optimization is a complex topic and heavily depends on the specific project and workload.

@@ -1,7 +1,7 @@
 # Logging & Observability
 
 <p align="center">
-  <img alt="Logging & Observability" src="https://github.com/prod-forge/backend/blob/main/assets/logging-observability.png" width="767px" height="338px">
+  <img alt="Logging & Observability" src="https://github.com/prod-forge/backend/blob/main/docs/assets/logging-observability.png" width="767px" height="338px">
 </p>
 
 Logging is one of the most important parts of building production systems.
@@ -157,7 +157,7 @@ observability/dashboards
 ```
 
 <p align="center">
-  <img alt="Dashboard" src="https://github.com/prod-forge/backend/blob/main/assets/grafana-dashboard.jpeg" width="640px" height="397px">
+  <img alt="Dashboard" src="https://github.com/prod-forge/backend/blob/main/docs/assets/grafana-dashboard.jpeg" width="640px" height="397px">
 </p>
 
 These dashboards provide visualization for:

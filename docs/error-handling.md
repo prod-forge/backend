@@ -1,7 +1,7 @@
 # Error Handling
 
 <p align="center">
-  <img alt="Error Handling" src="https://github.com/prod-forge/backend/blob/main/assets/error-handling.png" width="768px" height="338px">
+  <img alt="Error Handling" src="https://github.com/prod-forge/backend/blob/main/docs/assets/error-handling.png" width="768px" height="338px">
 </p>
 
 Errors in backend applications usually fall into several categories.

@@ -1,7 +1,7 @@
 # Project Structure
 
 <p align="center">
-  <img alt="Project Structure" src="https://github.com/prod-forge/backend/blob/main/assets/project-structure.png" width="512px" height="406px">
+  <img alt="Project Structure" src="https://github.com/prod-forge/backend/blob/main/docs/assets/project-structure.png" width="512px" height="406px">
 </p>
 
 A well-structured project is critical for long-term maintainability and scalability.

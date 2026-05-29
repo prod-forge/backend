@@ -1,7 +1,7 @@
 # Release Management
 
 <p align="center">
-  <img alt="Release Management" src="https://github.com/prod-forge/backend/blob/main/assets/release-management.png" width="512px" height="281px">
+  <img alt="Release Management" src="https://github.com/prod-forge/backend/blob/main/docs/assets/release-management.png" width="512px" height="281px">
 </p>
 
 Releasing software is not just a technical step - it is a structured process that ensures new functionality can be
@@ -80,7 +80,7 @@ The release-it tool automates several important steps:
 Before starting the release, a checklist is shown to ensure the project is ready.
 
 <p align="center">
-  <img alt="Before Script" src="https://github.com/prod-forge/backend/blob/main/assets/release-before-script.png" width="524px" height="144px">
+  <img alt="Before Script" src="https://github.com/prod-forge/backend/blob/main/docs/assets/release-before-script.png" width="524px" height="144px">
 </p>
 
 Example checklist:
@@ -132,7 +132,7 @@ The v prefix is required so that GitHub Actions can detect the release tag and t
 ## Continuous Integration (CI)
 
 <p align="center">
-  <img alt="CI" src="https://github.com/prod-forge/backend/blob/main/assets/ci-verification.png" width="1220px" height="86px">
+  <img alt="CI" src="https://github.com/prod-forge/backend/blob/main/docs/assets/ci-verification.png" width="1220px" height="86px">
 </p>
 
 Continuous Integration ensures that every change introduced to the repository is automatically validated.
@@ -189,7 +189,7 @@ These checks help maintain long-term code quality.
 ## Continuous Deployment (CD)
 
 <p align="center">
-  <img alt="CD" src="https://github.com/prod-forge/backend/blob/main/assets/ci-deploy.png" width="1284px" height="46px">
+  <img alt="CD" src="https://github.com/prod-forge/backend/blob/main/docs/assets/ci-deploy.png" width="1284px" height="46px">
 </p>
 
 Continuous Deployment is responsible for delivering the new version to production infrastructure.
@@ -249,7 +249,7 @@ This allows fast rollback if needed.
 ## Rollback Strategy
 
 <p align="center">
-  <img alt="Rollback Strategy" src="https://github.com/prod-forge/backend/blob/main/assets/rollback-strategy.png" width="320px" height="232px">
+  <img alt="Rollback Strategy" src="https://github.com/prod-forge/backend/blob/main/docs/assets/rollback-strategy.png" width="320px" height="232px">
 </p>
 
 Rollback is one of the most critical parts of production operations.
@@ -273,7 +273,7 @@ Show ECS 3 Last Revisions
 This displays the last three ECS task revisions.
 
 <p align="center">
-  <img alt="Revisions" src="https://github.com/prod-forge/backend/blob/main/assets/revisions.png" width="980px" height="228px">
+  <img alt="Revisions" src="https://github.com/prod-forge/backend/blob/main/docs/assets/revisions.png" width="980px" height="228px">
 </p>
 
 ### Step 2 - Rollback

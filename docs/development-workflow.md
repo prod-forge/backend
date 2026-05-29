@@ -1,7 +1,7 @@
 # Development Workflow
 
 <p align="center">
-  <img alt="Development Workflow" src="https://github.com/prod-forge/backend/blob/main/assets/development-workflow.png" width="512px" height="386px">
+  <img alt="Development Workflow" src="https://github.com/prod-forge/backend/blob/main/docs/assets/development-workflow.png" width="512px" height="386px">
 </p>
 
 To support a reliable release pipeline, the development workflow should follow several conventions.

@@ -1,7 +1,7 @@
 # Architecture Decisions
 
 <p align="center">
-  <img alt="Architecture Decisions" src="https://github.com/prod-forge/backend/blob/main/assets/arch-decision.png" width="512px" height="541px">
+  <img alt="Architecture Decisions" src="https://github.com/prod-forge/backend/blob/main/docs/assets/arch-decision.png" width="512px" height="541px">
 </p>
 
 Choosing the right architecture is rarely a purely technical decision.

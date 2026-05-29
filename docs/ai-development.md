@@ -1,7 +1,7 @@
 # AI-Assisted Development
 
 <p align="center">
-  <img alt="AI Assisted Development" src="https://github.com/prod-forge/backend/blob/main/assets/ai-development.png" width="501px" height="401px">
+  <img alt="AI Assisted Development" src="https://github.com/prod-forge/backend/blob/main/docs/assets/ai-development.png" width="501px" height="401px">
 </p>
 
 AI coding agents can significantly speed up development.

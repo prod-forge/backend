@@ -1,7 +1,7 @@
 # Database Management
 
 <p align="center">
-  <img alt="Database Management" src="https://github.com/prod-forge/backend/blob/main/assets/database-management.png" width="510px" height="467px">
+  <img alt="Database Management" src="https://github.com/prod-forge/backend/blob/main/docs/assets/database-management.png" width="510px" height="467px">
 </p>
 
 Database management is treated as a separate operational layer inside the application.

@@ -1,7 +1,7 @@
 # Configuration Management
 
 <p align="center">
-  <img alt="Configuration Management" src="https://github.com/prod-forge/backend/blob/main/assets/configuration-management.png" width="508px" height="523px">
+  <img alt="Configuration Management" src="https://github.com/prod-forge/backend/blob/main/docs/assets/configuration-management.png" width="508px" height="523px">
 </p>
 
 Managing application configuration is often more complex than it appears.

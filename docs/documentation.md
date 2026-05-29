@@ -1,7 +1,7 @@
 # Documentation
 
 <p align="center">
-  <img alt="Documentation" src="https://github.com/prod-forge/backend/blob/main/assets/documentation.png" width="767px" height="340px">
+  <img alt="Documentation" src="https://github.com/prod-forge/backend/blob/main/docs/assets/documentation.png" width="767px" height="340px">
 </p>
 
 The documentation process is an ongoing process throughout development. Each feature should be accompanied by at least

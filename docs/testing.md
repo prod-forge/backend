@@ -1,7 +1,7 @@
 # Testing
 
 <p align="center">
-  <img alt="Testing" src="https://github.com/prod-forge/backend/blob/main/assets/testing.png" width="733px" height="254px">
+  <img alt="Testing" src="https://github.com/prod-forge/backend/blob/main/docs/assets/testing.png" width="733px" height="254px">
 </p>
 
 ## Unit Tests

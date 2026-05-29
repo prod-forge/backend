@@ -1,5 +1,5 @@
 <p align="center">
-  <img alt="Logo" src="https://github.com/prod-forge/backend/blob/main/assets/prod-forge-logo.png" width="264px" height="243px">
+  <img alt="Logo" src="https://github.com/prod-forge/backend/blob/main/docs/assets/prod-forge-logo.png" width="264px" height="243px">
 </p>
 
 _AI made writing the code easy. Running it in production is still hard._
@@ -24,7 +24,7 @@ Every major technical decision is documented and explained.
 ## Stack
 
 <p align="center">
-  <img alt="Architecture" src="https://github.com/prod-forge/backend/blob/main/assets/architecture_diagram.png">
+  <img alt="Architecture" src="https://github.com/prod-forge/backend/blob/main/docs/assets/architecture_diagram.png">
 </p>
 
 | Layer          | Tools                                          |

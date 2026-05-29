@@ -1,7 +1,7 @@
 # Fault Tolerance
 
 <p align="center">
-  <img alt="Fault Tolerance" src="https://github.com/prod-forge/backend/blob/main/assets/fault-tolerance.png" width="680px" height="271px">
+  <img alt="Fault Tolerance" src="https://github.com/prod-forge/backend/blob/main/docs/assets/fault-tolerance.png" width="680px" height="271px">
 </p>
 
 ## Fault vs Failure

@@ -16,10 +16,11 @@ Every major technical decision is documented and explained.
 
 ## Project structure
 
-| Repository                                                | Description                 |
-| --------------------------------------------------------- | --------------------------- |
-| [Backend](https://github.com/prod-forge/backend)          | NestJS API - the main guide |
-| [Infrastructure](https://github.com/prod-forge/terraform) | Terraform on AWS            |
+| Repository                                                | Description                                     |
+| --------------------------------------------------------- | ----------------------------------------------- |
+| [Frontend](https://github.com/prod-forge/frontend)        | React Web and React Mobile apps + Design System |
+| [Backend](https://github.com/prod-forge/backend)          | NestJS API - the main guide                     |
+| [Infrastructure](https://github.com/prod-forge/terraform) | Terraform on AWS                                |
 
 ## Stack
 
@@ -27,12 +28,14 @@ Every major technical decision is documented and explained.
   <img alt="Architecture" src="https://github.com/prod-forge/backend/blob/main/docs/assets/architecture_diagram.png">
 </p>
 
-| Layer          | Tools                                          |
-| -------------- | ---------------------------------------------- |
-| Backend        | NestJS · Prisma · PostgreSQL · Redis · Docker  |
-| Infrastructure | AWS · ECR · ECS · RDS · ElasticCache           |
-| Observability  | Prometheus · Grafana · Loki · Promtail         |
-| Quality        | ESLint · Prettier · Husky · Commitlint · CI/CD |
+| Layer          | Tools                                            |
+| -------------- | ------------------------------------------------ |
+| Web Client     | React · Vite · Redux Toolkit · Tailwind CSS · NX |
+| Deploy         | AWS S3 · CloudFront · ECR · ECS                  |
+| Backend        | NestJS · Prisma · PostgreSQL · Redis · Docker    |
+| Infrastructure | AWS · RDS · ElasticCache                         |
+| Observability  | Prometheus · Grafana · Loki · Promtail           |
+| Quality        | ESLint · Prettier · Husky · Commitlint · CI/CD   |
 
 # Table of contents
 

@@ -135,3 +135,16 @@ Never edit generated code manually.
 - If only one module/service/controller changed, avoid unrelated validations
 - Read only files relevant to the current task
 - Avoid scanning the entire repository unless necessary
+
+---
+
+## Documentation Rules
+
+After every change, update any affected documentation in `.claude/docs/`:
+
+- **`architecture.md`** — update when modules are added/removed, middleware/interceptor/filter wiring changes, or request lifecycle changes
+- **`api.md`** — update when endpoints are added/removed/modified, request/response shapes change, new error codes are introduced, or auth behavior changes
+- **`db-schema.md`** — update when the Prisma schema changes (new models, fields, indexes, or relations)
+- **`developers-guide.md`** — update when setup steps change, new env variables are added, scripts are modified, or new patterns for adding features are established
+
+Do not update docs for internal refactors that have no observable effect on architecture, API contracts, schema, or developer workflow.

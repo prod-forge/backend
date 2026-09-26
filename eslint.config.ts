@@ -26,6 +26,7 @@ const jsFiles = ['**/*.{js,jsx,mjs,cjs}'];
 const tsFiles = ['**/*.{ts,tsx,mts,cts}'];
 
 const sourceFiles = ['**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}'];
+const testFiles = ['**/*.{spec,test}.{js,jsx,ts,tsx}'];
 
 const languageOptions: Linter.Config['languageOptions'] = {
   ecmaVersion: 2024,
@@ -78,7 +79,6 @@ const typescriptConfig: Linter.Config = {
     '@sonar': sonar,
     '@typescript-eslint': tseslint.plugin,
     '@unicorn': unicorn,
-    'import/parsers': tsParser,
   },
   rules: {
     '@check-file/filename-naming-convention': [
@@ -262,7 +262,7 @@ const dtsOverrides: Linter.Config = {
 };
 
 const testOverrides: Linter.Config = {
-  files: ['**/*.spec.{ts,tsx}', '**/__fixtures__/**'],
+  files: [...testFiles, '**/__fixtures__/**'],
   languageOptions: {
     globals: {
       ...globals.jest,

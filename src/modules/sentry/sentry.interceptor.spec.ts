@@ -1,6 +1,6 @@
 import type { CallHandler, ExecutionContext } from '@nestjs/common';
 
-import { of, throwError } from 'rxjs';
+import { lastValueFrom, of, throwError } from 'rxjs';
 
 jest.mock('@sentry/node', () => ({
   captureException: jest.fn(),
@@ -26,30 +26,21 @@ describe('SentryInterceptor', () => {
   });
 
   describe('negative cases', () => {
-    it('captures exception and rethrows on error', (done) => {
+    it('captures exception and rethrows on error', async () => {
       const error = new Error('test error');
       const handler: CallHandler = { handle: jest.fn().mockReturnValue(throwError(() => error)) };
 
-      interceptor.intercept(makeContext(), handler).subscribe({
-        error: (err) => {
-          expect(err).toBe(error);
-          expect(Sentry.captureException).toHaveBeenCalledWith(error, expect.any(Object));
-          done();
-        },
-      });
+      await expect(lastValueFrom(interceptor.intercept(makeContext(), handler))).rejects.toBe(error);
+      expect(Sentry.captureException).toHaveBeenCalledWith(error, expect.any(Object));
     });
   });
 
   describe('positive cases', () => {
-    it('passes through successful responses without capturing', (done) => {
+    it('passes through successful responses without capturing', async () => {
       const handler: CallHandler = { handle: jest.fn().mockReturnValue(of({ id: 1 })) };
 
-      interceptor.intercept(makeContext(), handler).subscribe({
-        complete: () => {
-          expect(Sentry.captureException).not.toHaveBeenCalled();
-          done();
-        },
-      });
+      await expect(lastValueFrom(interceptor.intercept(makeContext(), handler))).resolves.toEqual({ id: 1 });
+      expect(Sentry.captureException).not.toHaveBeenCalled();
     });
   });
 });

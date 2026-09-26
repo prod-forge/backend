@@ -1,7 +1,7 @@
 import type { CallHandler, ExecutionContext } from '@nestjs/common';
 
 import { HttpStatus } from '@nestjs/common';
-import { of } from 'rxjs';
+import { firstValueFrom, of } from 'rxjs';
 
 import { UnifiedResponseInterceptor } from './unified-response.interceptor';
 
@@ -31,106 +31,96 @@ describe('UnifiedResponseInterceptor', () => {
   });
 
   describe('negative cases', () => {
-    it('returns raw data for excluded endpoints', (done) => {
+    it('returns raw data for excluded endpoints', async () => {
       const { ctx } = makeContext('/health');
       const data = { status: 'ok' };
 
-      interceptor.intercept(ctx, makeHandler(data)).subscribe((result) => {
-        expect(result).toBe(data);
-        done();
-      });
+      const result = await firstValueFrom(interceptor.intercept(ctx, makeHandler(data)));
+
+      expect(result).toBe(data);
     });
 
-    it('sets NO_CONTENT status and returns void for empty object', (done) => {
+    it('sets NO_CONTENT status and returns void for empty object', async () => {
       const { ctx, res } = makeContext('/api/todos');
 
-      interceptor.intercept(ctx, makeHandler({})).subscribe((result) => {
-        expect(res.status).toHaveBeenCalledWith(HttpStatus.NO_CONTENT);
-        expect(result).toBeUndefined();
-        done();
-      });
+      const result = await firstValueFrom(interceptor.intercept(ctx, makeHandler({})));
+
+      expect(res.status).toHaveBeenCalledWith(HttpStatus.NO_CONTENT);
+      expect(result).toBeUndefined();
     });
 
-    it('returns void for null data', (done) => {
+    it('returns void for null data', async () => {
       const { ctx, res } = makeContext('/api/todos');
 
-      interceptor.intercept(ctx, makeHandler(null)).subscribe((result) => {
-        expect(res.status).toHaveBeenCalledWith(HttpStatus.NO_CONTENT);
-        expect(result).toBeUndefined();
-        done();
-      });
+      const result = await firstValueFrom(interceptor.intercept(ctx, makeHandler(null)));
+
+      expect(res.status).toHaveBeenCalledWith(HttpStatus.NO_CONTENT);
+      expect(result).toBeUndefined();
     });
 
-    it('returns void for undefined data', (done) => {
+    it('returns void for undefined data', async () => {
       const { ctx, res } = makeContext('/api/todos');
 
-      interceptor.intercept(ctx, makeHandler(undefined)).subscribe((result) => {
-        expect(res.status).toHaveBeenCalledWith(HttpStatus.NO_CONTENT);
-        expect(result).toBeUndefined();
-        done();
-      });
+      const result = await firstValueFrom(interceptor.intercept(ctx, makeHandler(undefined)));
+
+      expect(res.status).toHaveBeenCalledWith(HttpStatus.NO_CONTENT);
+      expect(result).toBeUndefined();
     });
   });
 
   describe('positive cases', () => {
-    it('wraps response in data property', (done) => {
+    it('wraps response in data property', async () => {
       const { ctx } = makeContext('/api/todos');
       const data = { id: '1', title: 'Test' };
 
-      interceptor.intercept(ctx, makeHandler(data)).subscribe((result) => {
-        expect(result).toEqual({ data });
-        done();
-      });
+      const result = await firstValueFrom(interceptor.intercept(ctx, makeHandler(data)));
+
+      expect(result).toEqual({ data });
     });
 
-    it('extracts meta and data when meta present', (done) => {
+    it('extracts meta and data when meta present', async () => {
       const { ctx } = makeContext('/api/todos');
       const responseData = { data: [{ id: '1' }], meta: { total: 1 } };
 
-      interceptor.intercept(ctx, makeHandler(responseData)).subscribe((result) => {
-        expect(result).toEqual({ data: [{ id: '1' }], meta: { total: 1 } });
-        done();
-      });
+      const result = await firstValueFrom(interceptor.intercept(ctx, makeHandler(responseData)));
+
+      expect(result).toEqual({ data: [{ id: '1' }], meta: { total: 1 } });
     });
 
-    it('wraps non-data-keyed objects in data', (done) => {
+    it('wraps non-data-keyed objects in data', async () => {
       const { ctx } = makeContext('/api/todos');
       const payload = { name: 'test', value: 42 };
 
-      interceptor.intercept(ctx, makeHandler(payload)).subscribe((result) => {
-        expect(result).toEqual({ data: payload });
-        done();
-      });
+      const result = await firstValueFrom(interceptor.intercept(ctx, makeHandler(payload)));
+
+      expect(result).toEqual({ data: payload });
     });
 
-    it('passes through raw data for second excluded endpoint', (done) => {
+    it('passes through raw data for second excluded endpoint', async () => {
       const { ctx } = makeContext('/metrics');
       const data = { metric: 'value' };
 
-      interceptor.intercept(ctx, makeHandler(data)).subscribe((result) => {
-        expect(result).toBe(data);
-        done();
-      });
+      const result = await firstValueFrom(interceptor.intercept(ctx, makeHandler(data)));
+
+      expect(result).toBe(data);
     });
 
-    it('uses data property directly when response has data but no meta', (done) => {
+    it('uses data property directly when response has data but no meta', async () => {
       const { ctx } = makeContext('/api/todos');
       const payload = { data: [{ id: '1' }] };
 
-      interceptor.intercept(ctx, makeHandler(payload)).subscribe((result) => {
-        expect(result).toEqual({ data: [{ id: '1' }] });
-        done();
-      });
+      const result = await firstValueFrom(interceptor.intercept(ctx, makeHandler(payload)));
+
+      expect(result).toEqual({ data: [{ id: '1' }] });
     });
 
-    it('wraps non-data sub-object when meta is present but data property is absent', (done) => {
+    it('wraps non-data sub-object when meta is present but data property is absent', async () => {
       const { ctx } = makeContext('/api/todos');
       const payload = { items: [{ id: '1' }], meta: { total: 1 } };
 
-      interceptor.intercept(ctx, makeHandler(payload)).subscribe((result) => {
-        expect(result).toEqual({ data: { items: [{ id: '1' }] }, meta: { total: 1 } });
-        done();
-      });
+      const result = await firstValueFrom(interceptor.intercept(ctx, makeHandler(payload)));
+
+      expect(result).toEqual({ data: { items: [{ id: '1' }] }, meta: { total: 1 } });
     });
   });
 });

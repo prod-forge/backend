@@ -107,7 +107,7 @@ describe('SentryService', () => {
 
       const result = capturedBeforeSend?.(
         {},
-        { originalException: Object.assign(new Error(), { name: 'IgnoredError' }) },
+        { originalException: Object.assign(new Error('Ignored error'), { name: 'IgnoredError' }) },
       );
 
       expect(result).toBeNull();
@@ -125,7 +125,7 @@ describe('SentryService', () => {
 
       const result = capturedBeforeSend?.(
         {},
-        { originalException: Object.assign(new Error(), { name: 'ValidationError' }) },
+        { originalException: Object.assign(new Error('Validation error'), { name: 'ValidationError' }) },
       );
 
       expect(result).toBeNull();

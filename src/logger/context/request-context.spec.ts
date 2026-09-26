@@ -8,33 +8,39 @@ describe('RequestContext', () => {
   });
 
   describe('positive cases', () => {
-    it('returns traceId set via run', (done) => {
+    it('returns traceId set via run', () => {
+      let traceId = '';
+
       RequestContext.run('abc-123', () => {
-        expect(RequestContext.getTraceId()).toBe('abc-123');
-        done();
+        traceId = RequestContext.getTraceId();
       });
+
+      expect(traceId).toBe('abc-123');
     });
 
-    it('isolates context per run call', (done) => {
+    it('isolates context per run call', () => {
       let inner = '';
+      let outer = '';
 
       RequestContext.run('outer', () => {
         RequestContext.run('inner', () => {
           inner = RequestContext.getTraceId();
         });
-
-        expect(RequestContext.getTraceId()).toBe('outer');
-        expect(inner).toBe('inner');
-        done();
+        outer = RequestContext.getTraceId();
       });
+
+      expect(outer).toBe('outer');
+      expect(inner).toBe('inner');
     });
 
-    it('returns empty string outside run callback', (done) => {
+    it('returns empty string outside run callback', () => {
+      let inside = '';
+
       RequestContext.run('temp', () => {
-        expect(RequestContext.getTraceId()).toBe('temp');
-        done();
+        inside = RequestContext.getTraceId();
       });
 
+      expect(inside).toBe('temp');
       expect(RequestContext.getTraceId()).toBe('');
     });
   });

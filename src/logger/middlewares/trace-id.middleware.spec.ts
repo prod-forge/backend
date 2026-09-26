@@ -11,37 +11,37 @@ const makeReq = (traceId?: string): Request =>
 
 describe('traceIdMiddleware', () => {
   describe('positive cases', () => {
-    it('uses existing traceId from header', (done) => {
+    it('uses existing traceId from header', () => {
       const req = makeReq('existing-id');
       const res = makeRes();
-      const next: NextFunction = () => {
-        expect(req.headers['x-trace-id']).toBe('existing-id');
-        done();
-      };
+      const next = jest.fn() as NextFunction;
 
       traceIdMiddleware(req, res as unknown as Response, next);
+
+      expect(next).toHaveBeenCalledTimes(1);
+      expect(req.headers['x-trace-id']).toBe('existing-id');
     });
 
-    it('generates a UUID when header is absent', (done) => {
+    it('generates a UUID when header is absent', () => {
       const req = makeReq();
       const res = makeRes();
-      const next: NextFunction = () => {
-        expect(req.headers['x-trace-id']).toMatch(/^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/);
-        done();
-      };
+      const next = jest.fn() as NextFunction;
 
       traceIdMiddleware(req, res as unknown as Response, next);
+
+      expect(next).toHaveBeenCalledTimes(1);
+      expect(req.headers['x-trace-id']).toMatch(/^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/);
     });
 
-    it('sets the traceId as response header', (done) => {
+    it('sets the traceId as response header', () => {
       const req = makeReq('test-id');
       const res = makeRes();
-      const next: NextFunction = () => {
-        expect(res.setHeader).toHaveBeenCalledWith('X-Trace-Id', 'test-id');
-        done();
-      };
+      const next = jest.fn() as NextFunction;
 
       traceIdMiddleware(req, res as unknown as Response, next);
+
+      expect(next).toHaveBeenCalledTimes(1);
+      expect(res.setHeader).toHaveBeenCalledWith('X-Trace-Id', 'test-id');
     });
 
     it('calls next', () => {

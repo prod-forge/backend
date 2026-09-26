@@ -25,7 +25,7 @@ const beforeRelease = async (): Promise<never> => {
       choices,
       message: 'Before you make a release, check:',
     });
-    const checked = JSON.stringify(res) == JSON.stringify(choices.map((a) => a.value));
+    const checked = JSON.stringify(res) === JSON.stringify(choices.map((a) => a.value));
 
     if (checked) {
       // eslint-disable-next-line no-console

@@ -1,6 +1,6 @@
 import type { ConfigType } from '@nestjs/config';
 
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException, Inject } from '@nestjs/common';
+import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, Inject } from '@nestjs/common';
 import * as Sentry from '@sentry/node';
 import { Request, Response } from 'express';
 import { Counter } from 'prom-client';
@@ -24,7 +24,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
   constructor(
     private readonly loggerService: LoggerService,
     @Inject(sentryConfig.KEY)
-    private configSentry: ConfigType<typeof sentryConfig>,
+    private readonly configSentry: ConfigType<typeof sentryConfig>,
   ) {}
 
   catch(exception: unknown, host: ArgumentsHost): void {
@@ -41,9 +41,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     }
 
     // 2) Prisma errors
-    if (!error) {
-      error = mapPrismaError(exception);
-    }
+    error ??= mapPrismaError(exception);
 
     // 3) Nest HttpException fallback (not show details to user)
     if (!error && exception instanceof HttpException) {
@@ -51,19 +49,17 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     }
 
     // 4) Unknown error (not show details to user)
-    if (!error) {
-      error = new InternalServerError();
-    }
+    error ??= new InternalServerError();
 
     // Need to skip Health endpoints
-    if (req.url.slice(1).indexOf(HEALTH_ENDPOINT) === 0 && exception instanceof HttpException) {
+    if (req.url.slice(1).startsWith(HEALTH_ENDPOINT) && exception instanceof HttpException) {
       res.status(200).json(exception.getResponse());
 
       return;
     }
 
-    if (+error.status >= 400) {
-      const route = req.route as { path: string };
+    if (error.status >= HttpStatus.BAD_REQUEST) {
+      const route = req.route as undefined | { path: string };
       this.httpErrors.labels(req.method, route?.path || req.url, error.status.toString()).inc();
     }
 

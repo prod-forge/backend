@@ -39,7 +39,7 @@ describe('RequestTrackingMiddleware', () => {
       const next = jest.fn() as NextFunction;
 
       middleware.use({} as Request, res as unknown as Response, next);
-      res.handlers['finish']();
+      res.handlers.finish();
 
       expect(tracker.getActiveRequests()).toBe(0);
     });
@@ -49,7 +49,7 @@ describe('RequestTrackingMiddleware', () => {
       const next = jest.fn() as NextFunction;
 
       middleware.use({} as Request, res as unknown as Response, next);
-      res.handlers['close']();
+      res.handlers.close();
 
       expect(tracker.getActiveRequests()).toBe(0);
     });

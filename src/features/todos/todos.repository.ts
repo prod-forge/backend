@@ -14,7 +14,9 @@ export class TodosRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   create(userId: string, dto: CreateTodoDto): Promise<Todo> {
-    return this.prisma.todo.create({ data: { ...dto, userId } });
+    return this.prisma.todo.create({
+      data: { completed: dto.completed, description: dto.description, title: dto.title, userId },
+    });
   }
 
   async findAll(
@@ -49,7 +51,7 @@ export class TodosRepository {
     });
   }
 
-  async findOne(id: string): Promise<TodoEntity | void> {
+  async findOne(id: string): Promise<TodoEntity | undefined> {
     const todo = await this.prisma.todo.findUnique({ where: { id } });
 
     if (todo) return TodoMapper.toEntity(todo);
@@ -60,8 +62,9 @@ export class TodosRepository {
     await this.prisma.todo.delete({ where: { id } });
   }
 
-  async update(id: string, dto: UpdateTodoDto): Promise<TodoEntity | void> {
-    const todo = await this.prisma.todo.update({ data: dto, where: { id } });
+  async update(id: string, dto: UpdateTodoDto): Promise<TodoEntity | undefined> {
+    // A falsy result is guarded although Prisma throws on a missing record.
+    const todo = (await this.prisma.todo.update({ data: dto, where: { id } })) as null | Todo;
 
     if (todo) return TodoMapper.toEntity(todo);
   }

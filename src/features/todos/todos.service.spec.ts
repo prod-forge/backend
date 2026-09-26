@@ -55,7 +55,7 @@ describe('TodosService', () => {
 
         const result = await service.create('user-1', { title: 'Test Todo' });
 
-        expect(result?.id).toBe('todo-1');
+        expect(result.id).toBe('todo-1');
         expect(prismaMock.todo.create).toHaveBeenCalledWith({
           data: { title: 'Test Todo', userId: 'user-1' },
         });
@@ -72,8 +72,8 @@ describe('TodosService', () => {
           title: 'Buy milk',
         });
 
-        expect(result?.description).toBe('Buy oat milk');
-        expect(result?.completed).toBe(true);
+        expect(result.description).toBe('Buy oat milk');
+        expect(result.completed).toBe(true);
       });
     });
   });

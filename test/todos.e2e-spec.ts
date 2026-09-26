@@ -81,7 +81,7 @@ describe('Todos API (e2e)', () => {
         const body = res.body as ListBody<TodoItem>;
 
         expect(body.data.length).toBeGreaterThanOrEqual(1);
-        expect(body.data.every((t) => t.completed === true)).toBe(true);
+        expect(body.data.every((t) => t.completed)).toBe(true);
       });
 
       it('returns only incomplete todos when completed=false', async () => {
@@ -89,7 +89,7 @@ describe('Todos API (e2e)', () => {
         const body = res.body as ListBody<TodoItem>;
 
         expect(body.data.length).toBeGreaterThanOrEqual(1);
-        expect(body.data.every((t) => t.completed === false)).toBe(true);
+        expect(body.data.every((t) => !t.completed)).toBe(true);
       });
 
       it('returns todos sorted by title ascending', async () => {

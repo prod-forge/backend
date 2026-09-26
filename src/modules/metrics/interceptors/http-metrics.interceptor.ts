@@ -40,8 +40,8 @@ export class HttpMetricsInterceptor implements NestInterceptor {
     this.httpInFlight.inc();
 
     return next.handle().pipe(
-      catchError((err: BaseError<unknown>) => {
-        const status = err?.status || 500;
+      catchError((err: unknown) => {
+        const status = (err as null | Partial<BaseError<unknown>> | undefined)?.status ?? 500;
         this.recordMetrics(method, route, status, start);
         throw err;
       }),

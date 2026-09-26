@@ -3,6 +3,14 @@ type MessageFormat = (log: LogDescriptor, messageKey: string) => string;
 
 let capturedMessageFormat: MessageFormat | undefined;
 
+const messageFormat = (): MessageFormat => {
+  if (!capturedMessageFormat) {
+    throw new Error('pino-pretty messageFormat was not captured');
+  }
+
+  return capturedMessageFormat;
+};
+
 jest.mock('pino-pretty', () =>
   jest.fn().mockImplementation((config: { messageFormat?: MessageFormat }) => {
     capturedMessageFormat = config.messageFormat;
@@ -107,35 +115,32 @@ describe('LoggerService', () => {
     });
 
     it('includes ctx in brackets when ctx is provided', () => {
-      const result = capturedMessageFormat!(
-        { ctx: 'TestCtx', levelLabel: 'info', msg: 'hello', traceId: 'abc' },
-        'msg',
-      );
+      const result = messageFormat()({ ctx: 'TestCtx', levelLabel: 'info', msg: 'hello', traceId: 'abc' }, 'msg');
       expect(result).toContain('[TestCtx]');
     });
 
     it('omits brackets when ctx is falsy', () => {
-      const result = capturedMessageFormat!({ levelLabel: 'info', msg: 'hello', traceId: 'abc' }, 'msg');
+      const result = messageFormat()({ levelLabel: 'info', msg: 'hello', traceId: 'abc' }, 'msg');
       expect(result).not.toContain('[');
     });
 
     it('uses levelLabel when provided', () => {
-      const result = capturedMessageFormat!({ levelLabel: 'info', msg: 'hello', traceId: '' }, 'msg');
+      const result = messageFormat()({ levelLabel: 'info', msg: 'hello', traceId: '' }, 'msg');
       expect(result).toContain('info');
     });
 
     it('falls back to level number when levelLabel is absent', () => {
-      const result = capturedMessageFormat!({ level: 30, msg: 'hello', traceId: '' }, 'msg');
+      const result = messageFormat()({ level: 30, msg: 'hello', traceId: '' }, 'msg');
       expect(result).toContain('30');
     });
 
     it('includes Trace-ID prefix for non-empty traceId', () => {
-      const result = capturedMessageFormat!({ levelLabel: 'info', msg: 'hello', traceId: 'trace-abc' }, 'msg');
+      const result = messageFormat()({ levelLabel: 'info', msg: 'hello', traceId: 'trace-abc' }, 'msg');
       expect(result).toContain('Trace-ID: trace-abc');
     });
 
     it('omits Trace-ID prefix when traceId is empty string', () => {
-      const result = capturedMessageFormat!({ levelLabel: 'info', msg: 'hello', traceId: '' }, 'msg');
+      const result = messageFormat()({ levelLabel: 'info', msg: 'hello', traceId: '' }, 'msg');
       expect(result).not.toContain('Trace-ID:');
     });
   });

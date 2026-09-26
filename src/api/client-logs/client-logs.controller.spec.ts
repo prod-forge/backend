@@ -72,11 +72,10 @@ describe('ClientLogsController', () => {
         expect(WebLogLevel.CRITICAL).toBe('critical');
       });
 
-      it('delegates to service and returns void', () => {
-        const result = controller.postWebLogs(webLogDto);
+      it('delegates to service', () => {
+        controller.postWebLogs(webLogDto);
 
         expect(service.processWebLog).toHaveBeenCalledWith(webLogDto);
-        expect(result).toBeUndefined();
       });
     });
   });
@@ -93,11 +92,10 @@ describe('ClientLogsController', () => {
     });
 
     describe('positive cases', () => {
-      it('delegates to service and returns void', () => {
-        const result = controller.postMobileLogs(mobileLogDto);
+      it('delegates to service', () => {
+        controller.postMobileLogs(mobileLogDto);
 
         expect(service.processMobileLog).toHaveBeenCalledWith(mobileLogDto);
-        expect(result).toBeUndefined();
       });
     });
   });

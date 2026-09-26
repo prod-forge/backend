@@ -47,8 +47,8 @@ describe('parseValidationErrors', () => {
 
       const result = parseValidationErrors(errors);
 
-      expect(result['title']).toEqual(expect.arrayContaining(['must be string', 'min length 3']));
-      expect(result['title']).toHaveLength(2);
+      expect(result.title).toEqual(expect.arrayContaining(['must be string', 'min length 3']));
+      expect(result.title).toHaveLength(2);
     });
 
     it('collects constraints across multiple fields', () => {

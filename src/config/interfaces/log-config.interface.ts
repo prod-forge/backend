@@ -1,7 +1,7 @@
 import type { Level } from 'pino';
 
-export interface LogConfigInterface {
+export type LogConfigInterface = {
   logExcludeEndpoints: string[];
   logLevel: Level;
   logPretty: boolean;
-}
+};

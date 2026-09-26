@@ -1,16 +1,16 @@
 import type { SortOrder, TodoSortField } from '../interfaces/queries.enum';
 
-export interface TodoFilter {
+export type TodoFilter = {
   completed?: boolean;
   search?: string;
-}
+};
 
-export interface TodoPagination {
+export type TodoPagination = {
   limit: number;
   offset: number;
-}
+};
 
-export interface TodoSort {
+export type TodoSort = {
   order: SortOrder;
-  sortBy: TodoSortField;
-}
+  sortBy?: TodoSortField;
+};

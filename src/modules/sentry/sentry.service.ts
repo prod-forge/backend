@@ -23,7 +23,7 @@ export class SentryService implements OnModuleInit {
     if (configSentry.sentryEnabled) {
       Sentry.init({
         beforeSend(event, hint) {
-          const error = hint.originalException as Error;
+          const error = hint.originalException as null | Partial<Error> | undefined;
 
           if (configSentry.sentryIgnoredErrors.some((e) => error?.name?.includes(e))) {
             return null;

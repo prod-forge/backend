@@ -15,7 +15,7 @@ export class RedisHealthService {
     const clients = this.redisManager.getClients();
 
     try {
-      const results = await Promise.allSettled(clients.map((client) => client.ping()));
+      const results = await Promise.allSettled(clients.map((client): Promise<string> => client.ping()));
 
       const isUp = results.every((r) => r.status === 'fulfilled' && r.value === 'PONG');
 

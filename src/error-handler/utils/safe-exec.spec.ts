@@ -8,7 +8,7 @@ describe('safeExec', () => {
     it('wraps thrown error in BaseError with INFRA_FAILURE code', async () => {
       const fn = (): Promise<BaseError<string>> => Promise.reject(new Error('boom'));
 
-      const error = await safeExec(fn, 'TestContext').catch((e) => e as BaseError<unknown>);
+      const error = await safeExec(fn, 'TestContext').catch((e: unknown) => e as BaseError<unknown>);
 
       expect(error).toBeInstanceOf(BaseError);
       expect(error.code).toBe(ErrorCodes.INFRA_FAILURE);
@@ -17,7 +17,7 @@ describe('safeExec', () => {
     it('includes context name in the error message', async () => {
       const fn = (): Promise<BaseError<string>> => Promise.reject(new Error('fail'));
 
-      const error = await safeExec(fn, 'MyService').catch((e) => e as BaseError<unknown>);
+      const error = await safeExec(fn, 'MyService').catch((e: unknown) => e as BaseError<unknown>);
 
       expect(error.message).toContain('MyService');
     });
@@ -26,7 +26,7 @@ describe('safeExec', () => {
       const original = new Error('original error');
       const fn = (): Promise<BaseError<string>> => Promise.reject(original);
 
-      const error = await safeExec(fn, 'ctx').catch((e) => e as BaseError<unknown>);
+      const error = await safeExec(fn, 'ctx').catch((e: unknown) => e as BaseError<unknown>);
 
       expect(error.details).toBe(original);
     });
@@ -34,7 +34,7 @@ describe('safeExec', () => {
     it('sets category to INFRASTRUCTURE', async () => {
       const fn = (): Promise<BaseError<string>> => Promise.reject(new Error('fail'));
 
-      const error = await safeExec(fn, 'ctx').catch((e) => e as BaseError<unknown>);
+      const error = await safeExec(fn, 'ctx').catch((e: unknown) => e as BaseError<unknown>);
 
       expect(error.category).toBe(ErrorCategory.INFRASTRUCTURE);
     });
@@ -42,7 +42,7 @@ describe('safeExec', () => {
     it('sets HTTP status to 500', async () => {
       const fn = (): Promise<BaseError<string>> => Promise.reject(new Error('fail'));
 
-      const error = await safeExec(fn, 'ctx').catch((e) => e as BaseError<unknown>);
+      const error = await safeExec(fn, 'ctx').catch((e: unknown) => e as BaseError<unknown>);
 
       expect(error.status).toBe(500);
     });
@@ -51,7 +51,7 @@ describe('safeExec', () => {
       // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
       const fn = (): Promise<BaseError<string>> => Promise.reject('string error');
 
-      const error = await safeExec(fn, 'ctx').catch((e) => e as BaseError<unknown>);
+      const error = await safeExec(fn, 'ctx').catch((e: unknown) => e as BaseError<unknown>);
 
       expect(error).toBeInstanceOf(BaseError);
       expect(error.details).toBe('string error');

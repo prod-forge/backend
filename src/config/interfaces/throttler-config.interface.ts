@@ -1,4 +1,4 @@
-export interface ThrottlerConfigInterface {
+export type ThrottlerConfigInterface = {
   throttlerLimit: number;
   throttlerTtl: number;
-}
+};

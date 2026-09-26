@@ -21,21 +21,21 @@ type ErrorClass = Type<BaseError<unknown>> & {
   status: number;
 };
 
-interface ReferenceObject {
+type ReferenceObject = {
   $ref: string;
-}
+};
 
 type SchemaObject = Record<string, unknown>;
 
-interface SwaggerOptions {
+type SwaggerOptions = {
   access: boolean;
   description: string;
   metaModel?: Type;
   title: string;
-}
+};
 
-export const ApiPaginated = <TModel extends Type>(
-  model: TModel,
+export const ApiPaginated = (
+  model: Type,
   { access, description, title }: SwaggerOptions,
 ): ClassDecorator & MethodDecorator => {
   const summary = `${title}${access ? ' 🔒' : ''}`;
@@ -67,8 +67,8 @@ export const ApiPaginated = <TModel extends Type>(
   );
 };
 
-export const ApiOk = <TModel extends Type>(
-  model: TModel,
+export const ApiOk = (
+  model: Type,
   { access, description, metaModel, title }: SwaggerOptions,
 ): ClassDecorator & MethodDecorator => {
   const summary = `${title}${access ? ' 🔒' : ''}`;
@@ -118,7 +118,7 @@ export const ApiEmpty = ({ access, description, title }: SwaggerOptions): ClassD
 
 export const ApiErrors = (...errors: ErrorClass[]): ClassDecorator & MethodDecorator => {
   const responses = errors.map((ErrorCtor) => {
-    const status = ErrorCtor.status ?? 500;
+    const { status } = ErrorCtor;
 
     return ApiResponse({
       description: `${ErrorCtor.code}: ${ErrorCtor.message}`,

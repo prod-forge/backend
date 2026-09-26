@@ -27,7 +27,7 @@ describe('TodosCacheKeys', () => {
       it('encodes query as base64', () => {
         const query: TodosQueryDto = { order: SortOrder.DESC, sortBy: TodoSortField.TITLE };
         const key = TodosCacheKeys.todos('user-1', query);
-        const encoded = key.split(':').at(-1)!;
+        const encoded = key.split(':').at(-1) ?? '';
         const decoded = JSON.parse(Buffer.from(encoded, 'base64').toString()) as Record<string, string>;
 
         expect(decoded).toEqual(query);

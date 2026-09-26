@@ -22,10 +22,10 @@ export class RedisManagerService {
     };
   }
 
-  destroy(): Promise<void[]> {
+  async destroy(): Promise<void> {
     const clients = this.getClients();
 
-    return Promise.all(
+    await Promise.all(
       clients.map(async (client) => {
         try {
           await client.quit();

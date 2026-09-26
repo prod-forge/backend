@@ -1,4 +1,4 @@
-export interface RedisOptionsInterface {
+export type RedisOptionsInterface = {
   db: number;
   keyPrefix?: string;
-}
+};

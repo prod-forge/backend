@@ -16,7 +16,7 @@ export class ThrottlerStorage implements ThrottlerStorageRedis {
     return this.redisStorage.redis;
   }
 
-  private memory = new Map<string, ThrottlerStorageRecord>();
+  private readonly memory = new Map<string, ThrottlerStorageRecord>();
 
   constructor(private readonly redisStorage: ThrottlerRedisStorage) {}
 

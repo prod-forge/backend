@@ -8,7 +8,7 @@ import {
   DatabaseValidationError,
 } from '../errors/database.errors';
 
-export function mapPrismaError(err: unknown): BaseError<Error | Record<string, unknown> | void> | null {
+export function mapPrismaError(err: unknown): BaseError<unknown> | null {
   if (err instanceof Prisma.PrismaClientKnownRequestError) {
     switch (err.code) {
       case 'P2000':

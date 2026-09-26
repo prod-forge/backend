@@ -25,7 +25,7 @@ describe('capitalizeFirstLetter', () => {
     });
 
     it('coerces a number to string before capitalizing', () => {
-      expect(capitalizeFirstLetter(123 as unknown as string)).toBe('123');
+      expect(capitalizeFirstLetter(123)).toBe('123');
     });
 
     it('handles a string starting with a space', () => {

@@ -10,7 +10,7 @@ import { RequestContext } from './context/request-context';
 
 type Details = unknown;
 
-interface Message {
+type Message = {
   code?: string;
   ctx: string;
   details?: Details;
@@ -18,7 +18,7 @@ interface Message {
   msg: string;
   path?: string;
   stack?: string;
-}
+};
 
 @Injectable()
 export class LoggerService implements NestLoggerService {
@@ -38,7 +38,7 @@ export class LoggerService implements NestLoggerService {
           ignore: 'appName,ctx,env,traceId,levelName',
           messageFormat: (log: LogDescriptor, messageKey: string) => {
             const ctx = log.ctx ? `[${log.ctx}]` : '';
-            const level = (log.levelLabel as string) ?? log.level;
+            const level = (log.levelLabel as string | undefined) ?? (log.level as number);
             const traceId = log.traceId === '' ? '' : `Trace-ID: ${log.traceId}`;
 
             return `${level} ${ctx} ${traceId} ${log[messageKey]}`;

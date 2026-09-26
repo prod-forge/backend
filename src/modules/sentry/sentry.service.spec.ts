@@ -6,7 +6,7 @@ let capturedBeforeSend: ((event: unknown, hint: { originalException: unknown }) 
 jest.mock('@sentry/node', () => ({
   default: { init: jest.fn() },
   init: jest.fn().mockImplementation((opts: { beforeSend?: (event: unknown, hint: unknown) => unknown }) => {
-    capturedBeforeSend = opts?.beforeSend;
+    capturedBeforeSend = opts.beforeSend;
   }),
 }));
 

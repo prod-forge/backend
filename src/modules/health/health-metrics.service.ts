@@ -9,7 +9,7 @@ export class HealthMetricsService {
   constructor(
     private readonly healthChecks: HealthChecks,
     @InjectMetric('service_health_status')
-    private readonly gauge: Gauge<string>,
+    private readonly gauge: Gauge,
   ) {}
 
   async updateMetrics(): Promise<void> {
@@ -22,7 +22,7 @@ export class HealthMetricsService {
         result = response;
       }
     } finally {
-      if (result && result.details) {
+      if (result?.details) {
         Object.entries(result.details).forEach(([service, data]: [string, Record<string, string>]) => {
           const isUp = data.status === 'up';
           this.gauge.set({ service }, isUp ? 1 : 0);

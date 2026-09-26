@@ -73,10 +73,12 @@ export const appSetup = (app: INestApplication): void => {
     credentials: true,
     origin: (origin: string, cb: (a: null, b: boolean) => void) => {
       if (!origin) {
-        return configApi.apiAllowNonBrowserOrigins ? cb(null, true) : cb(null, false);
+        cb(null, configApi.apiAllowNonBrowserOrigins);
+
+        return;
       }
 
-      return configApi.apiAllowedOrigins.includes(origin) ? cb(null, true) : cb(null, false);
+      cb(null, configApi.apiAllowedOrigins.includes(origin));
     },
   });
 

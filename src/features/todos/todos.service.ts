@@ -19,7 +19,7 @@ export class TodosService {
     private readonly cacheStorage: CacheStorage,
   ) {}
 
-  async create(userId: string, dto: CreateTodoDto): Promise<TodoEntity | void> {
+  async create(userId: string, dto: CreateTodoDto): Promise<TodoEntity> {
     const todo = await this.todosRepository.create(userId, dto);
 
     await this.cacheStorage.delByPattern(TodosCacheKeys.todosByUser(userId));
@@ -101,7 +101,7 @@ export class TodosService {
     await this.cacheStorage.del(TodosCacheKeys.todo(id));
   }
 
-  async update(id: string, dto: UpdateTodoDto): Promise<TodoEntity | void> {
+  async update(id: string, dto: UpdateTodoDto): Promise<TodoEntity | undefined> {
     const todo = await this.todosRepository.update(id, dto);
 
     await this.cacheStorage.del(TodosCacheKeys.todo(id));

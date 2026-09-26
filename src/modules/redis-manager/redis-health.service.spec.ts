@@ -34,7 +34,7 @@ describe('RedisHealthService', () => {
 
       const result = await service.pingCheck('redis');
 
-      expect(result['redis'].status).toBe('down');
+      expect(result.redis.status).toBe('down');
     });
 
     it('returns down when ping rejects', async () => {
@@ -42,7 +42,7 @@ describe('RedisHealthService', () => {
 
       const result = await service.pingCheck('redis');
 
-      expect(result['redis'].status).toBe('down');
+      expect(result.redis.status).toBe('down');
     });
 
     it('returns down when one of multiple clients fails', async () => {
@@ -53,7 +53,7 @@ describe('RedisHealthService', () => {
 
       const result = await service.pingCheck('redis');
 
-      expect(result['redis'].status).toBe('down');
+      expect(result.redis.status).toBe('down');
     });
 
     it('logs warning on degraded state', async () => {
@@ -69,7 +69,7 @@ describe('RedisHealthService', () => {
 
       const result = await service.pingCheck('redis');
 
-      expect(result['redis'].status).toBe('down');
+      expect(result.redis.status).toBe('down');
       expect(logger.error).toHaveBeenCalled();
     });
   });
@@ -83,7 +83,7 @@ describe('RedisHealthService', () => {
 
       const result = await service.pingCheck('redis');
 
-      expect(result['redis'].status).toBe('up');
+      expect(result.redis.status).toBe('up');
     });
 
     it('uses the provided service name as key', async () => {

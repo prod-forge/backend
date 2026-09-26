@@ -6,7 +6,7 @@ async function main(): Promise<void> {
   // eslint-disable-next-line no-console
   console.log(`Seeding in env: ${process.env.NODE_ENV}...`);
 
-  switch (process.env.NODE_ENV) {
+  switch (process.env.NODE_ENV ?? 'development') {
     case 'production':
       break;
     case 'test':
@@ -22,7 +22,7 @@ main()
   .then(async () => {
     await prisma.$disconnect();
   })
-  .catch(async (e) => {
+  .catch(async (e: unknown) => {
     // eslint-disable-next-line no-console
     console.error(e);
     await prisma.$disconnect();

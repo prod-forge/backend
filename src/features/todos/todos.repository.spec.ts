@@ -69,7 +69,7 @@ describe('TodosRepository', () => {
       it('uses empty orderBy when sortBy is falsy', async () => {
         prismaMock.$transaction.mockResolvedValue([[], 0]);
 
-        await repository.findAll('user-1', filter, { order: SortOrder.DESC, sortBy: undefined as never }, pagination);
+        await repository.findAll('user-1', filter, { order: SortOrder.DESC, sortBy: undefined }, pagination);
 
         expect(prismaMock.todo.findMany).toHaveBeenCalledWith(expect.objectContaining({ orderBy: {} }));
       });

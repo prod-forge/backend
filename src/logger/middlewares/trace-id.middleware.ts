@@ -7,7 +7,7 @@ import { RequestContext } from '../context/request-context';
 import { traceIdHeader } from '../headers/trace-id.header';
 
 export const traceIdMiddleware = (req: Request, res: Response, next: NextFunction): void => {
-  const traceId = (req.headers && (req.headers[traceIdHeader] as string)) || randomUUID();
+  const traceId = (req.headers[traceIdHeader] as string | undefined) || randomUUID();
   req.headers[traceIdHeader] = traceId;
   const capitalizedHeader = traceIdHeader.split('-').map(capitalizeFirstLetter).join('-');
   res.setHeader(capitalizedHeader, traceId);

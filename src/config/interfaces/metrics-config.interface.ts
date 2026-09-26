@@ -1,3 +1,3 @@
-export interface MetricsConfigInterface {
+export type MetricsConfigInterface = {
   healthCheckTriggerMs: number;
-}
+};

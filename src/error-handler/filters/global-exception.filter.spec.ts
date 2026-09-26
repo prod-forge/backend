@@ -21,11 +21,11 @@ import { InternalServerError } from '../errors/common.errors';
 import { TodoNotFoundError } from '../errors/todo.errors';
 import { GlobalExceptionFilter } from './global-exception.filter';
 
-interface MakeHostResult {
+type MakeHostResult = {
   host: ArgumentsHost;
   jsonMock: jest.Mock;
   res: { status: jest.Mock };
-}
+};
 
 const makeHost = (
   opts: {

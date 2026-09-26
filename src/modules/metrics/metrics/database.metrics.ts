@@ -11,10 +11,10 @@ export class DatabaseMetrics {
     const rows = await this.prisma.$queryRawUnsafe<
       {
         calls: bigint;
-        max_ms: number;
-        mean_ms: number;
+        max_ms: string;
+        mean_ms: string;
         query: string;
-        total_ms: number;
+        total_ms: string;
       }[]
     >(`
       SELECT

@@ -4,7 +4,7 @@ import { EnvironmentType } from '../../../config/enums/environment.enum';
 
 jest.mock('ioredis', () => {
   const MockRedis = jest.fn().mockImplementation(() => {
-    const handlers: Record<string, ((...args: unknown[]) => void)[]> = {};
+    const handlers: Partial<Record<string, ((...args: unknown[]) => void)[]>> = {};
 
     return {
       _emit: (event: string, ...args: unknown[]): void => {
@@ -12,8 +12,7 @@ jest.mock('ioredis', () => {
       },
       disconnect: jest.fn(),
       on: jest.fn((event: string, handler: (...args: unknown[]) => void) => {
-        if (!handlers[event]) handlers[event] = [];
-        handlers[event].push(handler);
+        (handlers[event] ??= []).push(handler);
       }),
       quit: jest.fn().mockResolvedValue('OK'),
     };

@@ -1,3 +1,3 @@
-export interface UserInterface {
+export type UserInterface = {
   userId: string;
-}
+};

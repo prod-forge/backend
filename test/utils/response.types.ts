@@ -1,25 +1,25 @@
-export interface DataBody<T> {
+export type DataBody<T> = {
   data: T;
-}
+};
 
-export interface ErrorBody {
+export type ErrorBody = {
   code: string;
   details?: Record<string, unknown>;
   status: number;
-}
+};
 
-export interface ListBody<T> {
+export type ListBody<T> = {
   data: T[];
   meta: {
     limit: number;
     offset: number;
     total: number;
   };
-}
+};
 
-export interface TodoItem {
+export type TodoItem = {
   completed: boolean;
   description?: string;
   id: string;
   title: string;
-}
+};

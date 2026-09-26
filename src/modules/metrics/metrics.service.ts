@@ -5,7 +5,7 @@ import { DatabaseMetrics } from './metrics/database.metrics';
 
 @Injectable()
 export class MetricsService implements OnModuleInit {
-  private slowQueryGauge: Gauge<string>;
+  private slowQueryGauge: Gauge;
 
   constructor(private readonly databaseMetrics: DatabaseMetrics) {}
 

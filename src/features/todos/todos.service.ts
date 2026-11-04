@@ -51,7 +51,8 @@ export class TodosService {
 
     const cached = await this.cacheStorage.get<TodoEntity>(key);
 
-    if (cached) {
+    // An entry without userId was written by an older version and cannot be authorized, so it counts as a miss
+    if (cached?.userId) {
       if (cached.userId !== userId) throw new TodoNotFoundError(id);
 
       return cached;

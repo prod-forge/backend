@@ -66,14 +66,20 @@ This ensures that the system remains functional even if performance temporarily 
 
 Invalidation rules per operation (`<id>` is the todo id, `<userId>` the owner):
 
-| Operation | Cache effect                                                                     |
-| --------- | -------------------------------------------------------------------------------- |
-| create    | delete `todos:<userId>:*` (all cached lists of the owner)                        |
-| update    | delete `todo:<id>` and `todos:<userId>:*`                                        |
-| delete    | delete `todo:<id>` and `todos:<userId>:*`                                        |
-| read      | `todo:<id>` (60 s) and `todos:<userId>:<query>` (30 s) are filled on a miss only |
+| Operation | Cache effect                                                                           |
+| --------- | -------------------------------------------------------------------------------------- |
+| create    | delete `v2:todos:<userId>:*` (all cached lists of the owner)                           |
+| update    | delete `v2:todo:<id>` and `v2:todos:<userId>:*`                                        |
+| delete    | delete `v2:todo:<id>` and `v2:todos:<userId>:*`                                        |
+| read      | `v2:todo:<id>` (60 s) and `v2:todos:<userId>:<query>` (30 s) are filled on a miss only |
 
 A request for a todo owned by another user is rejected before any cache write or invalidation.
+
+Keys carry a version prefix (`CACHE_VERSION` in `todos.cache-queries.ts`). During a rolling deploy old and new tasks share
+Redis; when the shape or meaning of a cached value changes (v2: todo entries carry `userId`, list keys use offset
+pagination), bumping the prefix keeps each version on its own entries instead of misreading the other's. A cached todo
+without `userId` is treated as a miss. Writes on an old task do not invalidate the new keys, so for the length of a
+deploy a new task can serve an entry up to its TTL (60 s / 30 s) old.
 
 Pattern invalidation uses `SCAN` (`scanStream` with `COUNT 100`) and `UNLINK` in batches, never `KEYS`. `KEYS` walks the whole keyspace in one blocking call, so on a large Redis it stalls every other command (including throttling and health checks) for the duration. `SCAN` is incremental and non-blocking, at the cost of weaker guarantees: it is not atomic, keys created during the scan may be missed, and a key can be returned twice (harmless for deletion). The cache client uses the `cache:` key prefix, which ioredis does not apply to `SCAN` `MATCH`, so the storage adds it to the match pattern and strips it from returned keys before `UNLINK`.
 

@@ -60,7 +60,7 @@ describe('TodosService', () => {
         expect(prismaMock.todo.create).toHaveBeenCalledWith({
           data: { title: 'Test Todo', userId: 'user-1' },
         });
-        expect(cacheStorageMock.delByPattern).toHaveBeenCalledWith('todos:user-1:*');
+        expect(cacheStorageMock.delByPattern).toHaveBeenCalledWith('v2:todos:user-1:*');
       });
 
       it('creates todo with optional fields', async () => {
@@ -105,7 +105,7 @@ describe('TodosService', () => {
         expect(result.data[0].id).toBe('todo-1');
         expect(result.meta.total).toBe(1);
         expect(cacheStorageMock.set).toHaveBeenCalledWith(
-          expect.stringContaining('todos:user-1:'),
+          expect.stringContaining('v2:todos:user-1:'),
           expect.any(PaginatedEntity),
           30,
         );
@@ -154,6 +154,21 @@ describe('TodosService', () => {
         expect(prismaMock.todo.findUnique).not.toHaveBeenCalled();
         expect(cacheStorageMock.set).not.toHaveBeenCalled();
       });
+
+      it('treats a cached todo without userId as a miss and reads the owner from the database', async () => {
+        cacheStorageMock.get.mockResolvedValue({ ...todoData, userId: undefined });
+        prismaMock.todo.findUnique.mockResolvedValue(todoData);
+
+        const result = await service.findOne('user-1', 'todo-1');
+
+        expect(prismaMock.todo.findUnique).toHaveBeenCalled();
+        expect(result.userId).toBe('user-1');
+        expect(cacheStorageMock.set).toHaveBeenCalledWith(
+          'v2:todo:todo-1',
+          expect.objectContaining({ userId: 'user-1' }),
+          60,
+        );
+      });
     });
 
     describe('positive cases', () => {
@@ -174,7 +189,11 @@ describe('TodosService', () => {
         const result = await service.findOne('user-1', 'todo-1');
 
         expect(result.id).toBe('todo-1');
-        expect(cacheStorageMock.set).toHaveBeenCalledWith('todo:todo-1', expect.objectContaining({ id: 'todo-1' }), 60);
+        expect(cacheStorageMock.set).toHaveBeenCalledWith(
+          'v2:todo:todo-1',
+          expect.objectContaining({ id: 'todo-1' }),
+          60,
+        );
       });
     });
   });
@@ -216,8 +235,8 @@ describe('TodosService', () => {
         await service.remove('user-1', 'todo-1');
 
         expect(prismaMock.todo.delete).toHaveBeenCalledWith({ where: { id: 'todo-1' } });
-        expect(cacheStorageMock.del).toHaveBeenCalledWith('todo:todo-1');
-        expect(cacheStorageMock.delByPattern).toHaveBeenCalledWith('todos:user-1:*');
+        expect(cacheStorageMock.del).toHaveBeenCalledWith('v2:todo:todo-1');
+        expect(cacheStorageMock.delByPattern).toHaveBeenCalledWith('v2:todos:user-1:*');
       });
     });
   });
@@ -251,8 +270,8 @@ describe('TodosService', () => {
         const result = await service.update('user-1', 'todo-1', { title: 'Updated Title' });
 
         expect(result?.title).toBe('Updated Title');
-        expect(cacheStorageMock.del).toHaveBeenCalledWith('todo:todo-1');
-        expect(cacheStorageMock.delByPattern).toHaveBeenCalledWith('todos:user-1:*');
+        expect(cacheStorageMock.del).toHaveBeenCalledWith('v2:todo:todo-1');
+        expect(cacheStorageMock.delByPattern).toHaveBeenCalledWith('v2:todos:user-1:*');
       });
 
       it('clears cache even when update returns void', async () => {
@@ -261,8 +280,8 @@ describe('TodosService', () => {
 
         await service.update('user-1', 'todo-1', { title: 'X' });
 
-        expect(cacheStorageMock.del).toHaveBeenCalledWith('todo:todo-1');
-        expect(cacheStorageMock.delByPattern).toHaveBeenCalledWith('todos:user-1:*');
+        expect(cacheStorageMock.del).toHaveBeenCalledWith('v2:todo:todo-1');
+        expect(cacheStorageMock.delByPattern).toHaveBeenCalledWith('v2:todos:user-1:*');
       });
     });
   });

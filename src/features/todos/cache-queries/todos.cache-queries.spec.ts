@@ -6,8 +6,8 @@ import { TodosCacheKeys } from './todos.cache-queries';
 describe('TodosCacheKeys', () => {
   describe('todo', () => {
     describe('positive cases', () => {
-      it('returns a key prefixed with "todo:"', () => {
-        expect(TodosCacheKeys.todo('abc-123')).toBe('todo:abc-123');
+      it('returns a versioned key prefixed with "v2:todo:"', () => {
+        expect(TodosCacheKeys.todo('abc-123')).toBe('v2:todo:abc-123');
       });
 
       it('returns unique keys for different ids', () => {
@@ -18,10 +18,16 @@ describe('TodosCacheKeys', () => {
 
   describe('todos', () => {
     describe('positive cases', () => {
-      it('returns a key prefixed with "todos:<userId>:"', () => {
+      it('returns a versioned key prefixed with "v2:todos:<userId>:"', () => {
         const key = TodosCacheKeys.todos('user-1', {});
 
-        expect(key).toMatch(/^todos:user-1:/);
+        expect(key).toMatch(/^v2:todos:user-1:/);
+      });
+
+      it('is matched by the todosByUser pattern of the same user', () => {
+        const pattern = TodosCacheKeys.todosByUser('user-1');
+
+        expect(TodosCacheKeys.todos('user-1', { limit: 5 }).startsWith(pattern.slice(0, -1))).toBe(true);
       });
 
       it('encodes query as base64', () => {
@@ -59,7 +65,7 @@ describe('TodosCacheKeys', () => {
   describe('todosByUser', () => {
     describe('positive cases', () => {
       it('returns a wildcard pattern for the user', () => {
-        expect(TodosCacheKeys.todosByUser('user-1')).toBe('todos:user-1:*');
+        expect(TodosCacheKeys.todosByUser('user-1')).toBe('v2:todos:user-1:*');
       });
 
       it('returns different patterns for different users', () => {

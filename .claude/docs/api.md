@@ -156,7 +156,7 @@ Defaults: `THROTTLE_LIMIT=10` requests per `THROTTLE_TTL=20000` ms window, track
 
 **Errors:** `DTO_VALIDATION_ERROR` 422 · `USER_IS_NOT_AUTHORIZED` 401 · `INTERNAL_ERROR` 500
 
-**Side effects:** Invalidates Redis cache key pattern `todos:<userId>:*`
+**Side effects:** Invalidates Redis cache key pattern `v2:todos:<userId>:*`
 
 ---
 
@@ -196,7 +196,7 @@ Defaults: `THROTTLE_LIMIT=10` requests per `THROTTLE_TTL=20000` ms window, track
 
 **Errors:** `DTO_VALIDATION_ERROR` 422 · `USER_IS_NOT_AUTHORIZED` 401 · `INTERNAL_ERROR` 500
 
-**Caching:** Results cached in Redis for 30 s. Cache key is `todos:<userId>:<base64(query)>`.
+**Caching:** Results cached in Redis for 30 s. Cache key is `v2:todos:<userId>:<base64(query)>`.
 
 ---
 
@@ -225,7 +225,7 @@ Defaults: `THROTTLE_LIMIT=10` requests per `THROTTLE_TTL=20000` ms window, track
 
 **Ownership:** A todo owned by another user returns `TODO_NOT_FOUND` 404 (same as a missing todo).
 
-**Caching:** Result cached in Redis for 60 s under key `todo:<id>`. The cached entry stores `userId`, which is checked against the caller on every hit.
+**Caching:** Result cached in Redis for 60 s under key `v2:todo:<id>`. The cached entry stores `userId`, which is checked against the caller on every hit; an entry without `userId` (written by an older version) is a miss.
 
 ---
 
@@ -270,7 +270,7 @@ Defaults: `THROTTLE_LIMIT=10` requests per `THROTTLE_TTL=20000` ms window, track
 
 **Ownership:** A todo owned by another user returns `TODO_NOT_FOUND` 404; nothing is written.
 
-**Side effects:** Deletes cache key `todo:<id>` and pattern `todos:<userId>:*`
+**Side effects:** Deletes cache key `v2:todo:<id>` and pattern `v2:todos:<userId>:*`
 
 ---
 
@@ -288,7 +288,7 @@ Defaults: `THROTTLE_LIMIT=10` requests per `THROTTLE_TTL=20000` ms window, track
 
 **Ownership:** A todo owned by another user returns `TODO_NOT_FOUND` 404; nothing is written.
 
-**Side effects:** Deletes cache key `todo:<id>` and pattern `todos:<userId>:*`
+**Side effects:** Deletes cache key `v2:todo:<id>` and pattern `v2:todos:<userId>:*`
 
 ---
 

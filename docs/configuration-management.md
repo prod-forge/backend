@@ -235,7 +235,8 @@ As the project grows, this structure allows the configuration system to scale wi
 The image contains no `.env` files, so in ECS every variable comes from the task definition that the terraform
 repository renders (`infrastructure/modules/task_definition`, documented in its `docs/workflow.md`, section "Backend
 configuration"). Secrets come from AWS Secrets Manager through the task definition `secrets`, never from plain
-`environment`. At release time CD renders the migration task (`ecs/migration-task.json`) with
+`environment`. At release time CD renders the migration task (`ecs/migration-task.json`, which calls the Prisma CLI
+directly because the production image ships without npm) with
 `scripts/render-migration-task.sh`, which copies the roles, `environment` and `secrets` of the latest application task
 definition revision with `jq` (JSON-valued entries such as `API_ALLOWED_ORIGINS` keep their escaping; CI checks the
 render with `scripts/render-migration-task.test.sh`). The migration task therefore has the same variables as the

@@ -11,7 +11,7 @@
       "name": "migration",
       "image": "__IMAGE__",
       "essential": true,
-      "command": ["npm", "run", "db:migration:deploy"],
+      "command": ["node_modules/.bin/prisma", "migrate", "deploy"],
       "environment": [],
       "secrets": [],
       "logConfiguration": {

@@ -380,7 +380,7 @@ docker-compose up --build production
 The `Dockerfile` uses a two-stage build:
 
 1. **builder** — installs all deps, generates Prisma client, compiles TypeScript
-2. **production** — copies only compiled output and prod deps, adds the AWS RDS CA bundle (`NODE_EXTRA_CA_CERTS`, so `pg` can verify RDS certificates), runs as unprivileged `nodeuser`
+2. **production** — copies only compiled output and prod deps, adds the AWS RDS CA bundle (`NODE_EXTRA_CA_CERTS`, so `pg` can verify RDS certificates), removes the bundled npm (nothing runs through it: the app starts with `node`, the ECS migration task runs `node_modules/.bin/prisma migrate deploy`), runs as unprivileged `nodeuser`
 
 ### Full observability stack
 

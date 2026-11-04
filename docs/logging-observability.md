@@ -292,21 +292,23 @@ Grafana can then use Prometheus as a data source to build dashboards and alerts 
 
 ## Alerting and SLOs
 
-Service level objectives for the API, measured over a rolling 30 days:
+Service level objectives for the API, measured over a rolling 30 days. Every SLI excludes probe and scrape traffic
+(`route!~"/(health|metrics).*"`, i.e. `/health`, `/health/deps`, `/metrics`): readiness 503s during a shutdown drain and
+Prometheus scrapes are not user requests.
 
-| SLO          | Target               | Measured with                                                       |
-| ------------ | -------------------- | ------------------------------------------------------------------- |
-| Availability | 99.9%                | Share of non-5xx responses in `http_requests_total`                 |
-| Latency      | p95 < 300 ms         | `histogram_quantile(0.95, ...http_request_duration_seconds_bucket)` |
-| Error rate   | < 1% of requests 5xx | `http_requests_total{status=~"5.."}` over all requests              |
+| SLO          | Target               | Measured with                                                                        |
+| ------------ | -------------------- | ------------------------------------------------------------------------------------ |
+| Availability | 99.9%                | Share of non-5xx responses in `http_requests_total`, probes excluded                 |
+| Latency      | p95 < 300 ms         | `histogram_quantile(0.95, ...http_request_duration_seconds_bucket)`, probes excluded |
+| Error rate   | < 1% of requests 5xx | `http_requests_total{status=~"5.."}` over all requests, probes excluded              |
 
 Alert rules live in `observability/prometheus/alerts.yml` and are loaded by Prometheus through `rule_files`. They fire
 on symptoms well past the SLO, so a page means users are hurting now rather than that the error budget is shrinking:
 
 | Alert            | Condition                                                   | For    | Severity |
 | ---------------- | ----------------------------------------------------------- | ------ | -------- |
-| `HighErrorRate`  | 5xx responses above 5% of all requests                      | 5 min  | critical |
-| `HighLatencyP95` | p95 request duration above 500 ms                           | 10 min | warning  |
+| `HighErrorRate`  | 5xx responses above 5% of all non-probe requests            | 5 min  | critical |
+| `HighLatencyP95` | p95 duration of non-probe requests above 500 ms             | 10 min | warning  |
 | `ServiceDown`    | `up{job="nestjs-app"} == 0`, or no target at all (`absent`) | 1 min  | critical |
 | `InFlightStuck`  | more than 50 requests in flight                             | 10 min | warning  |
 

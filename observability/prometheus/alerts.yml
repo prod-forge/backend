@@ -2,8 +2,9 @@
 groups:
   - name: backend
     rules:
+      # SLIs exclude probe and scrape routes (/health, /health/deps, /metrics): drain 503s and scrapes are not user traffic.
       - alert: HighErrorRate
-        expr: sum(rate(http_requests_total{job="nestjs-app",status=~"5.."}[5m])) / sum(rate(http_requests_total{job="nestjs-app"}[5m])) > 0.05
+        expr: sum(rate(http_requests_total{job="nestjs-app",route!~"/(health|metrics).*",status=~"5.."}[5m])) / sum(rate(http_requests_total{job="nestjs-app",route!~"/(health|metrics).*"}[5m])) > 0.05
         for: 5m
         labels:
           severity: critical
@@ -11,7 +12,7 @@ groups:
           summary: 'More than 5% of requests fail with 5xx'
 
       - alert: HighLatencyP95
-        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="nestjs-app"}[5m])) by (le)) > 0.5
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="nestjs-app",route!~"/(health|metrics).*"}[5m])) by (le)) > 0.5
         for: 10m
         labels:
           severity: warning

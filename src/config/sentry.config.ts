@@ -4,6 +4,7 @@ import { Transform } from 'class-transformer';
 import { IsArray, IsBoolean, IsString } from 'class-validator';
 
 import { validateConfig } from '../common/utils/validate-config.util';
+import { isSentryEnabled } from '../modules/sentry/sentry-enabled';
 import { SentryConfigInterface } from './interfaces/sentry-config.interface';
 
 class SentryConfig {
@@ -12,7 +13,7 @@ class SentryConfig {
 
   @IsBoolean()
   @Transform(({ value }) => value === 'true')
-  SENTRY_ENABLED = true;
+  SENTRY_ENABLED = false;
 
   @IsArray()
   @IsString({ each: true })
@@ -35,7 +36,7 @@ export const sentryConfig = registerAs<SentryConfig, ConfigFactory<SentryConfigI
 
     return {
       sentryDsn: config.SENTRY_DSN,
-      sentryEnabled: config.SENTRY_ENABLED,
+      sentryEnabled: isSentryEnabled(process.env),
       sentryIgnoredErrors: config.SENTRY_IGNORED_ERRORS,
     };
   },

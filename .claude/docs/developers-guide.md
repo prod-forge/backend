@@ -123,7 +123,7 @@ All variables are validated at startup with `class-validator`. Missing required 
 | `TRUST_PROXY`                     | `0`                               | Express trust-proxy hops; `1` behind ALB          |
 | `JWT_SECRET`                      | required, 32+ chars               | HS256 signing key for access tokens               |
 | `JWT_TTL`                         | `3600`                            | Access token lifetime in seconds                  |
-| `SENTRY_ENABLED`                  | `false`                           | Enable Sentry error capture                       |
+| `SENTRY_ENABLED`                  | `false`                           | Sentry on only with `SENTRY_DSN` and `true`       |
 | `SENTRY_DSN`                      | —                                 | Sentry DSN (required when enabled)                |
 | `OTEL_EXPORTER_OTLP_ENDPOINT`     | —                                 | OTLP/HTTP trace endpoint; tracing off when unset  |
 | `HEALTH_CHECK_TRIGGER_MS`         | `15000`                           | Min interval between DB pings on /metrics scrapes |

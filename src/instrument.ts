@@ -4,6 +4,7 @@ import { config } from 'dotenv';
 import { join } from 'node:path';
 
 import packageJson from '../package.json';
+import { isSentryEnabled } from './modules/sentry/sentry-enabled';
 import { isTracingEnabled, startTracing } from './tracing';
 
 // Must run before any other import: Sentry/OpenTelemetry patch `http` and `pg` at require time.
@@ -14,7 +15,7 @@ const dsn = process.env.SENTRY_DSN;
 
 let sentryClient: Sentry.NodeClient | undefined;
 
-if (dsn && process.env.SENTRY_ENABLED !== 'false') {
+if (isSentryEnabled(process.env)) {
   const ignoredErrors = JSON.parse(process.env.SENTRY_IGNORED_ERRORS || '[]') as string[];
 
   sentryClient = Sentry.init({

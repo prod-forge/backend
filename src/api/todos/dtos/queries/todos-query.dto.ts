@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, MaxLength, Min } from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 
 import { SortOrder, TodoSearchField, TodoSortField } from '../../../../features/todos/interfaces/queries.enum';
 
@@ -14,6 +14,7 @@ export class TodosQueryDto {
   @ApiPropertyOptional({ default: 10, example: 10 })
   @IsInt()
   @IsOptional()
+  @Max(100)
   @Min(1)
   @Type(() => Number)
   limit?: number = 10;

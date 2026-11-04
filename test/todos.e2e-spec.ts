@@ -48,6 +48,14 @@ describe('Todos API (e2e)', () => {
         expect(body.details).toHaveProperty('search');
       });
 
+      it('returns 422 when limit is above maximum', async () => {
+        const res = await request(server).get(`${TODOS_URL}?limit=101`).set(authHeaders).expect(422);
+        const body = res.body as ErrorBody;
+
+        expect(body.code).toBe('DTO_VALIDATION_ERROR');
+        expect(body.details).toHaveProperty('limit');
+      });
+
       it('returns 422 when limit is below minimum', async () => {
         const res = await request(server).get(`${TODOS_URL}?limit=0`).set(authHeaders).expect(422);
         const body = res.body as ErrorBody;

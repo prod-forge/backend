@@ -339,6 +339,12 @@ describe('TodosService', () => {
         expect(result.offset).toBe(0);
       });
 
+      it('clamps limit above 100 to 100', () => {
+        const result = service.getPaginationQuery({ limit: 1000000 });
+
+        expect(result.limit).toBe(100);
+      });
+
       it('clamps negative limit to 1', () => {
         const result = service.getPaginationQuery({ limit: -1 });
 

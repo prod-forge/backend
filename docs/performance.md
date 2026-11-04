@@ -32,7 +32,7 @@ Pagination also makes APIs easier to consume.
 
 ### Pagination semantics
 
-`GET /api/v1/todos` accepts `limit` (default 10, min 1) and `offset` (default 0, min 0). `offset` is the number of rows
+`GET /api/v1/todos` accepts `limit` (default 10, min 1, max 100) and `offset` (default 0, min 0). `offset` is the number of rows
 to skip, so `offset=0` is the first row and the next page of `limit=10` starts at `offset=10`. The response `meta`
 echoes `limit`, `offset` and `total`. The default order is `createdAt DESC`. Free-text `search` is limited to 100
 characters, `title` to 200 and `description` to 2000, which bounds the work of a single query.

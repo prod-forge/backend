@@ -80,7 +80,7 @@ export class TodosService {
   getPaginationQuery({ limit, offset }: TodosQueryDto): TodoPagination {
     const defaultLimit = 10;
     const _offset = Math.max(Number(offset) || 0, 0);
-    const _limit = Math.max(Number(limit) || defaultLimit, 1);
+    const _limit = Math.min(Math.max(Number(limit) || defaultLimit, 1), 100);
 
     return { limit: _limit, offset: _offset };
   }

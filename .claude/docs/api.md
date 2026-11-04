@@ -165,7 +165,7 @@ Defaults: `THROTTLE_LIMIT=10` requests per `THROTTLE_TTL=20000` ms window, track
 
 | Param         | Type                                  | Required | Default     | Description                       |
 | ------------- | ------------------------------------- | -------- | ----------- | --------------------------------- |
-| `limit`       | `integer` (≥ 1)                       | no       | `10`        | Items per page                    |
+| `limit`       | `integer` (1-100)                     | no       | `10`        | Items per page                    |
 | `offset`      | `integer` (≥ 0)                       | no       | `0`         | Number of rows to skip (0-based)  |
 | `completed`   | `boolean` (`true`/`false`)            | no       | —           | Filter by completion status       |
 | `search`      | `string` (≤ 100 chars)                | no       | —           | Case-insensitive substring search |

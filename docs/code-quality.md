@@ -84,6 +84,15 @@ At this stage the entire codebase is analyzed to ensure:
 - linting rules pass
 - formatting rules are satisfied
 - tests run successfully
+- the committed OpenAPI contract matches the code (`npm run openapi:check`)
+
+The pipeline runs on every pull request and on every push to `main`. Supply-chain controls run alongside it:
+
+- `npm audit --omit=dev --audit-level=high` fails the lint job on high or critical production dependency advisories
+- CodeQL (`codeql.yml`) analyzes JavaScript/TypeScript on pull requests, on `main` and weekly
+- Trivy scans the built Docker image for fixed HIGH and CRITICAL vulnerabilities
+- the release image is pushed with an SBOM and provenance attestation
+- Dependabot opens weekly updates for npm (minor and patch grouped), GitHub Actions and Docker
 
 This final check acts as a safeguard before any changes are merged into the main branch.
 

@@ -1,17 +1,24 @@
 name: Verification pipeline for each PR
 
 on:
+  pull_request:
   push:
     branches:
       - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   NODE_VERSION: 24.21.0
 
 jobs:
   lint:
-    if: "!startsWith(github.event.head_commit.message, 'chore(release)')"
-    environment: prod
+    if: github.event_name == 'pull_request' || !startsWith(github.event.head_commit.message, 'chore(release)')
     runs-on: ubuntu-latest
     name: Linting
 
@@ -40,9 +47,14 @@ jobs:
       - name: Run Nestjs-doctor
         run: npm run doctor
 
+      - name: Check OpenAPI contract
+        run: npm run openapi:check
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+
   unit-tests:
     needs: lint
-    environment: prod
     runs-on: ubuntu-latest
     name: Unit Tests
 
@@ -67,7 +79,6 @@ jobs:
 
   e2e-tests:
     needs: unit-tests
-    environment: prod
     runs-on: ubuntu-latest
     name: E2E Tests
 
@@ -98,7 +109,6 @@ jobs:
 
   build:
     needs: e2e-tests
-    environment: prod
     runs-on: ubuntu-latest
     name: Build Application
 
@@ -112,5 +122,13 @@ jobs:
           DATABASE_SSL: true
           LOG_PRETTY: false
 
-      - name: Set up Docker Compose
-        run: docker compose -f docker-compose.yml build production
+      - name: Build production image
+        run: docker build --target production -t prod-forge-todolist:ci .
+
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: prod-forge-todolist:ci
+          severity: HIGH,CRITICAL
+          exit-code: 1
+          ignore-unfixed: true

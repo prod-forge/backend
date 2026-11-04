@@ -32,12 +32,12 @@ jobs:
         id: current
         run: |
           CURRENT_TASK=$(aws ecs describe-services \
-            --cluster ${{ env.ECS_CLUSTER }} \
-            --services ${{ env.ECS_SERVICE }} \
+            --cluster "${ECS_CLUSTER}" \
+            --services "${ECS_SERVICE}" \
             --query 'services[0].taskDefinition' \
             --output text)
 
-          echo "CURRENT_TASK=$CURRENT_TASK" >> $GITHUB_ENV
+          echo "CURRENT_TASK=$CURRENT_TASK" >> "$GITHUB_ENV"
 
       - name: Show last 3 revisions with versions
         run: |
@@ -46,16 +46,17 @@ jobs:
           echo ""
 
           REVISIONS=$(aws ecs list-task-definitions \
-            --family-prefix ${{ env.TASK_NAME }} \
+            --family-prefix "${TASK_NAME}" \
             --sort DESC \
             --max-items 3 \
             --query 'taskDefinitionArns[*]' \
             --output text)
 
+          # shellcheck disable=SC2086
           for REV in $REVISIONS
           do
             IMAGE=$(aws ecs describe-task-definition \
-              --task-definition $REV \
+              --task-definition "$REV" \
               --query 'taskDefinition.containerDefinitions[0].image' \
               --output text) || continue
 

@@ -139,7 +139,8 @@ Continuous Integration ensures that every change introduced to the repository is
 
 This project uses GitHub Actions for CI.
 
-The CI pipeline runs automatically when code is pushed to important branches.
+The CI pipeline runs automatically on every pull request and on every push to `main`. Runs for the same ref are
+cancelled when a newer one starts, and the workflow token is read-only (`contents: read`).
 
 Typical CI stages include:
 
@@ -176,12 +177,16 @@ In this project the application is built as a Docker container.
 
 If the build fails, the release cannot proceed.
 
+The built image is scanned with Trivy (severity HIGH and CRITICAL, unfixed vulnerabilities ignored). A finding fails
+the job.
+
 ### Optional Quality Gates
 
 Some teams also include additional checks such as:
 
-- static analysis (SonarQube)
-- dependency vulnerability scanning
+- static analysis (SonarQube); this project runs CodeQL on pull requests, on `main` and weekly
+- dependency vulnerability scanning; this project runs `npm audit --omit=dev --audit-level=high` in the lint job and
+  Dependabot (npm, GitHub Actions, Docker) weekly
 - code coverage thresholds
 
 These checks help maintain long-term code quality.
@@ -198,7 +203,7 @@ The CD pipeline extends the CI pipeline with deployment steps.
 
 Typical deployment workflow:
 
-1. Build Docker image
+1. Build Docker image (with an SBOM and provenance attestation)
 2. Tag image using the release version
 3. Push image to AWS ECR
 4. Run one-time ECS task to apply database migrations

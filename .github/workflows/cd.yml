@@ -155,15 +155,15 @@ jobs:
         id: ecr
         run: |
           ECR_URL=$(aws ecr describe-repositories \
-            --repository-names ${{ env.ECR_REPO }} \
+            --repository-names "${ECR_REPO}" \
             --query 'repositories[0].repositoryUri' \
             --output text)
 
-          echo "ecr_url=$ECR_URL" >> $GITHUB_OUTPUT
+          echo "ecr_url=$ECR_URL" >> "$GITHUB_OUTPUT"
 
       - name: Extract version from tag
         id: extract
-        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
 
       - name: Generate .env
         uses: ./.github/actions/generate-env
@@ -171,25 +171,26 @@ jobs:
           DATABASE_SSL: true
           LOG_PRETTY: false
 
-      - name: Debug files
-        run: |
-          ls -la
-          cat .env || echo ".env not found"
-
       - name: Build and push Docker image
+        env:
+          ECR_URL: ${{ steps.ecr.outputs.ecr_url }}
+          VERSION: ${{ steps.extract.outputs.version }}
         run: |
           docker buildx build \
             --platform linux/amd64 \
-            --provenance=false \
-            --sbom=false \
+            --provenance=true \
+            --sbom=true \
             --target production \
-            -t ${{ steps.ecr.outputs.ecr_url }}:${{ steps.extract.outputs.version }} \
+            -t "${ECR_URL}:${VERSION}" \
             --push \
             .
 
       - name: Show pushed image
+        env:
+          ECR_URL: ${{ steps.ecr.outputs.ecr_url }}
+          VERSION: ${{ steps.extract.outputs.version }}
         run: |
-          echo "${{ steps.ecr.outputs.ecr_url }}:${{ steps.extract.outputs.version }}"
+          echo "${ECR_URL}:${VERSION}"
 
   migrations:
     needs: publish
@@ -213,7 +214,7 @@ jobs:
       - name: Get current task definition
         run: |
           aws ecs describe-task-definition \
-            --task-definition ${{ env.TASK_NAME }} \
+            --task-definition "${TASK_NAME}" \
             --query taskDefinition > task.json
 
       - name: Fetch dynamic values from AWS
@@ -227,32 +228,34 @@ jobs:
           ENVIRONMENT=$(jq -c '.containerDefinitions[0].environment' task.json)
           SECRETS=$(jq -c '.containerDefinitions[0].secrets' task.json)
 
-          echo "execution_role_arn=$EXECUTION_ROLE_ARN" >> $GITHUB_OUTPUT
-          echo "task_role_arn=$TASK_ROLE_ARN"           >> $GITHUB_OUTPUT
+          {
+            echo "execution_role_arn=$EXECUTION_ROLE_ARN"
+            echo "task_role_arn=$TASK_ROLE_ARN"
 
-          # Multiline-safe output using EOF delimiter
-          echo "environment<<EOF"  >> $GITHUB_OUTPUT
-          echo "$ENVIRONMENT"      >> $GITHUB_OUTPUT
-          echo "EOF"               >> $GITHUB_OUTPUT
+            # Multiline-safe output using EOF delimiter
+            echo "environment<<EOF"
+            echo "$ENVIRONMENT"
+            echo "EOF"
 
-          echo "secrets<<EOF"      >> $GITHUB_OUTPUT
-          echo "$SECRETS"          >> $GITHUB_OUTPUT
-          echo "EOF"               >> $GITHUB_OUTPUT
+            echo "secrets<<EOF"
+            echo "$SECRETS"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Render migration task definition
+        env:
+          EXECUTION_ROLE_ARN: ${{ steps.fetch-aws-values.outputs.execution_role_arn }}
+          TASK_ROLE_ARN: ${{ steps.fetch-aws-values.outputs.task_role_arn }}
+          ENVIRONMENT: ${{ steps.fetch-aws-values.outputs.environment }}
+          SECRETS: ${{ steps.fetch-aws-values.outputs.secrets }}
         run: |
-          EXECUTION_ROLE_ARN="${{ steps.fetch-aws-values.outputs.execution_role_arn }}"
-          TASK_ROLE_ARN="${{ steps.fetch-aws-values.outputs.task_role_arn }}"
-          ENVIRONMENT='${{ steps.fetch-aws-values.outputs.environment }}'
-          SECRETS='${{ steps.fetch-aws-values.outputs.secrets }}'
-
           cat ecs/migration-task.json \
-          | sed "s|__IMAGE__|${{ env.ecr_url }}:${{ env.version }}|g" \
+          | sed "s|__IMAGE__|${ecr_url}:${version}|g" \
           | sed "s|__EXECUTION_ROLE_ARN__|$EXECUTION_ROLE_ARN|g" \
           | sed "s|__TASK_ROLE_ARN__|$TASK_ROLE_ARN|g" \
-          | sed "s|__NAME__|${{ env.TASK_MIGRATION_NAME }}|g" \
-          | sed "s|__REGION__|${{ env.AWS_REGION }}|g" \
-          | sed "s|__TASK_MIGRATION_LOGS__|${{ env.TASK_MIGRATION_LOGS }}|g" \
+          | sed "s|__NAME__|${TASK_MIGRATION_NAME}|g" \
+          | sed "s|__REGION__|${AWS_REGION}|g" \
+          | sed "s|__TASK_MIGRATION_LOGS__|${TASK_MIGRATION_LOGS}|g" \
           | sed "s|__ENVIRONMENT__|$ENVIRONMENT|g" \
           | sed "s|__SECRETS__|$SECRETS|g" \
           > task-def-rendered.json
@@ -264,14 +267,16 @@ jobs:
             --cli-input-json file://task-def-rendered.json \
             --query 'taskDefinition.taskDefinitionArn' \
             --output text)
-          echo "task_def_arn=$TASK_DEF_ARN" >> $GITHUB_OUTPUT
+          echo "task_def_arn=$TASK_DEF_ARN" >> "$GITHUB_OUTPUT"
 
       - name: Run migration task
         id: run-task
+        env:
+          TASK_DEF_ARN: ${{ steps.register.outputs.task_def_arn }}
         run: |
           NET_JSON=$(aws ecs describe-services \
-            --cluster ${{ env.ECS_CLUSTER }} \
-            --services ${{ env.ECS_SERVICE }} \
+            --cluster "${ECS_CLUSTER}" \
+            --services "${ECS_SERVICE}" \
             --query 'services[0].networkConfiguration.awsvpcConfiguration' \
             --output json)
 
@@ -279,26 +284,30 @@ jobs:
           SG=$(echo "$NET_JSON" | jq -r '.securityGroups[0]')
 
           TASK_ARN=$(aws ecs run-task \
-            --cluster ${{ env.ECS_CLUSTER }} \
+            --cluster "${ECS_CLUSTER}" \
             --launch-type FARGATE \
-            --task-definition ${{ steps.register.outputs.task_def_arn }} \
+            --task-definition "${TASK_DEF_ARN}" \
             --network-configuration "awsvpcConfiguration={subnets=[$SUBNETS],securityGroups=[$SG],assignPublicIp=ENABLED}" \
             --query 'tasks[0].taskArn' \
             --output text)
 
-          echo "task_arn=$TASK_ARN" >> $GITHUB_OUTPUT
+          echo "task_arn=$TASK_ARN" >> "$GITHUB_OUTPUT"
 
       - name: Wait for migration to finish
+        env:
+          TASK_ARN: ${{ steps.run-task.outputs.task_arn }}
         run: |
           aws ecs wait tasks-stopped \
-            --cluster ${{ env.ECS_CLUSTER }} \
-            --tasks ${{ steps.run-task.outputs.task_arn }}
+            --cluster "${ECS_CLUSTER}" \
+            --tasks "${TASK_ARN}"
 
       - name: Verify migration result
+        env:
+          TASK_ARN: ${{ steps.run-task.outputs.task_arn }}
         run: |
           EXIT_CODE=$(aws ecs describe-tasks \
-            --cluster ${{ env.ECS_CLUSTER }} \
-            --tasks ${{ steps.run-task.outputs.task_arn }} \
+            --cluster "${ECS_CLUSTER}" \
+            --tasks "${TASK_ARN}" \
             --query 'tasks[0].containers[0].exitCode' \
             --output text)
 
@@ -333,14 +342,14 @@ jobs:
       - name: Get current task definition
         run: |
           aws ecs describe-task-definition \
-            --task-definition ${{ env.TASK_NAME }} \
+            --task-definition "${TASK_NAME}" \
             --query taskDefinition > task.json
 
       - name: Update image
         run: |
           cat task.json \
-            | jq \
-              '.containerDefinitions[0].image = "${{ env.ecr_url }}:${{ env.version }}"
+            | jq --arg image "${ecr_url}:${version}" \
+              '.containerDefinitions[0].image = $image
                | del(.taskDefinitionArn,.revision,.status,.requiresAttributes,.compatibilities,.registeredAt,.registeredBy)' \
             > new-task.json
 
@@ -348,26 +357,28 @@ jobs:
         id: revision
         run: |
           REVISION=$(aws ecs register-task-definition \
-            --tags key=app_version,value=${{ env.version }} \
+            --tags "key=app_version,value=${version}" \
             --cli-input-json file://new-task.json \
             --query "taskDefinition.revision" \
             --output text)
 
-          echo "revision=$REVISION" >> $GITHUB_OUTPUT
+          echo "revision=$REVISION" >> "$GITHUB_OUTPUT"
 
       - name: Deploy new version
+        env:
+          REVISION: ${{ steps.revision.outputs.revision }}
         run: |
           aws ecs update-service \
-            --cluster ${{ env.ECS_CLUSTER }} \
-            --service ${{ env.ECS_SERVICE }} \
-            --task-definition ${{ env.TASK_NAME }}:${{ steps.revision.outputs.revision }} \
+            --cluster "${ECS_CLUSTER}" \
+            --service "${ECS_SERVICE}" \
+            --task-definition "${TASK_NAME}:${REVISION}" \
             --no-cli-pager
 
       - name: Wait for deployment to finish
         run: |
           aws ecs wait services-stable \
-            --cluster ${{ env.ECS_CLUSTER }} \
-            --services ${{ env.ECS_SERVICE }}
+            --cluster "${ECS_CLUSTER}" \
+            --services "${ECS_SERVICE}"
 
           echo "Deployment completed successfully 🚀"
 
@@ -393,7 +404,7 @@ jobs:
           echo "Fetching ACTIVE revisions for $TASK_NAME"
 
           REVISIONS=$(aws ecs list-task-definitions \
-            --family-prefix $TASK_NAME \
+            --family-prefix "$TASK_NAME" \
             --status ACTIVE \
             --sort DESC \
             --query 'taskDefinitionArns' \
@@ -404,10 +415,10 @@ jobs:
           for REV in $REVISIONS; do
             COUNT=$((COUNT+1))
 
-            if [ $COUNT -gt ${{ env.KEEP }} ]; then
+            if [ "$COUNT" -gt "$KEEP" ]; then
               echo "Deregistering old revision: $REV"
               aws ecs deregister-task-definition \
-                --task-definition $REV
+                --task-definition "$REV"
             else
               echo "Keeping: $REV"
             fi
@@ -422,7 +433,7 @@ jobs:
           echo "Fetching ACTIVE revisions for $TASK_MIGRATION_NAME"
 
           REVISIONS=$(aws ecs list-task-definitions \
-            --family-prefix $TASK_MIGRATION_NAME \
+            --family-prefix "$TASK_MIGRATION_NAME" \
             --status ACTIVE \
             --sort DESC \
             --query 'taskDefinitionArns' \
@@ -431,5 +442,5 @@ jobs:
           for REV in $REVISIONS; do
             echo "Deregistering migration revision: $REV"
             aws ecs deregister-task-definition \
-              --task-definition $REV
+              --task-definition "$REV"
           done

@@ -31,11 +31,13 @@ jobs:
           aws-region: eu-central-1
 
       - name: Rollback ECS service
+        env:
+          TASK_REVISION: ${{ github.event.inputs.task_revision }}
         run: |
           aws ecs update-service \
-            --cluster ${{ env.ECS_CLUSTER }} \
-            --service ${{ env.ECS_SERVICE }} \
-            --task-definition "${TASK_NAME}:${{ github.event.inputs.task_revision }}" \
+            --cluster "${ECS_CLUSTER}" \
+            --service "${ECS_SERVICE}" \
+            --task-definition "${TASK_NAME}:${TASK_REVISION}" \
             --force-new-deployment \
             --no-cli-pager \
             > /dev/null
@@ -45,7 +47,7 @@ jobs:
           echo "Waiting for ECS deployment to stabilize..."
 
           aws ecs wait services-stable \
-            --cluster ${{ env.ECS_CLUSTER }} \
-            --services ${{ env.ECS_SERVICE }}
+            --cluster "${ECS_CLUSTER}" \
+            --services "${ECS_SERVICE}"
 
           echo "Deployment completed successfully!"

@@ -203,7 +203,7 @@ The CD pipeline extends the CI pipeline with deployment steps.
 
 Typical deployment workflow:
 
-1. Build Docker image (with an SBOM and provenance attestation)
+1. Build Docker image (with an SBOM and provenance attestation); it is pushed as an OCI index with SBOM and provenance attestations (built with Docker Buildx)
 2. Tag image using the release version
 3. Push image to AWS ECR
 4. Run one-time ECS task to apply database migrations

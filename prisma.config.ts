@@ -12,7 +12,8 @@ config({
 // eslint-disable-next-line @import-lite/no-default-export
 export default defineConfig({
   datasource: {
-    url: getDatabaseUrl(),
+    // The schema engine's sslmode=require encrypts without verifying the certificate; verify-full is not one of its documented modes.
+    url: getDatabaseUrl('require'),
   },
   migrations: {
     path: 'database-manager/migrations',

@@ -285,13 +285,16 @@ Sentry sends events only when `SENTRY_ENABLED=true` and `SENTRY_DSN` is non-empt
 
 ## Database TLS
 
-`DATABASE_SSL=true` appends `sslmode=require` to the connection URL. The application connects through `pg`, which treats
-`require` as `verify-full`: the server certificate and host name are verified. RDS certificates are issued by the RDS
+`DATABASE_SSL=true` appends an `sslmode` to the connection URL built by `database-manager/generate-url.ts`. The
+application, the seeds and `db:wait` connect through `pg` with `sslmode=verify-full`: the server certificate and host
+name are verified. (`pg` 8 currently treats `require` the same way but warns at every start, and `pg` 9 switches
+`require` to libpq semantics without verification, so `verify-full` is spelled out.) RDS certificates are issued by the RDS
 CA, which is not in Node's built-in CA store, so the production image downloads the AWS global RDS bundle
 (`https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem`) to `/etc/ssl/certs/rds-global-bundle.pem` and
 sets `NODE_EXTRA_CA_CERTS` to it. Node then trusts the RDS CA in addition to the public roots; verification stays on.
-`prisma migrate deploy` (the migration task) uses Prisma's schema engine, which encrypts with `sslmode=require` and does
-not verify the certificate.
+`prisma migrate deploy` (the migration task) reads `prisma.config.ts`, which asks for `sslmode=require`: Prisma's schema
+engine documents only `disable`, `prefer` and `require`, and with `require` it encrypts without verifying the
+certificate.
 
 ## Redis TLS and AUTH
 

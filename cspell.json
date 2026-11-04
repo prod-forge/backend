@@ -1,0 +1,38 @@
+{
+  "version": "0.2",
+  "language": "en,en-GB",
+  "ignorePaths": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/coverage/**",
+    "**/.terraform/**",
+    "**/*.lock.hcl",
+    "**/generated/**",
+    "**/*.generated.ts",
+    "CHANGELOG.md",
+    "package-lock.json",
+    "docs/openapi.json",
+    ".superpowers/**"
+  ],
+  "words": [
+    "Aleksandrov",
+    "Buildx",
+    "dtos",
+    "HEALTHCHECK",
+    "hsts",
+    "ILIKE",
+    "Kleppmann",
+    "libpq",
+    "overengineering",
+    "Promtail",
+    "promtool",
+    "Qube",
+    "queryid",
+    "reqs",
+    "sslmode",
+    "todolist",
+    "trgm",
+    "unthrottled"
+  ]
+}

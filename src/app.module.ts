@@ -29,6 +29,7 @@ import { HealthModule } from './modules/health/health.module';
 import { RequestTrackingMiddleware } from './modules/in-flight-requests/request-tracking.middleware';
 import { RequestTrackingService } from './modules/in-flight-requests/request-tracking.service';
 import { MetricsModule } from './modules/metrics/metrics.module';
+import { PrometheusScrapeController } from './modules/metrics/prometheus-scrape.controller';
 import { RedisManagerModule } from './modules/redis-manager/redis-manager.module';
 import { ThrottlerStorage } from './modules/redis-manager/storages/throttler.storage';
 import { SentryModule } from './modules/sentry/sentry.module';
@@ -57,6 +58,7 @@ import { VersionModule } from './modules/version/version.module';
       },
     }),
     PrometheusModule.register({
+      controller: PrometheusScrapeController,
       defaultMetrics: {
         enabled: true,
       },

@@ -140,7 +140,7 @@ Behind an Application Load Balancer the TCP peer of every request is the ALB, so
 
 ### Exempt routes
 
-`/health`, `/health/deps`, `/metrics` and `/version` are marked `@SkipThrottle()`, so probes and scrapers are never blocked.
+`/health`, `/health/deps`, `/metrics`, `/metrics/database` and `/version` are marked `@SkipThrottle()`, so probes and scrapers are never blocked. The Prometheus `/metrics` endpoint is served by `PrometheusScrapeController`, a subclass of the library controller passed to `PrometheusModule.register({ controller })`.
 
 ### Disabling
 

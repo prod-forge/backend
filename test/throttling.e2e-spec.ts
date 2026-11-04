@@ -2,40 +2,37 @@ import type { INestApplication } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import type { App } from 'supertest/types';
 
+import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
 
-import type * as AppModuleExports from '../src/app.module';
-import type * as AppSetupExports from '../src/app.setup';
+import { AppModule } from '../src/app.module';
+import { appSetup } from '../src/app.setup';
 
-import { type DataBody } from './utils/response.types';
-
-const LOGIN_URL = '/api/v1/auth/login';
 const TODOS_URL = '/api/v1/todos';
 const THROTTLE_LIMIT = 3;
+// Seeded users no other e2e file authenticates as, so their buckets stay untouched.
+const THROTTLED_USER_ID = 'f870a1dd-3814-42e9-8175-99cd507873ab';
+const SECOND_USER_ID = '535645c4-0409-4ac3-b78c-1f7b9581873b';
 
-type TokenBody = DataBody<{ accessToken: string }>;
+const issueToken = (userId: string): string =>
+  new JwtService({
+    secret: process.env.JWT_SECRET,
+    signOptions: { algorithm: 'HS256', expiresIn: 3600 },
+  }).sign({}, { subject: userId });
 
 describe('Throttling (e2e)', () => {
   const originalEnv = { ...process.env };
   let app: INestApplication<App>;
   let server: App;
 
-  const login = async (email: string): Promise<string> => {
-    const res = await request(server).post(LOGIN_URL).send({ email });
-
-    return (res.body as TokenBody).data.accessToken;
-  };
+  const getTodos = (token: string): request.Test =>
+    request(server).get(TODOS_URL).set('Authorization', `Bearer ${token}`);
 
   beforeAll(async () => {
     process.env.THROTTLE_LIMIT = String(THROTTLE_LIMIT);
     process.env.THROTTLE_TTL = '60000';
     process.env.THROTTLE_ENABLED = 'true';
-
-    // Config factories read process.env at import time, so load a fresh AppModule with the low limits.
-    jest.resetModules();
-    const { AppModule } = jest.requireActual<typeof AppModuleExports>('../src/app.module');
-    const { appSetup } = jest.requireActual<typeof AppSetupExports>('../src/app.setup');
 
     const moduleFixture = await Test.createTestingModule({ imports: [AppModule] }).compile();
     app = moduleFixture.createNestApplication<NestExpressApplication>();
@@ -51,31 +48,37 @@ describe('Throttling (e2e)', () => {
 
   describe('negative cases', () => {
     it('returns 429 with Retry-After on the request over the limit', async () => {
-      const token = await login('user1@example.com');
+      const token = issueToken(THROTTLED_USER_ID);
 
       for (let i = 0; i < THROTTLE_LIMIT; i++) {
-        await request(server).get(TODOS_URL).set('Authorization', `Bearer ${token}`).expect(200);
+        await getTodos(token).expect(200);
       }
 
-      const res = await request(server).get(TODOS_URL).set('Authorization', `Bearer ${token}`);
+      const res = await getTodos(token);
 
       expect(res.status).toBe(429);
       expect(res.headers['retry-after']).toBeDefined();
-    });
-  });
-
-  describe('positive cases', () => {
-    it('counts each user separately even when they share an IP', async () => {
-      const token = await login('user2@example.com');
-
-      for (let i = 0; i < THROTTLE_LIMIT; i++) {
-        await request(server).get(TODOS_URL).set('Authorization', `Bearer ${token}`).expect(200);
-      }
     });
 
     it('never throttles /health', async () => {
       for (let i = 0; i < 10; i++) {
         await request(server).get('/health').expect(200);
+      }
+    });
+
+    it('never throttles /metrics', async () => {
+      for (let i = 0; i < 10; i++) {
+        await request(server).get('/metrics').expect(200);
+      }
+    });
+  });
+
+  describe('positive cases', () => {
+    it('counts each user separately even when they share an IP', async () => {
+      const token = issueToken(SECOND_USER_ID);
+
+      for (let i = 0; i < THROTTLE_LIMIT; i++) {
+        await getTodos(token).expect(200);
       }
     });
   });

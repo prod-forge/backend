@@ -116,16 +116,18 @@ the counter is decremented.
 
 If the counter is greater than zero, it means there are still active requests being processed.
 
-Shutdown happens in two phases, driven by NestJS lifecycle hooks (`enableShutdownHooks()` is on):
+Shutdown happens in three phases, driven by NestJS lifecycle hooks (`enableShutdownHooks()` is on):
 
 1. `beforeApplicationShutdown` (drain): the service flips to the shutting-down state and waits `SHUTDOWN_DRAIN_MS`
    (default 10000). `/health` returns `503` during this time while the HTTP server still accepts connections, so the
    load balancer stops routing new traffic and in-flight requests keep completing with `200`. NestJS runs this hook
    before it closes the HTTP server.
-2. `onApplicationShutdown`: after the server stops accepting connections, the application waits up to
-   `SHUTDOWN_INFLIGHT_TIMEOUT_MS` (default 20000) for in-flight requests, then disconnects Prisma and Redis.
-
-If the timeout is exceeded, remaining requests are forcefully terminated.
+   After the drain it waits up to `SHUTDOWN_INFLIGHT_TIMEOUT_MS` (default 20000) for in-flight requests to finish.
+   This must happen here: once the hook returns, Nest closes the HTTP server, and `server.close()` has no upper bound
+   on how long it waits for active requests.
+2. HTTP server close: `forceCloseConnections: true` (set in `NestFactory.create`) destroys any connection still open,
+   so requests that exceeded the in-flight timeout are forcefully terminated.
+3. `onApplicationShutdown`: disconnects Prisma and Redis.
 
 The sum of both values must stay below the ECS `stopTimeout` (60s, set in terraform), otherwise ECS sends `SIGKILL`
 before shutdown finishes.

@@ -7,6 +7,9 @@ import { config } from 'dotenv';
 import { execSync } from 'node:child_process';
 import { join } from 'node:path';
 
+process.env.SHUTDOWN_DRAIN_MS ??= '0';
+process.env.SHUTDOWN_INFLIGHT_TIMEOUT_MS ??= '1000';
+
 config({
   override: false,
   path: [join(process.cwd(), '.env.test'), join(process.cwd(), '.env.common')],

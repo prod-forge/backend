@@ -10,13 +10,17 @@ export class RequestTrackingMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction): void {
     this.tracker.increment();
 
-    res.on('finish', () => {
+    let done = false;
+    const release = (): void => {
+      if (done) {
+        return;
+      }
+      done = true;
       this.tracker.decrement();
-    });
+    };
 
-    res.on('close', () => {
-      this.tracker.decrement();
-    });
+    res.on('finish', release);
+    res.on('close', release);
 
     next();
   }

@@ -54,6 +54,16 @@ describe('RequestTrackingMiddleware', () => {
       expect(tracker.getActiveRequests()).toBe(0);
     });
 
+    it('decrements only once when both finish and close fire', () => {
+      const res = makeResMock();
+
+      middleware.use({} as Request, res as unknown as Response, jest.fn() as NextFunction);
+      res.handlers.finish();
+      res.handlers.close();
+
+      expect(tracker.getActiveRequests()).toBe(0);
+    });
+
     it('registers both finish and close listeners', () => {
       const res = makeResMock();
 

@@ -70,6 +70,14 @@ describe('ShutdownService', () => {
       expect(resolved).toBe(false);
     });
 
+    it('does not wait for in-flight requests in onApplicationShutdown', async () => {
+      requestTracking.getActiveRequests.mockReturnValue(2);
+
+      await service.onApplicationShutdown('SIGTERM');
+
+      expect(requestTracking.waitForRequestsToFinish).not.toHaveBeenCalled();
+    });
+
     it('does not disconnect dependencies in beforeApplicationShutdown', async () => {
       const pending = service.beforeApplicationShutdown('SIGTERM');
       await jest.advanceTimersByTimeAsync(DRAIN_MS);
@@ -117,16 +125,23 @@ describe('ShutdownService', () => {
       expect(logger.log).toHaveBeenCalledWith(expect.objectContaining({ msg: 'Shutdown completed: SIGTERM' }));
     });
 
-    it('waits for in-flight requests with the configured timeout when active', async () => {
+    it('waits for in-flight requests with the configured timeout after the drain when active', async () => {
       requestTracking.getActiveRequests.mockReturnValue(2);
 
-      await service.onApplicationShutdown('SIGTERM');
+      const pending = service.beforeApplicationShutdown('SIGTERM');
+      await jest.advanceTimersByTimeAsync(DRAIN_MS - 1);
+      expect(requestTracking.waitForRequestsToFinish).not.toHaveBeenCalled();
+
+      await jest.advanceTimersByTimeAsync(1);
+      await pending;
 
       expect(requestTracking.waitForRequestsToFinish).toHaveBeenCalledWith(INFLIGHT_TIMEOUT_MS);
     });
 
     it('does not wait when no active requests', async () => {
-      await service.onApplicationShutdown('SIGTERM');
+      const pending = service.beforeApplicationShutdown('SIGTERM');
+      await jest.advanceTimersByTimeAsync(DRAIN_MS);
+      await pending;
 
       expect(requestTracking.waitForRequestsToFinish).not.toHaveBeenCalled();
     });

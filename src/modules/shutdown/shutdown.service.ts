@@ -30,13 +30,7 @@ export class ShutdownService implements BeforeApplicationShutdown, OnApplication
     });
 
     await new Promise<void>((resolve) => setTimeout(resolve, this.config.shutdownDrainMs));
-  }
 
-  isShuttingDown(): boolean {
-    return this.shuttingDown;
-  }
-
-  async onApplicationShutdown(signal?: string): Promise<void> {
     const inFlightRequests = this.requestTrackingService.getActiveRequests();
 
     if (inFlightRequests > 0) {
@@ -47,7 +41,13 @@ export class ShutdownService implements BeforeApplicationShutdown, OnApplication
 
       await this.requestTrackingService.waitForRequestsToFinish(this.config.shutdownInflightTimeoutMs);
     }
+  }
 
+  isShuttingDown(): boolean {
+    return this.shuttingDown;
+  }
+
+  async onApplicationShutdown(signal?: string): Promise<void> {
     const results = await Promise.allSettled([this.prisma.$disconnect(), this.redisManager.destroy()]);
 
     results.forEach((r) => {

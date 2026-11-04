@@ -129,7 +129,7 @@ Avoid phrases like "best-in-class", "battle-tested", "industry-leading". Write p
 
 ## Code of conduct
 
-Be respectful. Disagreements about technical approach are normal and healthy. Personal attacks are not.
+Be respectful. Disagreements about technical approach are normal and healthy. Personal attacks are not. See the [Code of Conduct](https://github.com/prod-forge/.github/blob/main/CODE_OF_CONDUCT.md).
 
 ---
 

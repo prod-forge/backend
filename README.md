@@ -1,42 +1,23 @@
 <p align="center">
-  <img alt="Logo" src="docs/assets/prod-forge-logo.png" width="264px" height="243px">
+  <img alt="Prod Forge" src="https://raw.githubusercontent.com/prod-forge/.github/main/assets/prod-forge-logo.png" width="264px" height="243px">
 </p>
 
 _AI made writing the code easy. Running it in production is still hard._
 
-**Prod Forge** is an open-source reference that shows how to build and operate a production-ready system: AI-assisted
-development, quality gates, CI/CD, infrastructure, observability, migrations, and rollback.
+This repository is the main guide: a NestJS Todo API taken from the first commit to production, covering quality gates, CI/CD, migrations, observability and rollback. It answers: how do I build and operate a production-ready API?
 
-The implementation is based on a simple Todo API, but the architecture follows patterns used in real production systems
-at scale.
-
-Every major technical decision is documented and explained.
-
----
-
-## Project structure
-
-| Repository                                                | Description                                     |
-| --------------------------------------------------------- | ----------------------------------------------- |
-| [Frontend](https://github.com/prod-forge/frontend)        | React Web and React Mobile apps + Design System |
-| [Backend](https://github.com/prod-forge/backend)          | NestJS API - the main guide                     |
-| [Infrastructure](https://github.com/prod-forge/terraform) | Terraform on AWS                                |
+Part of Prod Forge — start with the organization overview: https://github.com/prod-forge
 
 ## Stack
 
-<p align="center">
-  <img alt="Architecture" src="docs/assets/architecture_diagram.png">
-</p>
-
+<!-- prettier-ignore -->
 | Layer          | Tools                                            |
 | -------------- | ------------------------------------------------ |
-| Web Client     | React · Vite · Redux Toolkit · Tailwind CSS · NX |
-| Mobile Client  | Expo · React Native · Redux Toolkit              |
-| Deploy         | AWS S3 · CloudFront · ECR · ECS                  |
 | Backend        | NestJS · Prisma · PostgreSQL · Redis · Docker    |
-| Infrastructure | Terraform · AWS · RDS · ElastiCache              |
 | Observability  | Prometheus · Grafana · Loki · Promtail · Tempo   |
 | Quality        | ESLint · Prettier · Husky · Commitlint · CI/CD   |
+
+The full stack table is on the organization page: https://github.com/prod-forge
 
 ## Getting started
 
@@ -303,10 +284,7 @@ The goal of Prod Forge is to make these practices visible, understandable, and r
 
 ## What comes next
 
-Open work (Kubernetes, blue/green deployment, feature flags, Alertmanager routing and others) is listed in the
-[roadmap](roadmap.md).
-
-If there is something missing that you would find valuable, open an issue or start a discussion.
+Open work is tracked in the [roadmap](roadmap.md) and summarized on the [organization page](https://github.com/prod-forge).
 
 ## A final thought
 

@@ -39,13 +39,13 @@ Every major technical decision is documented and explained.
 
 ## Getting started
 
-Requires Node 24, Docker and `jq`.
+Requires Node 24, Docker with Compose >= 2.24 (`env_file` with `required: false`) and `jq`.
 
 ```shell
 npm install
 npm run db:generate                   # Prisma client (gitignored); lint, tests and start need it
 docker compose up -d database cache   # works without .env, using local defaults user/user/app
-echo 'DATABASE_PORT=5332' > .env      # host port of the compose database (.env.common says 5432)
+printf 'DATABASE_PORT=5332\nJWT_SECRET=%s\n' "$(openssl rand -hex 32)" >> .env   # 5332 is the compose DB host port (.env.common says 5432); JWT_SECRET needs >= 32 chars; append, never overwrite
 npm run db:migration:deploy && npm run db:seed
 npm run start:dev                     # API on http://localhost:3000, Swagger on /docs
 ./scripts/verify-observability.sh     # app in Docker plus Prometheus, Grafana, Loki, Tempo, checked end to end

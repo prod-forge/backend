@@ -199,8 +199,9 @@ The stack consists of the following components:
 monitoring host in `prod-forge/terraform`.
 
 ```shell
+npm run db:generate                              # clean clone only; also needs .env, see README Getting started
 docker compose up -d database cache
-npm run db:migration:deploy && npm run db:seed   # once, against the compose database on localhost:5332
+npm run db:migration:deploy && npm run db:seed   # once, needs DATABASE_PORT=5332 in .env, against the compose database on localhost:5332
 ./scripts/verify-observability.sh                # builds and starts everything, then checks it end to end
 docker compose down                              # stop the stack, volumes are kept
 ```

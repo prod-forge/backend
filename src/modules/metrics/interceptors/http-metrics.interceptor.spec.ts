@@ -74,13 +74,22 @@ describe('HttpMetricsInterceptor', () => {
       expect(mockCounterLabels).toHaveBeenCalledWith('GET', '/api/v1/todos/:id', '404');
     });
 
-    it('labels a plain HttpException with 500 like the exception filter', async () => {
-      const error = new HttpException('teapot', 418);
+    it('labels a 5xx HttpException with 500 like the exception filter', async () => {
+      const error = new HttpException('bad gateway', 502);
       const handler: CallHandler = { handle: jest.fn().mockReturnValue(throwError(() => error)) };
 
       await expect(lastValueFrom(interceptor.intercept(makeContext(), handler))).rejects.toBe(error);
 
       expect(mockCounterLabels).toHaveBeenCalledWith('GET', '/api/v1/todos/:id', '500');
+    });
+
+    it('keeps the status of a 4xx HttpException like the exception filter', async () => {
+      const error = new HttpException('teapot', 418);
+      const handler: CallHandler = { handle: jest.fn().mockReturnValue(throwError(() => error)) };
+
+      await expect(lastValueFrom(interceptor.intercept(makeContext(), handler))).rejects.toBe(error);
+
+      expect(mockCounterLabels).toHaveBeenCalledWith('GET', '/api/v1/todos/:id', '418');
     });
 
     it('uses 500 as fallback status when the error has no status', async () => {

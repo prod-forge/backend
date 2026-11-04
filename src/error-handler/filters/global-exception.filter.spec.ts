@@ -1,6 +1,7 @@
 import type { ArgumentsHost } from '@nestjs/common';
 
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
+import { ThrottlerException } from '@nestjs/throttler';
 
 jest.mock('prom-client', () => ({
   Counter: jest.fn().mockImplementation(() => ({
@@ -88,10 +89,10 @@ describe('GlobalExceptionFilter', () => {
       expect(res.status).toHaveBeenCalledWith(HttpStatus.INTERNAL_SERVER_ERROR);
     });
 
-    it('handles HttpException as InternalServerError', () => {
+    it('handles 5xx HttpException as InternalServerError', () => {
       const { host, res } = makeHost({ route: { path: '/api' } });
 
-      filter.catch(new HttpException('Forbidden', HttpStatus.FORBIDDEN), host);
+      filter.catch(new HttpException('Bad gateway', HttpStatus.BAD_GATEWAY), host);
 
       expect(res.status).toHaveBeenCalledWith(HttpStatus.INTERNAL_SERVER_ERROR);
     });
@@ -103,6 +104,20 @@ describe('GlobalExceptionFilter', () => {
 
       expect(res.status).toHaveBeenCalledWith(HttpStatus.OK);
       expect(jsonMock).toHaveBeenCalledWith({ status: 'ok' });
+    });
+
+    it.each([
+      ['NotFoundException', new NotFoundException('Cannot GET /x'), HttpStatus.NOT_FOUND],
+      ['ThrottlerException', new ThrottlerException(), HttpStatus.TOO_MANY_REQUESTS],
+      ['malformed body', new HttpException('Bad', HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST],
+    ])('keeps the status and skips Sentry for %s', (_name, exception, status) => {
+      filter = new GlobalExceptionFilter(logger as unknown as LoggerService, { sentryEnabled: true } as never);
+      const { host, res } = makeHost({ route: { path: '/api' } });
+
+      filter.catch(exception, host);
+
+      expect(res.status).toHaveBeenCalledWith(status);
+      expect(Sentry.captureException).not.toHaveBeenCalled();
     });
 
     it('does not capture domain 4xx errors in Sentry', () => {

@@ -1,4 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
+import { STATUS_CODES } from 'node:http';
 
 import { ErrorCategory } from '../constants/error-category';
 import { ErrorCodes } from '../constants/error.codes';
@@ -27,6 +28,25 @@ export class InternalServerError extends BaseError<void> {
       InternalServerError.code,
       InternalServerError.domain,
       InternalServerError.status,
+    );
+  }
+}
+
+const HTTP_STATUS_CODES: Readonly<Partial<Record<number, ErrorCodes>>> = {
+  [HttpStatus.BAD_REQUEST]: ErrorCodes.BAD_REQUEST,
+  [HttpStatus.NOT_FOUND]: ErrorCodes.NOT_FOUND,
+  [HttpStatus.PAYLOAD_TOO_LARGE]: ErrorCodes.PAYLOAD_TOO_LARGE,
+  [HttpStatus.TOO_MANY_REQUESTS]: ErrorCodes.TOO_MANY_REQUESTS,
+};
+
+// Framework-level 4xx (unknown route, malformed body, throttling) keep their status; the message is the generic status text
+export class HttpStatusError extends BaseError<void> {
+  constructor(status: number) {
+    super(
+      STATUS_CODES[status] ?? 'Request Error',
+      HTTP_STATUS_CODES[status] ?? ErrorCodes.HTTP_EXCEPTION,
+      ErrorCategory.APPLICATION,
+      status,
     );
   }
 }

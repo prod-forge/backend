@@ -95,7 +95,11 @@ Empty results return `204 No Content` with no body.
 | `REDIS_ERROR`            | 500  | Redis operation failed             |
 | `INTERNAL_ERROR`         | 500  | Unclassified server error          |
 | `INFRA_FAILURE`          | 500  | Infrastructure-level failure       |
-| `HTTP_EXCEPTION`         | 500  | Caught NestJS HttpException        |
+| `BAD_REQUEST`            | 400  | Malformed request (e.g. bad JSON)  |
+| `NOT_FOUND`              | 404  | Unknown route                      |
+| `PAYLOAD_TOO_LARGE`      | 413  | Request body too large             |
+| `TOO_MANY_REQUESTS`      | 429  | Throttled (keeps Retry-After)      |
+| `HTTP_EXCEPTION`         | 4xx  | Other framework 4xx HttpException  |
 | `FORBIDDEN`              | 403  | Access denied                      |
 
 ---

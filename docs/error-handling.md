@@ -125,8 +125,9 @@ an error is never reported twice.
 
 ### What is an incident
 
-- Reported: 5xx responses (`InternalServerError`, mapped database failures, any unknown error or `HttpException`).
-- Not reported: domain 4xx errors (`TodoNotFoundError`, validation errors, and so on). They are expected outcomes, are
+- Reported: 5xx responses (`InternalServerError`, mapped database failures, any unknown error, 5xx `HttpException`).
+- Not reported: domain 4xx errors (`TodoNotFoundError`, validation errors, and so on) and framework 4xx
+  (`NotFoundException` for unknown routes, `ThrottlerException` 429, malformed JSON 400, 413). They are expected outcomes, are
   already logged and counted in metrics, and would only add noise.
 
 The filter sends request context with the exception:

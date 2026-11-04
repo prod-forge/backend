@@ -144,7 +144,7 @@ Prometheus metrics exposed at `/metrics` (default prom-client metrics + custom c
 
 1. **Domain error** (`BaseError` subclass) — pass through with its HTTP status and code
 2. **Prisma error** — mapped to a structured `DatabaseError` via `mapPrismaError`
-3. **NestJS `HttpException`** — returned as generic `InternalServerError` (details hidden)
+3. **NestJS `HttpException`** — 4xx keeps its status with a generic code and message (`NOT_FOUND`, `TOO_MANY_REQUESTS`, ...); 5xx becomes `InternalServerError` (details hidden)
 4. **Unknown** — `InternalServerError`
 
 Every error is logged via `LoggerService`, counted in Prometheus, and sent to Sentry from the filter only when it is an incident (5xx or unknown error). Sentry is initialized in `src/instrument.ts`, the first import of `main.ts`.

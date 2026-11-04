@@ -57,8 +57,8 @@ This incremental approach ensures that users receive value early while the syste
 
 ## Creating a Release
 
-When all features planned for the sprint are merged into the release branch (e.g. dev, stage, or main), the release
-process can begin.
+When all features planned for the sprint are merged into `main`, the release process can begin. `release-it` refuses to
+run on any other branch or with uncommitted changes (`requireBranch`, `requireCleanWorkingDir` in `.release-it.json`).
 
 Releases are created using the following command:
 
@@ -72,10 +72,12 @@ This project uses the **release-it** library to automate release tasks.
 
 The release-it tool automates several important steps:
 
+- linting before anything changes (`before:init` runs `npm run lint`)
 - version bumping
 - changelog generation
 - git tagging
 - pushing release commits
+- creating the GitHub release
 
 Before starting the release, a checklist is shown to ensure the project is ready.
 
@@ -97,8 +99,9 @@ After confirmation:
 3. the `after:bump` hook runs `npm run build` and `npm run openapi:export`, then stages `docs/openapi.json`: the
    contract's `info.version` comes from `package.json`, so without this the release commit would fail
    `npm run openapi:check` on the next CI run
-4. creates the release commit (including the re-exported `docs/openapi.json`) and a git tag
-5. pushes the release commit
+4. creates the release commit `chore(release): v<version>` (including the re-exported `docs/openapi.json`) and the git
+   tag `v<version>`
+5. pushes the release commit and the tag, and creates the GitHub release (`npm` publishing is off)
 
 #### Versioning
 

@@ -291,6 +291,7 @@ Custom metrics (default `prom-client` process metrics are exposed as well):
 | `prisma_queries_per_request`    | histogram | none                        | Queries executed during one HTTP request (N+1 detector)                                     |
 | `db_slow_query_mean_ms`         | gauge     | `queryid`                   | Mean time of the 10 slowest statements from `pg_stat_statements`, refreshed on every scrape |
 | `service_health_status`         | gauge     | `service`                   | 1 when a dependency check is up, 0 otherwise                                                |
+| `cache_operations_total`        | counter   | `operation`, `result`       | Cache `get`/`set`/`del` calls by outcome (`hit`, `miss`, `ok`, `error`)                     |
 
 The `route` label is the route template (for example `/api/v1/todos/:id`), never the raw URL, so cardinality stays bounded.
 
@@ -386,7 +387,7 @@ Three endpoints serve three purposes:
 
 Answers only "is the process up?" and runs no dependency check, so it stays `200` during a database outage. Use it
 wherever a failure means the container is killed and restarted: the Dockerfile `HEALTHCHECK` (it honours `APP_PORT`)
-and, in the Terraform phase, the ECS container `healthCheck`. Pointing those at `/health` would make a database outage
+and the ECS container `healthCheck`. Pointing those at `/health` would make a database outage
 restart healthy tasks. The ALB target group keeps using `/health`, because there a failure should only stop traffic.
 
 ### /health (Critical)

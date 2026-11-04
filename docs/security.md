@@ -104,17 +104,22 @@ CORS should be configured carefully to restrict which origins are allowed to acc
 Example:
 
 ```typescript
-app.enableCors({
+// src/app.cors.ts
+export const buildCorsOptions = (configApi: ConfigType<typeof apiConfig>): CorsOptions => ({
   credentials: true,
   exposedHeaders: ['X-Trace-Id'],
   origin: (origin, cb) => {
     if (!origin) {
-      return configApi.apiAllowNonBrowserOrigins ? cb(null, true) : cb(null, false);
+      cb(null, configApi.apiAllowNonBrowserOrigins);
+
+      return;
     }
 
-    return configApi.apiAllowedOrigins.includes(origin) ? cb(null, true) : cb(null, false);
+    cb(null, configApi.apiAllowedOrigins.includes(origin));
   },
 });
+
+app.enableCors(buildCorsOptions(configApi));
 ```
 
 This allows only trusted origins to access the API. `exposedHeaders` lets the web client read the `X-Trace-Id` response header cross-origin (browsers hide non-simple headers otherwise), so an error can be matched to its backend logs.
@@ -141,7 +146,7 @@ Behind an Application Load Balancer the TCP peer of every request is the ALB, so
 
 ### Exempt routes
 
-`/health`, `/health/deps`, `/metrics`, `/metrics/database` and `/version` are marked `@SkipThrottle()`, so probes and scrapers are never blocked. The Prometheus `/metrics` endpoint is served by `PrometheusScrapeController`, a subclass of the library controller passed to `PrometheusModule.register({ controller })`.
+`/health`, `/health/live`, `/health/deps`, `/metrics`, `/metrics/database` and `/version` are marked `@SkipThrottle()`, so probes and scrapers are never blocked. The Prometheus `/metrics` endpoint is served by `PrometheusScrapeController`, a subclass of the library controller passed to `PrometheusModule.register({ controller })`.
 
 ### Internal-only metrics
 

@@ -131,7 +131,8 @@ The e2e suite runs the real application against Testcontainers PostgreSQL and Re
   invalidation after writes
 - cache behaviour: a repeated read of the same todo increments `cache_operations_total{operation="get",result="hit"}`,
   scraped from `/metrics` before and after the second request
-- throttling: per-user limits, the login limit, `/metrics` is never throttled
+- throttling: the global limit answers 429 with `Retry-After`, users are counted separately even behind one IP, `/health`
+  and `/metrics` are never throttled (the login limit of 5 per minute has no e2e test)
 - metrics gate: `/metrics` and `/metrics/database` (any case, with or without the API prefix) return 404 with
   `X-Forwarded-For` and 200 without it
 - health endpoints, version endpoint, client log ingestion, and the OpenAPI contract

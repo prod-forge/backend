@@ -28,8 +28,8 @@ The configuration system is built around two main files - `.env.common`, `.env`
 
 Characteristics:
 
-- contains all required environment variables
-- fully configured for running the application locally
+- contains the environment variables the application needs, except `JWT_SECRET`
+- configured for running the application locally once `JWT_SECRET` is set in `.env` (the README quick start appends it)
 - does not contain sensitive secrets
 - committed to the repository
 
@@ -169,6 +169,14 @@ class AppConfig {
 
   @IsString()
   APP_VERSION = packageJson.version || '1.0.0';
+
+  @IsNumber()
+  @Transform(({ value }) => Number(value))
+  SHUTDOWN_DRAIN_MS = 10000;
+
+  @IsNumber()
+  @Transform(({ value }) => Number(value))
+  SHUTDOWN_INFLIGHT_TIMEOUT_MS = 20000;
 }
 
 export const appConfig = registerAs<AppConfig, ConfigFactory<AppConfigInterface>>(
@@ -182,6 +190,8 @@ export const appConfig = registerAs<AppConfig, ConfigFactory<AppConfigInterface>
       appName: config.APP_NAME,
       appPort: config.APP_PORT,
       appVersion: config.APP_VERSION,
+      shutdownDrainMs: config.SHUTDOWN_DRAIN_MS,
+      shutdownInflightTimeoutMs: config.SHUTDOWN_INFLIGHT_TIMEOUT_MS,
     };
   },
 );

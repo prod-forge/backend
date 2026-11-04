@@ -312,4 +312,4 @@ We welcome any kind of contribution, please read the guidelines:
 
 # The MIT License
 
-[LICENSE](LICENSE.md)
+[LICENSE](LICENSE)

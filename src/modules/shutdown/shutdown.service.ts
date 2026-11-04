@@ -37,7 +37,7 @@ export class ShutdownService implements BeforeApplicationShutdown, OnApplication
     if (inFlightRequests > 0) {
       this.logger.log({
         ctx: ShutdownService.name,
-        msg: 'Waiting for in-flight requests to finish...',
+        msg: `Waiting for ${inFlightRequests} in-flight requests to finish...`,
       });
 
       await this.requestTrackingService.waitForRequestsToFinish(this.config.shutdownInflightTimeoutMs);

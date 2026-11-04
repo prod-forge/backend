@@ -138,7 +138,7 @@ Prometheus metrics exposed at `/metrics` (default prom-client metrics + custom c
 
 ### Shutdown
 
-`ShutdownModule` listens for `SIGTERM`/`SIGINT`. `RequestTrackingService` counts in-flight requests. On signal, the app enters a draining state: health/ready returns unhealthy, new requests continue but the process waits for in-flight count to drop to zero before exiting.
+`ShutdownModule` listens for `SIGTERM`/`SIGINT`. `RequestTrackingService` counts in-flight requests; it is a singleton provided by `RequestTrackingModule` (imported by `AppModule` for the middleware and by `ShutdownModule`), never redeclared elsewhere. On signal, the app enters a draining state: health/ready returns unhealthy, new requests continue but the process waits for in-flight count to drop to zero before exiting.
 
 ### Error handling
 

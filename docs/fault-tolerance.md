@@ -120,6 +120,10 @@ To handle this safely, the application uses an in-flight requests tracking appro
 Each incoming request is tracked via a middleware, which increments an internal counter. Once a request is completed,
 the counter is decremented.
 
+`RequestTrackingService` must be a single instance: it is provided only by `RequestTrackingModule`, which both
+`AppModule` (where `RequestTrackingMiddleware` runs) and `ShutdownModule` import. Declaring it again in another module's
+`providers` creates a second counter that the shutdown hook never sees incremented.
+
 If the counter is greater than zero, it means there are still active requests being processed.
 
 Shutdown happens in three phases, driven by NestJS lifecycle hooks (`enableShutdownHooks()` is on):
@@ -128,7 +132,8 @@ Shutdown happens in three phases, driven by NestJS lifecycle hooks (`enableShutd
    (default 10000). `/health` returns `503` during this time while the HTTP server still accepts connections, so the
    load balancer stops routing new traffic and in-flight requests keep completing with `200`. NestJS runs this hook
    before it closes the HTTP server.
-   After the drain it waits up to `SHUTDOWN_INFLIGHT_TIMEOUT_MS` (default 20000) for in-flight requests to finish.
+   After the drain it waits up to `SHUTDOWN_INFLIGHT_TIMEOUT_MS` (default 20000) for in-flight requests to finish and
+   logs `Waiting for <n> in-flight requests to finish...`.
    This must happen here: once the hook returns, Nest closes the HTTP server, and `server.close()` has no upper bound
    on how long it waits for active requests.
 2. HTTP server close: `forceCloseConnections: true` (set in `NestFactory.create`) destroys any connection still open,

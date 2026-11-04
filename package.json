@@ -94,7 +94,7 @@
     "@sentry/node": "10.78.0",
     "@sentry/opentelemetry": "10.78.0",
     "@sentry/profiling-node": "10.78.0",
-    "@willsoto/nestjs-prometheus": "6.1.0",
+    "@willsoto/nestjs-prometheus": "7.0.0",
     "class-transformer": "0.5.1",
     "class-validator": "0.15.1",
     "compression": "1.8.2",

@@ -46,6 +46,7 @@ export class HttpStatusError extends BaseError<void> {
       STATUS_CODES[status] ?? 'Request Error',
       HTTP_STATUS_CODES[status] ?? ErrorCodes.HTTP_EXCEPTION,
       ErrorCategory.APPLICATION,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-assignment -- status comes from HttpException.getStatus(), a plain number
       status,
     );
   }

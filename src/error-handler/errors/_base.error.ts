@@ -1,4 +1,4 @@
-// eslint-disable-next-line @check-file/filename-naming-convention
+/* eslint-disable @check-file/filename-naming-convention */
 import type { HttpStatus } from '@nestjs/common';
 
 import type { ErrorCategory } from '../constants/error-category';

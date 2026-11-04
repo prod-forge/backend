@@ -154,7 +154,7 @@ Sentry is a third-party processor, so the reports carry no personal data:
 - the request body is never sent: the filter leaves it out of `extra`, and the SDK's HTTP integration runs with
   `maxIncomingRequestBodySize: 'none'` (by default it attaches incoming bodies up to 10 KB, and the login body carries
   the email)
-- `sendDefaultPii: false`, so the SDK does not attach IP addresses, cookies or user details
+- `dataCollection` turns off user details, cookies, headers, request and response bodies, query params and database query values, so the SDK attaches none of them by default
 - the only user context is the internal user id set by the filter (`Sentry.setUser({ userId })`)
 
 The options are built by `buildSentryOptions` in `src/modules/sentry/sentry-options.ts`, which `instrument.ts` calls.

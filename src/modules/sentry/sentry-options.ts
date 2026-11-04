@@ -27,14 +27,23 @@ export const buildSentryOptions = (
 
       return event;
     },
+    // No user details, cookies, headers, bodies, query params or query values; the exception filter sets only the
+    // internal user id
+    dataCollection: {
+      cookies: false,
+      databaseQueryData: false,
+      genAI: { inputs: false, outputs: false },
+      httpBodies: [],
+      httpHeaders: false,
+      urlQueryParams: false,
+      userInfo: false,
+    },
     dsn: env.SENTRY_DSN,
     environment: env.NODE_ENV,
     // GDPR: request bodies can hold personal data (the login body carries the email), so they are never attached
     integrations: [httpIntegration({ maxIncomingRequestBodySize: 'none' }), nodeProfilingIntegration()],
     propagateTraceparent: true,
     release,
-    // No IP addresses, cookies or user details by default; the exception filter sets only the internal user id
-    sendDefaultPii: false,
     // With an OTLP endpoint the NodeSDK in tracing.ts owns the single TracerProvider.
     skipOpenTelemetrySetup,
     tracesSampleRate: 0.2,

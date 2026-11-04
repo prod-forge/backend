@@ -16,8 +16,16 @@ const env = {
 
 describe('buildSentryOptions', () => {
   describe('negative cases', () => {
-    it('does not send default PII (IP address, cookies, user)', () => {
-      expect(buildSentryOptions(env, '1.0.0', false).sendDefaultPii).toBe(false);
+    it('does not collect PII (user, cookies, headers, bodies, query params, query values)', () => {
+      expect(buildSentryOptions(env, '1.0.0', false).dataCollection).toEqual({
+        cookies: false,
+        databaseQueryData: false,
+        genAI: { inputs: false, outputs: false },
+        httpBodies: [],
+        httpHeaders: false,
+        urlQueryParams: false,
+        userInfo: false,
+      });
     });
 
     it('never attaches incoming request bodies', () => {

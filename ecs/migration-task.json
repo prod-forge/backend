@@ -12,8 +12,8 @@
       "image": "__IMAGE__",
       "essential": true,
       "command": ["npm", "run", "db:migration:deploy"],
-      "environment": __ENVIRONMENT__,
-      "secrets": __SECRETS__,
+      "environment": [],
+      "secrets": [],
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {

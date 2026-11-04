@@ -220,48 +220,15 @@ jobs:
             --task-definition "${TASK_NAME}" \
             --query taskDefinition > task.json
 
-      - name: Fetch dynamic values from AWS
-        id: fetch-aws-values
-        run: |
-          # Extract role ARNs from existing task definition
-          EXECUTION_ROLE_ARN=$(jq -r '.executionRoleArn' task.json)
-          TASK_ROLE_ARN=$(jq -r '.taskRoleArn' task.json)
-
-          # Compact JSON to single line to avoid multiline issues
-          ENVIRONMENT=$(jq -c '.containerDefinitions[0].environment' task.json)
-          SECRETS=$(jq -c '.containerDefinitions[0].secrets' task.json)
-
-          {
-            echo "execution_role_arn=$EXECUTION_ROLE_ARN"
-            echo "task_role_arn=$TASK_ROLE_ARN"
-
-            # Multiline-safe output using EOF delimiter
-            echo "environment<<EOF"
-            echo "$ENVIRONMENT"
-            echo "EOF"
-
-            echo "secrets<<EOF"
-            echo "$SECRETS"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-
+      # Roles, environment and secrets come from the current app task definition. jq renders it, so JSON-valued
+      # environment entries (API_ALLOWED_ORIGINS, DATABASE_LOG_LEVELS) stay valid.
       - name: Render migration task definition
         env:
-          EXECUTION_ROLE_ARN: ${{ steps.fetch-aws-values.outputs.execution_role_arn }}
-          TASK_ROLE_ARN: ${{ steps.fetch-aws-values.outputs.task_role_arn }}
-          ENVIRONMENT: ${{ steps.fetch-aws-values.outputs.environment }}
-          SECRETS: ${{ steps.fetch-aws-values.outputs.secrets }}
-        run: |
-          cat ecs/migration-task.json \
-          | sed "s|__IMAGE__|${ecr_url}:${version}|g" \
-          | sed "s|__EXECUTION_ROLE_ARN__|$EXECUTION_ROLE_ARN|g" \
-          | sed "s|__TASK_ROLE_ARN__|$TASK_ROLE_ARN|g" \
-          | sed "s|__NAME__|${TASK_MIGRATION_NAME}|g" \
-          | sed "s|__REGION__|${AWS_REGION}|g" \
-          | sed "s|__TASK_MIGRATION_LOGS__|${TASK_MIGRATION_LOGS}|g" \
-          | sed "s|__ENVIRONMENT__|$ENVIRONMENT|g" \
-          | sed "s|__SECRETS__|$SECRETS|g" \
-          > task-def-rendered.json
+          IMAGE: ${{ env.ecr_url }}:${{ env.version }}
+          NAME: ${{ env.TASK_MIGRATION_NAME }}
+          REGION: ${{ env.AWS_REGION }}
+          LOG_GROUP: ${{ env.TASK_MIGRATION_LOGS }}
+        run: scripts/render-migration-task.sh ecs/migration-task.json task.json > task-def-rendered.json
 
       - name: Register new migration task definition
         id: register

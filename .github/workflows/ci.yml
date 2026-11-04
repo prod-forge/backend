@@ -122,6 +122,9 @@ jobs:
           DATABASE_SSL: true
           LOG_PRETTY: false
 
+      - name: Check the migration task definition render
+        run: scripts/render-migration-task.test.sh
+
       - name: Build production image
         run: docker build --target production -t prod-forge-todolist:ci .
 

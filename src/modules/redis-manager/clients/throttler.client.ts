@@ -23,30 +23,6 @@ export class ThrottlerRedis extends BaseRedisService {
     super(config, environment, logger);
     this.client = new Redis({ ...this.getDefaultProps(), ...redisOptions });
     this.config = config;
-    this.listen();
-  }
-
-  listen(): void {
-    this.client.on('connect', () => {
-      this.logger.log({
-        ctx: 'ThrottlerRedis',
-        msg: 'ThrottlerRedis connected',
-      });
-    });
-
-    this.client.on('close', () => {
-      this.logger.warn({
-        ctx: 'ThrottlerRedis',
-        msg: 'ThrottlerRedis disconnected',
-      });
-    });
-
-    this.client.on('error', (err) => {
-      this.logger.error({
-        ctx: 'ThrottlerRedis',
-        details: err,
-        msg: 'ThrottlerRedis error',
-      });
-    });
+    this.listen('ThrottlerRedis');
   }
 }

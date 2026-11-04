@@ -228,5 +228,5 @@ root, so no custom CA is needed. `rejectUnauthorized` is never disabled, and the
 `REDIS_HOST`, so use the endpoint hostname. `REDIS_PASSWORD` is the optional AUTH token; if `REDIS_TLS=true` in
 production without it, a warning is logged at startup.
 
-Redis clients reconnect forever with capped backoff (`min(attempt * 200, 5000)` ms) and log every 10th attempt, while
+Redis clients reconnect forever with capped backoff (`min(attempt * 200, 5000)` ms) and log the first and every 10th consecutive failure, while
 commands fail fast during an outage (cache reads degrade to a miss).

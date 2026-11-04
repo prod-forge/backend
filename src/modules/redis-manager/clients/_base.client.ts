@@ -27,13 +27,6 @@ export class BaseRedisService {
   }
 
   getDefaultProps(): RedisOptions {
-    if (this.config.redisTls && !this.config.redisPassword && this.environment.isProduction()) {
-      this.logger.warn({
-        ctx: BaseRedisService.name,
-        msg: 'REDIS_TLS is enabled in production without REDIS_PASSWORD',
-      });
-    }
-
     return {
       autoResendUnfulfilledCommands: false,
       autoResubscribe: false,
@@ -50,9 +43,44 @@ export class BaseRedisService {
     };
   }
 
+  protected listen(name: string): void {
+    let closes = 0;
+    let errors = 0;
+
+    this.client.on('connect', () => {
+      this.logger.log({ ctx: name, msg: `${name} connected` });
+    });
+
+    this.client.on('ready', () => {
+      closes = 0;
+      errors = 0;
+    });
+
+    this.client.on('close', () => {
+      if (this.shouldLog(++closes)) {
+        this.logger.warn({ ctx: name, msg: `${name} disconnected` });
+      }
+    });
+
+    this.client.on('error', (err) => {
+      if (this.shouldLog(++errors)) {
+        this.logger.error({ ctx: name, details: err, msg: `${name} error` });
+      }
+    });
+  }
+
+  protected warnIfTlsWithoutPassword(): void {
+    if (this.config.redisTls && !this.config.redisPassword && this.environment.isProduction()) {
+      this.logger.warn({
+        ctx: BaseRedisService.name,
+        msg: 'REDIS_TLS is enabled in production without REDIS_PASSWORD',
+      });
+    }
+  }
+
   private createRetryStrategy(): (times: number) => number {
     return (times: number): number => {
-      if (times === 1 || times % RETRY_LOG_EVERY === 0) {
+      if (this.shouldLog(times)) {
         this.logger.warn({
           ctx: BaseRedisService.name,
           msg: `Redis reconnect attempt ${times}`,
@@ -61,5 +89,9 @@ export class BaseRedisService {
 
       return Math.min(times * RETRY_STEP_MS, RETRY_MAX_DELAY_MS);
     };
+  }
+
+  private shouldLog(consecutive: number): boolean {
+    return consecutive === 1 || consecutive % RETRY_LOG_EVERY === 0;
   }
 }

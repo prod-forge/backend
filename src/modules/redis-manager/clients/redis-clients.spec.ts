@@ -54,9 +54,10 @@ class TestRedisService extends BaseRedisService {
   }
 
   attachListeners(clientName: string): void {
-    this.client.on('connect', () => this.logger.log({ ctx: clientName, msg: `${clientName} connected` }));
-    this.client.on('close', () => this.logger.warn({ ctx: clientName, msg: `${clientName} disconnected` }));
-    this.client.on('error', (err) => this.logger.error({ ctx: clientName, details: err, msg: `${clientName} error` }));
+    this.listen(clientName);
+  }
+  warn(): void {
+    this.warnIfTlsWithoutPassword();
   }
 }
 
@@ -128,7 +129,7 @@ describe('BaseRedisService', () => {
       const logger = makeLogger();
       const config = { ...makeConfig(), redisTls: true };
       const service = new TestRedisService(config, makeEnvironment(EnvironmentType.production), logger);
-      service.getDefaultProps();
+      service.warn();
 
       expect(logger.warn).toHaveBeenCalledWith(
         expect.objectContaining({ msg: 'REDIS_TLS is enabled in production without REDIS_PASSWORD' }),
@@ -139,7 +140,7 @@ describe('BaseRedisService', () => {
       const logger = makeLogger();
       const config = { ...makeConfig(), redisTls: true };
       const service = new TestRedisService(config, makeEnvironment(EnvironmentType.development), logger);
-      service.getDefaultProps();
+      service.warn();
 
       expect(logger.warn).not.toHaveBeenCalled();
     });
@@ -170,6 +171,42 @@ describe('BaseRedisService', () => {
       (service.getClient() as unknown as { _emit: (e: string) => void })._emit('close');
 
       expect(logger.warn).toHaveBeenCalledWith(expect.objectContaining({ msg: 'TestClient disconnected' }));
+    });
+
+    it('attachListeners throttles 20 consecutive errors to the first and every 10th', () => {
+      const logger = makeLogger();
+      const service = new TestRedisService(makeConfig(), makeEnvironment(EnvironmentType.test), logger);
+      service.attachListeners('TestClient');
+      const emit = (service.getClient() as unknown as { _emit: (e: string, err?: Error) => void })._emit;
+
+      for (let i = 0; i < 20; i++) emit('error', new Error('refused'));
+
+      expect(logger.error).toHaveBeenCalledTimes(3);
+    });
+
+    it('attachListeners throttles consecutive close events', () => {
+      const logger = makeLogger();
+      const service = new TestRedisService(makeConfig(), makeEnvironment(EnvironmentType.test), logger);
+      service.attachListeners('TestClient');
+      const emit = (service.getClient() as unknown as { _emit: (e: string) => void })._emit;
+
+      for (let i = 0; i < 20; i++) emit('close');
+
+      expect(logger.warn).toHaveBeenCalledTimes(3);
+    });
+
+    it('attachListeners resets the error counter on ready', () => {
+      const logger = makeLogger();
+      const service = new TestRedisService(makeConfig(), makeEnvironment(EnvironmentType.test), logger);
+      service.attachListeners('TestClient');
+      const emit = (service.getClient() as unknown as { _emit: (e: string, err?: Error) => void })._emit;
+
+      emit('error', new Error('a'));
+      emit('error', new Error('b'));
+      emit('ready');
+      emit('error', new Error('c'));
+
+      expect(logger.error).toHaveBeenCalledTimes(2);
     });
 
     it('attachListeners logs error event', () => {

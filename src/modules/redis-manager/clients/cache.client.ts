@@ -23,30 +23,7 @@ export class CacheRedis extends BaseRedisService {
     super(config, environment, logger);
     this.client = new Redis({ ...this.getDefaultProps(), ...redisOptions });
     this.config = config;
-    this.listen();
-  }
-
-  listen(): void {
-    this.client.on('connect', () => {
-      this.logger.log({
-        ctx: 'CacheRedis',
-        msg: 'CacheRedis connected',
-      });
-    });
-
-    this.client.on('close', () => {
-      this.logger.warn({
-        ctx: 'CacheRedis',
-        msg: 'CacheRedis disconnected',
-      });
-    });
-
-    this.client.on('error', (err) => {
-      this.logger.error({
-        ctx: 'CacheRedis',
-        details: err,
-        msg: 'CacheRedis error',
-      });
-    });
+    this.listen('CacheRedis');
+    this.warnIfTlsWithoutPassword();
   }
 }

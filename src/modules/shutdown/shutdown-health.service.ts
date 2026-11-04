@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { HealthIndicatorResult, HealthIndicatorService } from '@nestjs/terminus';
 
-import { ShutdownService } from './shutdown.servie';
+import { ShutdownService } from './shutdown.service';
 
 @Injectable()
 export class ShutdownHealthService {

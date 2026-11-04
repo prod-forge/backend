@@ -91,6 +91,8 @@ All variables are validated at startup with `class-validator`. Missing required 
 | `NODE_ENV`                        | `development`                     | `development` \| `production` \| `test`           |
 | `APP_PORT`                        | `3000`                            | HTTP listen port                                  |
 | `APP_HOST`                        | `0.0.0.0`                         | HTTP listen host                                  |
+| `SHUTDOWN_DRAIN_MS`               | `10000`                           | Readiness returns 503 before the server closes    |
+| `SHUTDOWN_INFLIGHT_TIMEOUT_MS`    | `20000`                           | Max wait for in-flight requests on shutdown       |
 | `APP_NAME`                        | `Todo_inst1`                      | Used in logs and Swagger title                    |
 | `API_PREFIX`                      | `api`                             | Global route prefix                               |
 | `API_ALLOWED_ORIGINS`             | `["http://localhost:3001"]`       | JSON array of allowed CORS origins                |

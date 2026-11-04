@@ -4,4 +4,6 @@ export type AppConfigInterface = {
   appName: string;
   appPort: number;
   appVersion: string;
+  shutdownDrainMs: number;
+  shutdownInflightTimeoutMs: number;
 };

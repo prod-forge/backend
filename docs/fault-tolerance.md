@@ -116,10 +116,30 @@ the counter is decremented.
 
 If the counter is greater than zero, it means there are still active requests being processed.
 
-During shutdown, the application does not terminate immediately. Instead, it waits for a configurable timeout (e.g. 30
-seconds) to allow in-flight requests to complete.
+Shutdown happens in two phases, driven by NestJS lifecycle hooks (`enableShutdownHooks()` is on):
+
+1. `beforeApplicationShutdown` (drain): the service flips to the shutting-down state and waits `SHUTDOWN_DRAIN_MS`
+   (default 10000). `/health` returns `503` during this time while the HTTP server still accepts connections, so the
+   load balancer stops routing new traffic and in-flight requests keep completing with `200`. NestJS runs this hook
+   before it closes the HTTP server.
+2. `onApplicationShutdown`: after the server stops accepting connections, the application waits up to
+   `SHUTDOWN_INFLIGHT_TIMEOUT_MS` (default 20000) for in-flight requests, then disconnects Prisma and Redis.
 
 If the timeout is exceeded, remaining requests are forcefully terminated.
+
+The sum of both values must stay below the ECS `stopTimeout` (60s, set in terraform), otherwise ECS sends `SIGKILL`
+before shutdown finishes.
+
+### Manual Check
+
+```bash
+docker compose up production
+while true; do curl -s -o /dev/null -w "%{http_code}\n" localhost:3000/health; sleep 0.5; done
+docker kill -s TERM production
+```
+
+Expected: `200` responses, then `503` for about 10 seconds, then connection refused once the port closes. A slow
+request started before the signal must still finish with `200`.
 
 ## Critical Dependency
 

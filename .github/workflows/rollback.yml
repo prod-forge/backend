@@ -35,8 +35,7 @@ jobs:
           aws ecs update-service \
             --cluster ${{ env.ECS_CLUSTER }} \
             --service ${{ env.ECS_SERVICE }} \
-            --task-definition ${TASK_NAME}:${{ github.event.inputs.task_revision }} \
-            --desired-count 1 \
+            --task-definition "${TASK_NAME}:${{ github.event.inputs.task_revision }}" \
             --force-new-deployment \
             --no-cli-pager \
             > /dev/null

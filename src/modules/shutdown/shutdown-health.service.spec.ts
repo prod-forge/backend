@@ -1,6 +1,6 @@
 import type { HealthIndicatorService } from '@nestjs/terminus';
 
-import type { ShutdownService } from './shutdown.servie';
+import type { ShutdownService } from './shutdown.service';
 
 import { ShutdownHealthService } from './shutdown-health.service';
 

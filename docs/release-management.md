@@ -292,6 +292,9 @@ To rollback:
 
 AWS will redeploy the selected revision.
 
+Rollback keeps the current desired count. The workflow does not pass `--desired-count`: forcing it to 1 would shrink a
+scaled-out service to a single task during an incident, which is a capacity outage on top of the original problem.
+
 Rollback typically takes less than one minute.
 
 ## Debugging in Production

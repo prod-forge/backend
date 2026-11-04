@@ -240,6 +240,9 @@ and lifecycle signals like shutdown state.
 this.shutdownHealthService.check('shutdown');
 ```
 
+On SIGTERM, readiness switches to `503` first and the HTTP server keeps accepting connections for
+`SHUTDOWN_DRAIN_MS` (10s by default), so the load balancer deregisters the instance before the port closes.
+
 ### /health/deps (All)
 
 Includes all dependencies (critical + optional).

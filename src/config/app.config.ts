@@ -23,6 +23,14 @@ class AppConfig {
 
   @IsString()
   APP_VERSION = packageJson.version || '1.0.0';
+
+  @IsNumber()
+  @Transform(({ value }) => Number(value))
+  SHUTDOWN_DRAIN_MS = 10000;
+
+  @IsNumber()
+  @Transform(({ value }) => Number(value))
+  SHUTDOWN_INFLIGHT_TIMEOUT_MS = 20000;
 }
 
 export const appConfig = registerAs<AppConfig, ConfigFactory<AppConfigInterface>>(
@@ -36,6 +44,8 @@ export const appConfig = registerAs<AppConfig, ConfigFactory<AppConfigInterface>
       appName: config.APP_NAME,
       appPort: config.APP_PORT,
       appVersion: config.APP_VERSION,
+      shutdownDrainMs: config.SHUTDOWN_DRAIN_MS,
+      shutdownInflightTimeoutMs: config.SHUTDOWN_INFLIGHT_TIMEOUT_MS,
     };
   },
 );

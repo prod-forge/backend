@@ -5,7 +5,7 @@ import { RequestTrackingModule } from '../in-flight-requests/request-tracking.mo
 import { PrismaModule } from '../prisma/prisma.module';
 import { RedisManagerModule } from '../redis-manager/redis-manager.module';
 import { ShutdownHealthService } from './shutdown-health.service';
-import { ShutdownService } from './shutdown.servie';
+import { ShutdownService } from './shutdown.service';
 
 @Module({
   exports: [ShutdownHealthService],

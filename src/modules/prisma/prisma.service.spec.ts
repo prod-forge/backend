@@ -20,6 +20,8 @@ jest.mock('./prisma.metrics', () => ({
   prismaQueryDuration: { observe: mockObserve },
 }));
 
+import { PrismaPg } from '@prisma/adapter-pg';
+
 import type { LoggerService } from '../../logger/logger.service';
 
 import { RequestContext } from '../../logger/context/request-context';
@@ -28,8 +30,11 @@ import { PrismaService } from './prisma.service';
 const makeService = (failFast = false, logLevels: string[] = []): [PrismaService, { error: jest.Mock }] => {
   const logger = { error: jest.fn() };
   const config = {
+    databaseConnectTimeoutMs: 5000,
     databaseFailFast: failFast,
     databaseLogLevels: logLevels,
+    databasePoolMax: 10,
+    databaseStatementTimeoutMs: 5000,
     databaseUrl: 'postgresql://test:test@localhost:5432/test',
   };
 
@@ -51,6 +56,19 @@ describe('PrismaService', () => {
   });
 
   describe('positive cases', () => {
+    it('passes pool size and timeouts to the pg adapter', () => {
+      makeService();
+
+      expect(PrismaPg).toHaveBeenCalledWith({
+        connectionString: 'postgresql://test:test@localhost:5432/test',
+        connectionTimeoutMillis: 5000,
+        idleTimeoutMillis: 30000,
+        max: 10,
+        // eslint-disable-next-line camelcase -- pg option name
+        statement_timeout: 5000,
+      });
+    });
+
     it('subscribes to query events once', () => {
       const [service] = makeService();
 

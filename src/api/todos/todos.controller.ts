@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
 
@@ -17,6 +17,10 @@ import { CreateTodoDto } from './dtos/requests/create-todo.dto';
 import { UpdateTodoDto } from './dtos/requests/update-todo.dto';
 import { TodoResponseDto } from './dtos/responses/todo-response.dto';
 import { TodosResponseDto } from './dtos/responses/todos-response.dto';
+
+const uuidPipe = new ParseUUIDPipe({
+  exceptionFactory: (): DtoValidationErrors => new DtoValidationErrors({ id: ['id must be a UUID'] }),
+});
 
 @ApiTags('Todos')
 @Controller({
@@ -58,7 +62,7 @@ export class TodosController {
     });
   }
 
-  @ApiErrors(TodoNotFoundError, UserIsNotAuthorizedError, InternalServerError)
+  @ApiErrors(DtoValidationErrors, TodoNotFoundError, UserIsNotAuthorizedError, InternalServerError)
   @ApiOk(TodoResponseDto, {
     access: true,
     description: 'Get todo item for user',
@@ -66,7 +70,7 @@ export class TodosController {
   })
   @Get(':id')
   @UseGuards(AuthGuard)
-  async findOne(@Param('id') id: string, @User() { userId }: UserInterface): Promise<TodoResponseDto> {
+  async findOne(@Param('id', uuidPipe) id: string, @User() { userId }: UserInterface): Promise<TodoResponseDto> {
     const todo = await this.todoService.findOne(userId, id);
 
     return plainToInstance(TodoResponseDto, todo, {
@@ -79,10 +83,10 @@ export class TodosController {
     description: 'Todo was successfully deleted',
     title: 'Remove Todo',
   })
-  @ApiErrors(TodoNotFoundError, UserIsNotAuthorizedError, InternalServerError)
+  @ApiErrors(DtoValidationErrors, TodoNotFoundError, UserIsNotAuthorizedError, InternalServerError)
   @Delete(':id')
   @UseGuards(AuthGuard)
-  async remove(@Param('id') id: string, @User() { userId }: UserInterface): Promise<void> {
+  async remove(@Param('id', uuidPipe) id: string, @User() { userId }: UserInterface): Promise<void> {
     await this.todoService.remove(userId, id);
   }
 
@@ -95,7 +99,7 @@ export class TodosController {
   @Patch(':id')
   @UseGuards(AuthGuard)
   async update(
-    @Param('id') id: string,
+    @Param('id', uuidPipe) id: string,
     @Body() dto: UpdateTodoDto,
     @User() { userId }: UserInterface,
   ): Promise<TodoResponseDto> {

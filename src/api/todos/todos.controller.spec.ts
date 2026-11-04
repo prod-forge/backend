@@ -61,7 +61,7 @@ describe('TodosController', () => {
       it('returns paginated todos DTO', async () => {
         const paginatedResult = {
           data: [todoData],
-          meta: { limit: 10, offset: 1, total: 1 },
+          meta: { limit: 10, offset: 0, total: 1 },
         };
         service.findAll.mockResolvedValue(paginatedResult);
 

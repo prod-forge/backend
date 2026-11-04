@@ -133,6 +133,21 @@ ECS tasks.
 
 Each operational task remains isolated and predictable.
 
+## Seeds
+
+Seeds live in `database-manager/seeds/` and run with `npm run db:seed`. They are not migrations and must be idempotent:
+`create-todos` deletes the seeded users' todos and recreates them with `createMany`, so repeated runs do not grow the
+table.
+
+Manual check (local or test database only, never a shared one):
+
+```shell
+npm run db:seed
+# note the row count: SELECT count(*) FROM "Todo";
+npm run db:seed
+# the count must be identical
+```
+
 ## Slow Query Metrics (pg_stat_statements)
 
 The `db_slow_query_mean_ms{queryid}` gauge reads from the `pg_stat_statements` view. Two things are required:

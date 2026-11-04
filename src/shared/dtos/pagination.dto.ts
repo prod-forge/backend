@@ -6,7 +6,7 @@ export class PaginationMetaDto {
   @Expose()
   limit: number;
 
-  @ApiProperty({ example: 1 })
+  @ApiProperty({ description: 'Zero-based number of rows skipped', example: 0 })
   @Expose()
   offset: number;
 

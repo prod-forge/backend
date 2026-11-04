@@ -55,7 +55,7 @@ Paginated responses include metadata:
   "data": [...],
   "meta": {
     "limit": 10,
-    "offset": 1,
+    "offset": 0,
     "total": 42
   }
 }
@@ -134,11 +134,11 @@ Defaults: `THROTTLE_LIMIT=10` requests per `THROTTLE_TTL=20000` ms window, track
 }
 ```
 
-| Field         | Type      | Required | Default | Description       |
-| ------------- | --------- | -------- | ------- | ----------------- |
-| `title`       | `string`  | yes      | —       | Todo title        |
-| `description` | `string`  | no       | —       | Optional detail   |
-| `completed`   | `boolean` | no       | `false` | Completion status |
+| Field         | Type      | Required | Default | Description                    |
+| ------------- | --------- | -------- | ------- | ------------------------------ |
+| `title`       | `string`  | yes      | —       | Todo title (≤ 200 chars)       |
+| `description` | `string`  | no       | —       | Optional detail (≤ 2000 chars) |
+| `completed`   | `boolean` | no       | `false` | Completion status              |
 
 **Response `200`**
 
@@ -148,8 +148,7 @@ Defaults: `THROTTLE_LIMIT=10` requests per `THROTTLE_TTL=20000` ms window, track
     "id": "550e8400-e29b-41d4-a716-446655440000",
     "title": "Buy milk",
     "description": "Oat milk please",
-    "completed": false,
-    "userName": "John Doe"
+    "completed": false
   }
 }
 ```
@@ -164,15 +163,15 @@ Defaults: `THROTTLE_LIMIT=10` requests per `THROTTLE_TTL=20000` ms window, track
 
 **Query parameters**
 
-| Param         | Type                                  | Required | Default | Description                       |
-| ------------- | ------------------------------------- | -------- | ------- | --------------------------------- |
-| `limit`       | `integer` (≥ 1)                       | no       | `10`    | Items per page                    |
-| `offset`      | `integer` (≥ 0)                       | no       | `0`     | Page offset (1-based internally)  |
-| `completed`   | `boolean` (`true`/`false`)            | no       | —       | Filter by completion status       |
-| `search`      | `string`                              | no       | —       | Case-insensitive substring search |
-| `searchField` | `title` \| `description`              | no       | `title` | Field to search in                |
-| `sortBy`      | `title` \| `completed` \| `createdAt` | no       | `title` | Sort field                        |
-| `order`       | `asc` \| `desc`                       | no       | `desc`  | Sort direction                    |
+| Param         | Type                                  | Required | Default     | Description                       |
+| ------------- | ------------------------------------- | -------- | ----------- | --------------------------------- |
+| `limit`       | `integer` (≥ 1)                       | no       | `10`        | Items per page                    |
+| `offset`      | `integer` (≥ 0)                       | no       | `0`         | Number of rows to skip (0-based)  |
+| `completed`   | `boolean` (`true`/`false`)            | no       | —           | Filter by completion status       |
+| `search`      | `string` (≤ 100 chars)                | no       | —           | Case-insensitive substring search |
+| `searchField` | `title` \| `description`              | no       | `title`     | Field to search in                |
+| `sortBy`      | `title` \| `completed` \| `createdAt` | no       | `createdAt` | Sort field                        |
+| `order`       | `asc` \| `desc`                       | no       | `desc`      | Sort direction                    |
 
 **Response `200`**
 
@@ -183,13 +182,12 @@ Defaults: `THROTTLE_LIMIT=10` requests per `THROTTLE_TTL=20000` ms window, track
       "id": "550e8400-e29b-41d4-a716-446655440000",
       "title": "Buy milk",
       "description": null,
-      "completed": false,
-      "userName": "John Doe"
+      "completed": false
     }
   ],
   "meta": {
     "limit": 10,
-    "offset": 1,
+    "offset": 0,
     "total": 1
   }
 }
@@ -205,9 +203,9 @@ Defaults: `THROTTLE_LIMIT=10` requests per `THROTTLE_TTL=20000` ms window, track
 
 **Path params**
 
-| Param | Type     | Description |
-| ----- | -------- | ----------- |
-| `id`  | `string` | Todo UUID   |
+| Param | Type     | Description                                                    |
+| ----- | -------- | -------------------------------------------------------------- |
+| `id`  | `string` | Todo UUID (malformed value returns `DTO_VALIDATION_ERROR` 422) |
 
 **Response `200`**
 
@@ -217,13 +215,12 @@ Defaults: `THROTTLE_LIMIT=10` requests per `THROTTLE_TTL=20000` ms window, track
     "id": "550e8400-e29b-41d4-a716-446655440000",
     "title": "Buy milk",
     "description": null,
-    "completed": false,
-    "userName": "John Doe"
+    "completed": false
   }
 }
 ```
 
-**Errors:** `TODO_NOT_FOUND` 404 · `USER_IS_NOT_AUTHORIZED` 401 · `INTERNAL_ERROR` 500
+**Errors:** `DTO_VALIDATION_ERROR` 422 · `TODO_NOT_FOUND` 404 · `USER_IS_NOT_AUTHORIZED` 401 · `INTERNAL_ERROR` 500
 
 **Ownership:** A todo owned by another user returns `TODO_NOT_FOUND` 404 (same as a missing todo).
 
@@ -235,9 +232,9 @@ Defaults: `THROTTLE_LIMIT=10` requests per `THROTTLE_TTL=20000` ms window, track
 
 **Path params**
 
-| Param | Type     | Description |
-| ----- | -------- | ----------- |
-| `id`  | `string` | Todo UUID   |
+| Param | Type     | Description                                                    |
+| ----- | -------- | -------------------------------------------------------------- |
+| `id`  | `string` | Todo UUID (malformed value returns `DTO_VALIDATION_ERROR` 422) |
 
 **Request body** (all fields optional)
 
@@ -263,8 +260,7 @@ Defaults: `THROTTLE_LIMIT=10` requests per `THROTTLE_TTL=20000` ms window, track
     "id": "550e8400-e29b-41d4-a716-446655440000",
     "title": "Buy oat milk",
     "description": "From the big supermarket",
-    "completed": true,
-    "userName": "John Doe"
+    "completed": true
   }
 }
 ```
@@ -281,13 +277,13 @@ Defaults: `THROTTLE_LIMIT=10` requests per `THROTTLE_TTL=20000` ms window, track
 
 **Path params**
 
-| Param | Type     | Description |
-| ----- | -------- | ----------- |
-| `id`  | `string` | Todo UUID   |
+| Param | Type     | Description                                                    |
+| ----- | -------- | -------------------------------------------------------------- |
+| `id`  | `string` | Todo UUID (malformed value returns `DTO_VALIDATION_ERROR` 422) |
 
 **Response `204 No Content`**
 
-**Errors:** `TODO_NOT_FOUND` 404 · `USER_IS_NOT_AUTHORIZED` 401 · `INTERNAL_ERROR` 500
+**Errors:** `DTO_VALIDATION_ERROR` 422 · `TODO_NOT_FOUND` 404 · `USER_IS_NOT_AUTHORIZED` 401 · `INTERNAL_ERROR` 500
 
 **Ownership:** A todo owned by another user returns `TODO_NOT_FOUND` 404; nothing is written.
 

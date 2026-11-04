@@ -63,7 +63,7 @@ describe('TodosRepository', () => {
   describe('findAll', () => {
     const sort = { order: SortOrder.DESC, sortBy: TodoSortField.TITLE };
     const filter = {};
-    const pagination = { limit: 10, offset: 1 };
+    const pagination = { limit: 10, offset: 0 };
 
     describe('negative cases', () => {
       it('uses empty orderBy when sortBy is falsy', async () => {
@@ -84,7 +84,7 @@ describe('TodosRepository', () => {
         expect(result.data).toHaveLength(1);
         expect(result.data[0]).toBeInstanceOf(TodoEntity);
         expect(result.data[0].id).toBe('todo-1');
-        expect(result.meta).toEqual({ limit: 10, offset: 1, total: 1 });
+        expect(result.meta).toEqual({ limit: 10, offset: 0, total: 1 });
       });
 
       it('queries with correct where clause including userId and filter', async () => {
@@ -115,12 +115,12 @@ describe('TodosRepository', () => {
         );
       });
 
-      it('calculates correct skip from offset', async () => {
+      it('passes offset as skip without multiplying by limit', async () => {
         prismaMock.$transaction.mockResolvedValue([[], 0]);
 
         await repository.findAll('user-1', filter, sort, { limit: 10, offset: 3 });
 
-        expect(prismaMock.todo.findMany).toHaveBeenCalledWith(expect.objectContaining({ skip: 20, take: 10 }));
+        expect(prismaMock.todo.findMany).toHaveBeenCalledWith(expect.objectContaining({ skip: 3, take: 10 }));
       });
 
       it('returns empty data when no todos match', async () => {

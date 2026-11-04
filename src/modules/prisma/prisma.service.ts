@@ -19,7 +19,11 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
   ) {
     const adapter = new PrismaPg({
       connectionString: config.databaseUrl,
-      idleTimeoutMillis: 600000,
+      connectionTimeoutMillis: config.databaseConnectTimeoutMs,
+      idleTimeoutMillis: 30000,
+      max: config.databasePoolMax,
+      // eslint-disable-next-line camelcase -- pg option name
+      statement_timeout: config.databaseStatementTimeoutMs,
     });
 
     super({

@@ -32,4 +32,5 @@ model Todo {
 
   @@index([userId, createdAt])
   @@index([userId, completed, createdAt])
+  @@index([userId, title])
 }

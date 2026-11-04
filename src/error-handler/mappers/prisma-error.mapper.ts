@@ -7,6 +7,7 @@ import {
   DatabaseUniqueConstraintError,
   DatabaseValidationError,
 } from '../errors/database.errors';
+import { DtoValidationErrors } from '../errors/dto-validation.errors';
 
 export function mapPrismaError(err: unknown): BaseError<unknown> | null {
   if (err instanceof Prisma.PrismaClientKnownRequestError) {
@@ -20,6 +21,8 @@ export function mapPrismaError(err: unknown): BaseError<unknown> | null {
         return new DatabaseUniqueConstraintError('Unique constraint failed', err.meta);
       case 'P2003':
         return new DatabaseForeignKeyError('Foreign key constraint failed', err.meta);
+      case 'P2023':
+        return new DtoValidationErrors({ value: ['Malformed value'] });
       case 'P2025':
         return new DatabaseNotFoundError('Record not found', err.meta);
     }

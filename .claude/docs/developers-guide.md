@@ -109,6 +109,9 @@ All variables are validated at startup with `class-validator`. Missing required 
 | `DATABASE_SSL`                    | `false`                           | Enable SSL for DB connection                      |
 | `DATABASE_LOG_LEVELS`             | `["query","error","info","warn"]` | Prisma log levels                                 |
 | `DATABASE_FAIL_FAST`              | `true`                            | Exit on DB connection failure at startup          |
+| `DATABASE_POOL_MAX`               | `10`                              | Max connections in the Prisma pg pool             |
+| `DATABASE_CONNECT_TIMEOUT_MS`     | `5000`                            | Pool connection timeout                           |
+| `DATABASE_STATEMENT_TIMEOUT_MS`   | `5000`                            | Postgres `statement_timeout` per query            |
 | `REDIS_ENABLED`                   | `true`                            | Enable Redis (cache + throttler)                  |
 | `REDIS_HOST`                      | `localhost`                       | Redis host                                        |
 | `REDIS_PORT`                      | `6379`                            | Redis port                                        |

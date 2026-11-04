@@ -9,6 +9,10 @@ import { validateConfig } from '../common/utils/validate-config.util';
 import { DatabaseConfigInterface } from './interfaces/database-config.interface';
 
 class DatabaseConfig {
+  @IsNumber()
+  @Transform(({ value }) => Number(value))
+  DATABASE_CONNECT_TIMEOUT_MS = 5000;
+
   @IsBoolean()
   @Transform(({ value }) => value === 'true')
   DATABASE_FAIL_FAST = true;
@@ -35,7 +39,15 @@ class DatabaseConfig {
 
   @IsNumber()
   @Transform(({ value }) => Number(value))
+  DATABASE_POOL_MAX = 10;
+
+  @IsNumber()
+  @Transform(({ value }) => Number(value))
   DATABASE_PORT: number;
+
+  @IsNumber()
+  @Transform(({ value }) => Number(value))
+  DATABASE_STATEMENT_TIMEOUT_MS = 5000;
 
   @IsString()
   DATABASE_USER: string;
@@ -47,9 +59,12 @@ export const databaseConfig = registerAs<DatabaseConfig, ConfigFactory<DatabaseC
     const config = validateConfig(DatabaseConfig);
 
     return {
+      databaseConnectTimeoutMs: config.DATABASE_CONNECT_TIMEOUT_MS,
       databaseFailFast: config.DATABASE_FAIL_FAST,
       databaseLogLevels: config.DATABASE_LOG_LEVELS,
       databasePassword: config.DATABASE_PASSWORD,
+      databasePoolMax: config.DATABASE_POOL_MAX,
+      databaseStatementTimeoutMs: config.DATABASE_STATEMENT_TIMEOUT_MS,
       databaseUrl: getDatabaseUrl(),
       databaseUser: config.DATABASE_USER,
     };

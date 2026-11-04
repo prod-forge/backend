@@ -38,6 +38,16 @@ describe('Todos API (e2e)', () => {
         expect(body.status).toBe(401);
       });
 
+      it('returns 422 when search is longer than 100 characters', async () => {
+        const res = await request(server)
+          .get(`${TODOS_URL}?search=${'a'.repeat(101)}`)
+          .set(authHeaders)
+          .expect(422);
+        const body = res.body as ErrorBody;
+
+        expect(body.details).toHaveProperty('search');
+      });
+
       it('returns 422 when limit is below minimum', async () => {
         const res = await request(server).get(`${TODOS_URL}?limit=0`).set(authHeaders).expect(422);
         const body = res.body as ErrorBody;
@@ -128,18 +138,18 @@ describe('Todos API (e2e)', () => {
       });
 
       it('respects limit and returns correct number of items', async () => {
-        const res = await request(server).get(`${TODOS_URL}?limit=1&offset=1`).set(authHeaders).expect(200);
+        const res = await request(server).get(`${TODOS_URL}?limit=1&offset=0`).set(authHeaders).expect(200);
         const body = res.body as ListBody<TodoItem>;
 
         expect(body.data).toHaveLength(1);
         expect(body.meta.limit).toBe(1);
-        expect(body.meta.offset).toBe(1);
+        expect(body.meta.offset).toBe(0);
       });
 
       it('total count is consistent across paginated requests', async () => {
         const [page1, page2] = await Promise.all([
+          request(server).get(`${TODOS_URL}?limit=1&offset=0`).set(authHeaders),
           request(server).get(`${TODOS_URL}?limit=1&offset=1`).set(authHeaders),
-          request(server).get(`${TODOS_URL}?limit=1&offset=2`).set(authHeaders),
         ]);
 
         expect((page1.body as ListBody<TodoItem>).meta.total).toBe((page2.body as ListBody<TodoItem>).meta.total);
@@ -156,8 +166,11 @@ describe('Todos API (e2e)', () => {
         expect(body.code).toBe('USER_IS_NOT_AUTHORIZED');
       });
 
-      it('returns 400 when id is not a valid UUID format', async () => {
-        await request(server).get(`${TODOS_URL}/${INVALID_ID}`).set(authHeaders).expect(400);
+      it('returns 422 with DTO_VALIDATION_ERROR when id is not a valid UUID format', async () => {
+        const res = await request(server).get(`${TODOS_URL}/${INVALID_ID}`).set(authHeaders).expect(422);
+        const body = res.body as ErrorBody;
+
+        expect(body.code).toBe('DTO_VALIDATION_ERROR');
       });
 
       it('returns 404 with TODO_NOT_FOUND code when todo does not exist', async () => {
@@ -209,6 +222,29 @@ describe('Todos API (e2e)', () => {
 
         expect(body.code).toBe('DTO_VALIDATION_ERROR');
         expect(body.details).toHaveProperty('title');
+      });
+
+      it('returns 422 when title is longer than 200 characters', async () => {
+        const res = await request(server)
+          .post(TODOS_URL)
+          .set(authHeaders)
+          .send({ title: 'a'.repeat(201) })
+          .expect(422);
+        const body = res.body as ErrorBody;
+
+        expect(body.code).toBe('DTO_VALIDATION_ERROR');
+        expect(body.details).toHaveProperty('title');
+      });
+
+      it('returns 422 when description is longer than 2000 characters', async () => {
+        const res = await request(server)
+          .post(TODOS_URL)
+          .set(authHeaders)
+          .send({ description: 'a'.repeat(2001), title: 'ok' })
+          .expect(422);
+        const body = res.body as ErrorBody;
+
+        expect(body.details).toHaveProperty('description');
       });
 
       it('returns 422 when title is not a string', async () => {

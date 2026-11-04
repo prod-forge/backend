@@ -7,6 +7,7 @@ import {
   DatabaseUniqueConstraintError,
   DatabaseValidationError,
 } from '../errors/database.errors';
+import { DtoValidationErrors } from '../errors/dto-validation.errors';
 import { mapPrismaError } from './prisma-error.mapper';
 
 const CLIENT_VERSION = '1.0.0';
@@ -128,6 +129,13 @@ describe('mapPrismaError', () => {
 
       expect(result).toBeInstanceOf(DatabaseValidationError);
       expect(result?.status).toBe(HttpStatus.BAD_REQUEST);
+    });
+
+    it('maps P2023 to DtoValidationErrors with UNPROCESSABLE_ENTITY status', () => {
+      const result = mapPrismaError(makePrismaError('P2023', { message: 'invalid uuid' }));
+
+      expect(result).toBeInstanceOf(DtoValidationErrors);
+      expect(result?.status).toBe(HttpStatus.UNPROCESSABLE_ENTITY);
     });
 
     it('maps P2011 to DatabaseValidationError with BAD_REQUEST status', () => {

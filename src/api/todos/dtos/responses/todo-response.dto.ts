@@ -23,9 +23,4 @@ export class TodoResponseDto {
   @Expose()
   @IsString()
   title: string;
-
-  @ApiProperty()
-  @Expose()
-  @IsString()
-  userName: string;
 }

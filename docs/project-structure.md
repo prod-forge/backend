@@ -97,10 +97,10 @@ Example error response:
 
 ```shell
 {
-  "error": {
-    "type": "ValidationError",
-    "message": "Invalid request payload"
-  }
+  "code": "DTO_VALIDATION_ERROR",
+  "message": "Validation Error",
+  "status": 422,
+  "details": { "title": ["title must be shorter than or equal to 200 characters"] }
 }
 ```
 

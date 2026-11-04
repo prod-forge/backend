@@ -83,7 +83,7 @@ describe('TodosService', () => {
 
     describe('positive cases', () => {
       it('returns cached result without hitting the repository', async () => {
-        const cached = new PaginatedEntity({ items: [todoData], limit: 10, offset: 1, total: 1 });
+        const cached = new PaginatedEntity({ items: [todoData], limit: 10, offset: 0, total: 1 });
         cacheStorageMock.get.mockResolvedValue(cached);
 
         const result = await service.findAll('user-1', query);
@@ -318,7 +318,7 @@ describe('TodosService', () => {
       it('returns defaults when no params are provided', () => {
         const result = service.getPaginationQuery({});
 
-        expect(result).toEqual({ limit: 10, offset: 1 });
+        expect(result).toEqual({ limit: 10, offset: 0 });
       });
 
       it('returns provided limit and offset', () => {
@@ -327,16 +327,16 @@ describe('TodosService', () => {
         expect(result).toEqual({ limit: 20, offset: 3 });
       });
 
-      it('clamps offset of 0 to 1', () => {
-        const result = service.getPaginationQuery({ offset: 0 });
+      it('keeps offset of 0 as the first row', () => {
+        const result = service.getPaginationQuery({ limit: 10, offset: 0 });
 
-        expect(result.offset).toBe(1);
+        expect(result).toEqual({ limit: 10, offset: 0 });
       });
 
-      it('clamps negative offset to 1', () => {
+      it('clamps negative offset to 0', () => {
         const result = service.getPaginationQuery({ offset: -5 });
 
-        expect(result.offset).toBe(1);
+        expect(result.offset).toBe(0);
       });
 
       it('clamps negative limit to 1', () => {
@@ -349,22 +349,22 @@ describe('TodosService', () => {
 
   describe('getSortQuery', () => {
     describe('positive cases', () => {
-      it('returns title desc by default when no params are provided', () => {
+      it('returns createdAt desc by default when no params are provided', () => {
         const result = service.getSortQuery({});
 
-        expect(result).toEqual({ order: SortOrder.DESC, sortBy: TodoSortField.TITLE });
+        expect(result).toEqual({ order: SortOrder.DESC, sortBy: TodoSortField.CREATED_AT });
       });
 
       it('uses provided order when sortBy is absent', () => {
         const result = service.getSortQuery({ order: SortOrder.ASC });
 
-        expect(result).toEqual({ order: SortOrder.ASC, sortBy: TodoSortField.TITLE });
+        expect(result).toEqual({ order: SortOrder.ASC, sortBy: TodoSortField.CREATED_AT });
       });
 
       it('uses provided sortBy with default desc order', () => {
-        const result = service.getSortQuery({ sortBy: TodoSortField.CREATED_AT });
+        const result = service.getSortQuery({ sortBy: TodoSortField.TITLE });
 
-        expect(result).toEqual({ order: SortOrder.DESC, sortBy: TodoSortField.CREATED_AT });
+        expect(result).toEqual({ order: SortOrder.DESC, sortBy: TodoSortField.TITLE });
       });
 
       it('uses provided sortBy and order', () => {

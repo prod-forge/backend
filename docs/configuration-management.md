@@ -51,7 +51,7 @@ Example scenario:
 A developer needs to override the database port locally.
 
 ```dotenv
-DB_PORT=5332
+DATABASE_PORT=5332
 ```
 
 Key properties:

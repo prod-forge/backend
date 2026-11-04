@@ -79,18 +79,14 @@ export class TodosService {
 
   getPaginationQuery({ limit, offset }: TodosQueryDto): TodoPagination {
     const defaultLimit = 10;
-    const _offset = Math.max(Number(offset) || 1, 1);
+    const _offset = Math.max(Number(offset) || 0, 0);
     const _limit = Math.max(Number(limit) || defaultLimit, 1);
 
     return { limit: _limit, offset: _offset };
   }
 
   getSortQuery({ order, sortBy }: TodosQueryDto): TodoSort {
-    if (!sortBy) {
-      return { order: order ?? SortOrder.DESC, sortBy: TodoSortField.TITLE };
-    }
-
-    return { order: order ?? SortOrder.DESC, sortBy: sortBy };
+    return { order: order ?? SortOrder.DESC, sortBy: sortBy ?? TodoSortField.CREATED_AT };
   }
 
   async remove(userId: string, id: string): Promise<void> {

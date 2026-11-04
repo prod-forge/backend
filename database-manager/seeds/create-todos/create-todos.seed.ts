@@ -194,6 +194,9 @@ export async function createTodos(): Promise<void> {
       title: t.title,
       userId: userIds[idx % userIds.length],
     }));
+    // Idempotent: replace the seeded users' todos instead of appending on every run
+    await prisma.todo.deleteMany({ where: { userId: { in: userIds } } });
+
     // Use createMany for performance (createdAt defaults applied by Prisma/DB)
     await prisma.todo.createMany({
       data: todosData,

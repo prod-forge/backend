@@ -15,7 +15,7 @@
   },
   "hooks": {
     "before:init": "npm run lint",
-    "after:bump": "npm run build"
+    "after:bump": ["npm run build", "npm run openapi:export && git add docs/openapi.json"]
   },
   "plugins": {
     "@release-it/conventional-changelog": {

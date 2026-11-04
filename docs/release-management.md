@@ -94,8 +94,11 @@ After confirmation:
 
 1. release-it determines the next version
 2. generates the changelog from git history
-3. creates a git tag
-4. pushes the release commit
+3. the `after:bump` hook runs `npm run build` and `npm run openapi:export`, then stages `docs/openapi.json`: the
+   contract's `info.version` comes from `package.json`, so without this the release commit would fail
+   `npm run openapi:check` on the next CI run
+4. creates the release commit (including the re-exported `docs/openapi.json`) and a git tag
+5. pushes the release commit
 
 #### Versioning
 

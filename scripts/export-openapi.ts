@@ -12,7 +12,13 @@ const OUTPUT_PATH = join(process.cwd(), 'docs', 'openapi.json');
 // The document is built from decorators only, so these placeholders never reach a real service.
 // Redis clients try to connect when constructed, so expect ECONNREFUSED log lines when Redis is not running;
 // they are harmless because the process exits right after the document is built.
+// Every config value without a default is listed, so the export works without any .env file (CI has only .env.common).
 process.env.JWT_SECRET ??= 'openapi-export-placeholder-secret-00';
+process.env.DATABASE_NAME ??= 'openapi-export';
+process.env.DATABASE_PASSWORD ??= 'openapi-export-placeholder';
+process.env.DATABASE_PORT ??= '5432';
+process.env.DATABASE_USER ??= 'openapi-export';
+process.env.SENTRY_DSN ??= '';
 
 async function generate(): Promise<string> {
   // No app.init(): Prisma connects in onModuleInit, so the script stays independent of Postgres

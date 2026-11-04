@@ -9,7 +9,7 @@ import { SentryConfigInterface } from './interfaces/sentry-config.interface';
 
 class SentryConfig {
   @IsString()
-  SENTRY_DSN: string;
+  SENTRY_DSN = '';
 
   @IsBoolean()
   @Transform(({ value }) => value === 'true')

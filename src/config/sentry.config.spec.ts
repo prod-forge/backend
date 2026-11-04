@@ -33,6 +33,12 @@ describe('sentryConfig', () => {
   });
 
   describe('positive cases', () => {
+    it('loads without SENTRY_DSN and keeps Sentry disabled, so a deployment without Sentry needs no DSN', () => {
+      process.env.SENTRY_ENABLED = 'false';
+
+      expect(sentryConfig()).toMatchObject({ sentryDsn: '', sentryEnabled: false });
+    });
+
     it('is enabled only when the DSN is set and SENTRY_ENABLED is "true", the same as instrument.ts decides', () => {
       process.env.SENTRY_DSN = 'https://key@sentry.example/1';
       process.env.SENTRY_ENABLED = 'true';

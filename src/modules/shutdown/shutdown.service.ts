@@ -4,6 +4,7 @@ import { BeforeApplicationShutdown, Inject, Injectable, OnApplicationShutdown } 
 
 import { appConfig } from '../../config/app.config';
 import { LoggerService } from '../../logger/logger.service';
+import { shutdownTracing } from '../../tracing';
 import { RequestTrackingService } from '../in-flight-requests/request-tracking.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisManagerService } from '../redis-manager/redis-manager.service';
@@ -48,7 +49,11 @@ export class ShutdownService implements BeforeApplicationShutdown, OnApplication
   }
 
   async onApplicationShutdown(signal?: string): Promise<void> {
-    const results = await Promise.allSettled([this.prisma.$disconnect(), this.redisManager.destroy()]);
+    const results = await Promise.allSettled([
+      this.prisma.$disconnect(),
+      this.redisManager.destroy(),
+      shutdownTracing(),
+    ]);
 
     results.forEach((r) => {
       if (r.status === 'rejected') {

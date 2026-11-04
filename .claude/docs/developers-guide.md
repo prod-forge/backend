@@ -120,6 +120,7 @@ All variables are validated at startup with `class-validator`. Missing required 
 | `JWT_TTL`                         | `3600`                            | Access token lifetime in seconds                  |
 | `SENTRY_ENABLED`                  | `false`                           | Enable Sentry error capture                       |
 | `SENTRY_DSN`                      | —                                 | Sentry DSN (required when enabled)                |
+| `OTEL_EXPORTER_OTLP_ENDPOINT`     | —                                 | OTLP/HTTP trace endpoint; tracing off when unset  |
 | `HEALTH_CHECK_TRIGGER_MS`         | `15000`                           | Min interval between DB pings on /metrics scrapes |
 
 ---

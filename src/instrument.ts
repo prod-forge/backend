@@ -4,6 +4,7 @@ import { config } from 'dotenv';
 import { join } from 'node:path';
 
 import packageJson from '../package.json';
+import { isTracingEnabled, startTracing } from './tracing';
 
 // Must run before any other import: Sentry/OpenTelemetry patch `http` and `pg` at require time.
 // Same precedence as ConfigModule: .env wins over .env.common (dotenv never overrides existing values).
@@ -11,10 +12,12 @@ config({ path: [join(process.cwd(), '.env'), join(process.cwd(), '.env.common')]
 
 const dsn = process.env.SENTRY_DSN;
 
+let sentryClient: Sentry.NodeClient | undefined;
+
 if (dsn && process.env.SENTRY_ENABLED !== 'false') {
   const ignoredErrors = JSON.parse(process.env.SENTRY_IGNORED_ERRORS || '[]') as string[];
 
-  Sentry.init({
+  sentryClient = Sentry.init({
     beforeSend(event, hint) {
       const error = hint.originalException as null | Partial<Error> | undefined;
 
@@ -30,6 +33,10 @@ if (dsn && process.env.SENTRY_ENABLED !== 'false') {
     integrations: [nodeProfilingIntegration()],
     release: process.env.APP_VERSION || packageJson.version,
     sendDefaultPii: true,
+    // With an OTLP endpoint the NodeSDK in tracing.ts owns the single TracerProvider.
+    skipOpenTelemetrySetup: isTracingEnabled(),
     tracesSampleRate: 0.2,
   });
 }
+
+startTracing(sentryClient);

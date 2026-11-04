@@ -188,6 +188,12 @@ Every error is logged via `LoggerService`, counted in Prometheus, and sent to Se
 | Grafana    | 3001 | Dashboards (admin/admin)         |
 | Loki       | 3100 | Log aggregation                  |
 | Promtail   | 9080 | Reads Docker logs, ships to Loki |
+| Tempo      | 3200 | Trace storage (OTLP on 4318)     |
+
+Tracing: `src/tracing.ts` (`startTracing`, called from `src/instrument.ts`) starts the OpenTelemetry `NodeSDK` only when
+`OTEL_EXPORTER_OTLP_ENDPOINT` is set; with Sentry active it owns the single TracerProvider and Sentry is initialised with
+`skipOpenTelemetrySetup`. `shutdownTracing()` flushes spans from `ShutdownService.onApplicationShutdown`.
+`traceIdMiddleware` prefers the active span's trace id.
 
 ---
 

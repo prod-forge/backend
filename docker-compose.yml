@@ -10,6 +10,8 @@ services:
     restart: always
     labels:
       logging: ${APP_NAME}
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
     ports:
       - "3000:3000"
     networks:
@@ -93,6 +95,17 @@ services:
       - ./loki/config.yml:/etc/loki/config.yml
       - loki-data:/loki
 
+  tempo:
+    image: grafana/tempo:2.8.2
+    container_name: tempo
+    command: -config.file=/etc/tempo/config.yml
+    ports:
+      - "3200:3200"
+    volumes:
+      - ./observability/tempo/config.yml:/etc/tempo/config.yml
+      - tempo-data:/var/tempo
+    restart: unless-stopped
+
 networks:
   database:
     driver: bridge
@@ -100,6 +113,7 @@ networks:
 volumes:
   grafana-data:
   loki-data:
+  tempo-data:
   database:
   cache:
     driver: local

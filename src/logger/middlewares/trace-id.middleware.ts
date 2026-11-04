@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 
+import { trace } from '@opentelemetry/api';
 import { randomUUID } from 'node:crypto';
 
 import { capitalizeFirstLetter } from '../../common/utils/strings';
@@ -7,7 +8,8 @@ import { RequestContext } from '../context/request-context';
 import { traceIdHeader } from '../headers/trace-id.header';
 
 export const traceIdMiddleware = (req: Request, res: Response, next: NextFunction): void => {
-  const traceId = (req.headers[traceIdHeader] as string | undefined) || randomUUID();
+  const traceId =
+    trace.getActiveSpan()?.spanContext().traceId || (req.headers[traceIdHeader] as string | undefined) || randomUUID();
   req.headers[traceIdHeader] = traceId;
   const capitalizedHeader = traceIdHeader.split('-').map(capitalizeFirstLetter).join('-');
   res.setHeader(capitalizedHeader, traceId);

@@ -121,6 +121,48 @@ This becomes extremely useful when investigating production errors.
 The ctx field identifies where in the application the log was generated — for example, the name of the middleware,
 service, or handler that produced the entry.
 
+## Distributed Tracing
+
+A trace id and a span are different things. The trace id identifies one request across every service it touches
+(it is also what the `x-trace-id` header and the `traceId` log field carry). A span is one timed operation inside that
+trace: the HTTP request, an Express handler, a `pg` query, an `ioredis` command. Logs answer "what happened", spans
+answer "where did the time go".
+
+`src/tracing.ts` starts the OpenTelemetry `NodeSDK` from `src/instrument.ts` (before any other import, because
+auto-instrumentation patches `http`, `express`, `pg` and `ioredis` at require time). Spans are exported over OTLP/HTTP to
+Tempo. Tracing is enabled only when `OTEL_EXPORTER_OTLP_ENDPOINT` is set (compose sets `http://tempo:4318` on
+`production`); without it `startTracing()` does nothing, so unit and e2e tests are unaffected. The service name is
+`APP_NAME` and the version is `APP_VERSION`.
+
+When an OpenTelemetry span is active, `traceIdMiddleware` uses its trace id for `x-trace-id`, the response header and
+the log `traceId`. Without a span (tracing disabled) it falls back to an incoming `x-trace-id` header, then a random
+UUID. A log line therefore links straight to its trace: Grafana's Loki datasource has a `traceId` derived field that
+opens the matching trace in Tempo.
+
+### Coexistence with Sentry
+
+`@sentry/node` v10 is built on OpenTelemetry and would otherwise register its own global `TracerProvider`; a second
+provider is silently ignored, so one of the two would lose spans. When `OTEL_EXPORTER_OTLP_ENDPOINT` is set,
+`instrument.ts` initialises Sentry with `skipOpenTelemetrySetup: true` and `tracing.ts` builds the one provider with
+Sentry's `SentrySpanProcessor`, `SentrySampler`, `SentryPropagator` and `SentryContextManager` next to the OTLP exporter.
+Sentry keeps instrumenting `http`, `express`, `pg` and `ioredis` itself, so those four are disabled in the auto
+instrumentations to avoid duplicate spans. Without the endpoint Sentry owns its own setup as before.
+`@sentry/opentelemetry` is pinned to the same version as `@sentry/node`, and the OpenTelemetry packages are pinned to the
+2.x line that Sentry uses (`sdk-node` 0.214.0), because mixing OpenTelemetry SDK majors breaks the shared context.
+
+### Context propagation
+
+Services pass the trace on with the W3C `traceparent` header (`00-<trace-id>-<parent-span-id>-<flags>`). The SDK reads it
+on incoming requests and writes it on outgoing ones, so a trace started in the browser continues in the API. The
+frontend should send `traceparent` (a later frontend task); until then every API request starts a new trace.
+
+### Sampling and cost
+
+With Sentry active the Sentry sampler decides, so only `tracesSampleRate` (0.2) of traces reach Tempo too. Without
+Sentry every trace is sampled. Spans are batched and flushed on shutdown (`ShutdownService`, after the drain and
+in-flight phases). Tempo keeps blocks locally for 48 hours; for real traffic lower the sample rate first, since span
+volume (storage and exporter CPU) grows linearly with it.
+
 ## Observability Stack
 
 This project includes a basic observability stack that allows engineers to monitor logs and system metrics.
@@ -131,6 +173,7 @@ The stack consists of the following components:
 - Loki – log storage and indexing
 - Grafana – visualization and dashboards
 - Prometheus – metrics collection system
+- Tempo – distributed trace storage
 
 ## Logging Pipeline
 

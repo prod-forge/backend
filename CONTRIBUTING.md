@@ -54,10 +54,15 @@ For small fixes (typos, broken links), you can submit a pull request directly.
 
 ### 2. Fork the repository
 
+Fork `prod-forge/backend` on GitHub, then clone your fork:
+
 ```shell
-git clone https://github.com/prod-forge/backend.git
+git clone https://github.com/<your-username>/backend.git
 cd backend
 ```
+
+Follow [Getting started](README.md#getting-started) to run the project locally. `npm install` also installs the Husky
+hooks that lint staged files and validate commit messages.
 
 ### 3. Create a branch
 

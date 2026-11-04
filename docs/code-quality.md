@@ -25,7 +25,7 @@ The second layer introduces stricter rules through **ESLint**.
 
 While ESLint can be configured in many different ways, this project uses the following plugins:
 
-- `typescript-eslint` - TypeScript-specific linting rules
+- `typescript-eslint` - TypeScript-specific linting rules (`strictTypeChecked` and `stylisticTypeChecked`)
 - `eslint-plugin-import-lite` - default export in modules are prohibited
 - `eslint-plugin-no-only-tests` - only statement in tests are prohibited
 - `eslint-plugin-regexp` - validation and best practices for regular expressions
@@ -33,6 +33,9 @@ While ESLint can be configured in many different ways, this project uses the fol
 - `eslint-plugin-perfectionist` - sorting of imports and object properties
 - `eslint-plugin-package-json` - validation rules for `package.json`
 - `eslint-plugin-check-file` - file naming conventions
+- `eslint-plugin-sonarjs` - SonarQube-style bug and code smell rules
+- `eslint-plugin-unicorn` - additional best-practice rules
+- `eslint-plugin-jest` - rules for test files
 - `@eslint/json` - additional validation for JSON files
 - `@eslint/js` - JavaScript linting support for auxiliary scripts
 
@@ -49,11 +52,14 @@ The third layer prevents problematic code from entering the repository.
 
 This is implemented using **Husky** and **lint-staged**.
 
-Before each commit:
+Before each commit (`.husky/pre-commit` runs `lint-staged`):
 
-- ESLint checks are executed
-- formatting is validated
-- only modified files are analyzed
+- staged `*.ts` and `*.json` files are formatted with Prettier and fixed with `eslint --fix`
+- staged `*.md` files are formatted with Prettier
+- the whole project is type-checked (`npm run lint:ts`) when a `*.ts` file is staged
+
+The `commit-msg` hook runs commitlint and rejects AI attribution trailers. Before each push, `.husky/pre-push` runs
+`npm run knip`, `npm run doctor` and `npm test`.
 
 This ensures that commits do not break the CI pipeline or introduce formatting issues.
 
@@ -81,9 +87,10 @@ The final layer runs full validation during the **CI pipeline**.
 
 At this stage the entire codebase is analyzed to ensure:
 
-- linting rules pass
+- linting rules pass (`npm run lint`, `npm run knip`, `npm run doctor`)
 - formatting rules are satisfied
-- tests run successfully
+- unit and e2e tests run successfully
+- the production Docker image builds
 - the committed OpenAPI contract matches the code (`npm run openapi:check`)
 
 The pipeline runs on every pull request and on every push to `main`. Supply-chain controls run alongside it:

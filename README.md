@@ -302,12 +302,8 @@ The goal of Prod Forge is to make these practices visible, understandable, and r
 
 ## What comes next
 
-This project is actively evolving.
-Planned additions include:
-
-- Frontend repository with the same level of production treatment
-- Mobile App repository with the same level of production treatment
-- Kubernetes-based infrastructure as an alternative to ECS
+Open work (Kubernetes, blue/green deployment, feature flags, Alertmanager routing and others) is listed in the
+[roadmap](roadmap.md).
 
 If there is something missing that you would find valuable, open an issue or start a discussion.
 
@@ -328,10 +324,6 @@ This project exists as a reminder not to skip them.
 
 - Identity provider and password management: the API verifies signed tokens and ships a login stub, see [Authentication and Authorization](docs/security.md#authentication-and-authorization)
 - Cursor pagination: list endpoints use offset pagination with `count(*)`, which is enough for the Todo scale, see [Performance](docs/performance.md#offset-vs-cursor-pagination)
-- Feature flags
-- A/B testing
-- Cost analysis
-- Kubernetes
 
 # Contributing
 

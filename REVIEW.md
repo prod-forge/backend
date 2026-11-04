@@ -25,6 +25,7 @@ Feature anatomy inside `src/features/<feature>/`:
 - `<feature>.service.ts`
 - `<feature>.repository.ts`
 - `<feature>.module.ts`
+- `constants/<feature>.constants.ts`
 - `entities/<feature>.entity.ts`
 - `mappers/<feature>.mapper.ts`
 - `cache-queries/<feature>.cache-queries.ts`
@@ -65,14 +66,14 @@ Controller anatomy inside `src/api/<feature>/`:
 
 ## Import Order
 
-Imports are grouped and ordered as follows (enforced by eslint-import-order):
+Imports are grouped and ordered as follows (enforced by `eslint-plugin-perfectionist`, `recommended-natural`):
 
-1. `import type` statements (NestJS types, config types, third-party types)
-2. NestJS core imports
-3. Third-party library imports
-4. Local relative imports
+1. `import type` from packages (NestJS types, config types, third-party types)
+2. Value imports from Node built-ins and packages (NestJS and third-party libraries together)
+3. `import type` from relative paths
+4. Value imports from relative paths
 
-Blank line separates each group. Example:
+A blank line separates each group; imports are sorted naturally inside a group. Example:
 
 ```ts
 import type { ConfigType } from '@nestjs/config';
@@ -91,12 +92,12 @@ import { RedisManagerService } from '../redis-manager.service';
 - Each module is focused on a single domain or infrastructure concern.
 - Module file declares `controllers`, `imports`, `providers`, and `exports` explicitly.
 - Infrastructure modules (`PrismaModule`, `RedisManagerModule`, etc.) are imported where needed rather than made global.
-- `ConfigModule` is global (`isGlobal: true`) — configs injected via `@Inject(config.KEY)`.
+- `ConfigModule` (`isGlobal: true`) and `LoggerModule` (`@Global()`) are the only global modules — configs are injected via `@Inject(config.KEY)`.
 
 ```ts
 @Module({
   controllers: [TodosController],
-  imports: [PrismaModule, RedisManagerModule],
+  imports: [AuthModule, PrismaModule, RedisManagerModule],
   providers: [TodosService, TodosRepository],
 })
 export class TodosModule {}
@@ -157,10 +158,10 @@ export class TodosService {
 - Only place that interacts with Prisma directly.
 - Use `this.prisma.$transaction([...])` for multi-step reads/writes.
 - Map Prisma models to domain entities via the feature's `Mapper` object.
-- Do not throw domain errors — return `void` or `undefined` for not-found, let the service decide.
+- Do not throw domain errors — return `undefined` for not-found, let the service decide.
 
 ```ts
-async findOne(id: string): Promise<TodoEntity | void> {
+async findOne(id: string): Promise<TodoEntity | undefined> {
   const todo = await this.prisma.todo.findUnique({ where: { id } });
   if (todo) return TodoMapper.toEntity(todo);
 }
@@ -180,6 +181,7 @@ export class TodoEntity {
   description: null | string;
   id: string;
   title: string;
+  userId: string;
 
   constructor(partial: Partial<TodoEntity>) {
     Object.assign(this, partial);
@@ -264,11 +266,12 @@ Rules:
 ### Global exception filter
 
 - Single `@Catch()` filter catches all exceptions.
-- Four-level fallback: domain error → Prisma error → HttpException → unknown.
+- Four-level fallback (`resolveError`): domain error → framework `HttpException` below 500 → Prisma error → generic `InternalServerError`.
+- Health endpoints (`/health*`) pass the Terminus `HttpException` through unchanged.
 - Internal errors (infra/unknown) never expose details to clients.
 - Logs via `LoggerService` with structured fields.
-- Tracks error metrics via Prometheus counter.
-- Sentry capture when enabled.
+- Tracks error metrics via the `httpErrorsTotal` Prometheus counter for every status of 400 and above.
+- Sentry capture only for 5xx when `SENTRY_ENABLED`; domain 4xx are never sent.
 
 ---
 
@@ -296,14 +299,17 @@ export const appConfig = registerAs<AppConfig, ConfigFactory<AppConfigInterface>
 - All cache operations are in `CacheStorage` (wraps Redis).
 - Every method has a `try/catch` that logs a warning on failure — cache errors never propagate to callers.
 - Cache keys defined in a `const` object with one function per key type (e.g. `TodosCacheKeys`).
-- Key naming pattern: `resource:id`, `resource:userId:*` (for pattern invalidation).
+- Key naming pattern: `<version>:resource:id`, `<version>:resource:userId:*` (for pattern invalidation). Bump the version constant when the shape of a cached value changes.
+- `delByPattern` walks the keyspace with `SCAN` and `UNLINK`; never use `KEYS`.
 
 ```ts
-export class TodosCacheKeys {
-  static todo(id: string): string { return `todo:${id}`; }
-  static todos(userId: string, query: TodosQueryDto): string { return `todos:${userId}:${...}`; }
-  static todosByUser(userId: string): string { return `todos:${userId}:*`; }
-}
+const CACHE_VERSION = 'v2';
+
+export const TodosCacheKeys = {
+  todo(id: string): string { return `${CACHE_VERSION}:todo:${id}`; },
+  todos(userId: string, query: TodosQueryDto): string { return `${CACHE_VERSION}:todos:${userId}:${...}`; },
+  todosByUser(userId: string): string { return `${CACHE_VERSION}:todos:${userId}:*`; },
+};
 ```
 
 Cache invalidation pattern in services:
@@ -324,7 +330,7 @@ this.loggerService.error({ code, ctx, details, method, msg, path, stack });
 ```
 
 - `ctx` field always set to the calling class name (use `ClassName.name`).
-- Sensitive fields (`authorization`, `cookie`, `password`, `token`) are redacted automatically.
+- Sensitive fields (`authorization`, `cookie`, `password`, `email`, `token`) are redacted automatically (`src/logger/log-redact.ts`).
 
 ---
 

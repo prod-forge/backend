@@ -3,12 +3,12 @@ import { ThrottlerException } from '@nestjs/throttler';
 
 import { ErrorCodes } from '../constants/error.codes';
 import { TodoNotFoundError } from '../errors/todo.errors';
-import { resolveError, resolveErrorStatus } from './resolve-error';
+import { isHealthPassthrough, resolveError, resolveErrorStatus } from './resolve-error';
 
 describe('resolveError', () => {
   describe('negative cases', () => {
     it('hides unknown errors behind a 500', () => {
-      expect(resolveErrorStatus(new Error('boom'))).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
+      expect(resolveErrorStatus(new Error('boom'), '/api/v1/todos')).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
     });
 
     it('hides 5xx HttpException behind a 500', () => {
@@ -17,9 +17,27 @@ describe('resolveError', () => {
       expect(error.status).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
       expect(error.code).toBe(ErrorCodes.INTERNAL_ERROR);
     });
+
+    it('hides a 503 HttpException outside the health routes behind a 500', () => {
+      const error = new HttpException('down', HttpStatus.SERVICE_UNAVAILABLE);
+
+      expect(resolveErrorStatus(error, '/healthz')).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
+      expect(resolveErrorStatus(error, '/api/v1/todos')).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
+    });
+
+    it('does not pass through a non-HttpException on a health route', () => {
+      expect(isHealthPassthrough('/health', new Error('boom'))).toBe(false);
+    });
   });
 
   describe('positive cases', () => {
+    it.each(['/health', '/HEALTH', '/health/deps', '/Health/Live'])('keeps the Terminus 503 on %s', (path) => {
+      const error = new HttpException({ status: 'error' }, HttpStatus.SERVICE_UNAVAILABLE);
+
+      expect(isHealthPassthrough(path, error)).toBe(true);
+      expect(resolveErrorStatus(error, path)).toBe(HttpStatus.SERVICE_UNAVAILABLE);
+    });
+
     it('returns BaseError unchanged', () => {
       const error = new TodoNotFoundError('1');
 

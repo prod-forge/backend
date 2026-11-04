@@ -25,12 +25,15 @@ import { TodoNotFoundError } from '../../../error-handler/errors/todo.errors';
 import { RequestContext } from '../../../logger/context/request-context';
 import { HttpMetricsInterceptor } from './http-metrics.interceptor';
 
-const makeContext = (method = 'GET', route = '/api/v1/todos/:id', statusCode = 200): ExecutionContext =>
+const makeContext = (
+  method = 'GET',
+  route = '/api/v1/todos/:id',
+  statusCode = 200,
+  path = '/api/v1/todos/42',
+): ExecutionContext =>
   ({
     switchToHttp: jest.fn().mockReturnValue({
-      getRequest: jest
-        .fn()
-        .mockReturnValue({ baseUrl: '', method, originalUrl: '/api/v1/todos/42', route: { path: route } }),
+      getRequest: jest.fn().mockReturnValue({ baseUrl: '', method, originalUrl: path, path, route: { path: route } }),
       getResponse: jest.fn().mockReturnValue({ statusCode }),
     }),
   }) as unknown as ExecutionContext;
@@ -81,6 +84,17 @@ describe('HttpMetricsInterceptor', () => {
       await expect(lastValueFrom(interceptor.intercept(makeContext(), handler))).rejects.toBe(error);
 
       expect(mockCounterLabels).toHaveBeenCalledWith('GET', '/api/v1/todos/:id', '500');
+    });
+
+    it('labels the Terminus 503 of a health route with 503 like the exception filter responds', async () => {
+      const error = new HttpException({ status: 'error' }, 503);
+      const handler: CallHandler = { handle: jest.fn().mockReturnValue(throwError(() => error)) };
+
+      await expect(
+        lastValueFrom(interceptor.intercept(makeContext('GET', '/health', 200, '/HEALTH'), handler)),
+      ).rejects.toBe(error);
+
+      expect(mockCounterLabels).toHaveBeenCalledWith('GET', '/health', '503');
     });
 
     it('keeps the status of a 4xx HttpException like the exception filter', async () => {

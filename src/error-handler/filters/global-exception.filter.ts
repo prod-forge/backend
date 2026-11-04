@@ -5,11 +5,10 @@ import * as Sentry from '@sentry/node';
 import { Request, Response } from 'express';
 
 import { sentryConfig } from '../../config/sentry.config';
-import { HEALTH_ENDPOINT } from '../../constants/url.constants';
 import { RequestContext } from '../../logger/context/request-context';
 import { LoggerService } from '../../logger/logger.service';
 import { frontendMapper } from '../mappers/frontend.mapper';
-import { resolveError } from '../mappers/resolve-error';
+import { isHealthPassthrough, resolveError } from '../mappers/resolve-error';
 import { httpErrorsTotal, UNMATCHED_ROUTE } from './http-errors.metrics';
 
 @Catch()
@@ -28,8 +27,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     const error = resolveError(exception);
 
-    // Health endpoints keep the Terminus body and status (503 when a check is down, e.g. during shutdown drain)
-    if (req.url.slice(1).startsWith(HEALTH_ENDPOINT) && exception instanceof HttpException) {
+    if (isHealthPassthrough(req.path, exception)) {
       res.status(exception.getStatus()).json(exception.getResponse());
 
       return;
@@ -49,8 +47,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       }
 
       Sentry.captureException(exception, {
+        // No request body: it can hold personal data (the login body carries the email)
         extra: {
-          body: req.body,
           params: req.params,
           query: req.query,
           traceId,

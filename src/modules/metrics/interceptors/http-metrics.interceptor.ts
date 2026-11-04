@@ -29,7 +29,7 @@ export class HttpMetricsInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       catchError((err: unknown) => {
-        record(resolveErrorStatus(err));
+        record(resolveErrorStatus(err, req.path));
         throw err;
       }),
       finalize(() => {

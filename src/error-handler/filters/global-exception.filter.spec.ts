@@ -45,14 +45,16 @@ const makeHost = (
   const jsonMock = jest.fn();
   const statusMock = jest.fn().mockReturnValue({ json: jsonMock });
   const res = { status: statusMock };
+  const url = opts.url || '/api/todos';
   const req = {
-    body: {},
+    body: { email: 'user@example.com' },
     header: jest.fn().mockReturnValue(undefined),
     method: opts.method || 'GET',
     params: {},
+    path: url.split('?')[0],
     query: {},
     route: opts.route,
-    url: opts.url || '/api/todos',
+    url,
     userId: opts.userId,
   };
 
@@ -119,6 +121,25 @@ describe('GlobalExceptionFilter', () => {
       expect(jsonMock).toHaveBeenCalledWith(body);
     });
 
+    it('does not treat a path that only starts with "health" as a health endpoint', () => {
+      const { host, res } = makeHost({ url: '/healthz' });
+
+      filter.catch(new HttpException('down', HttpStatus.SERVICE_UNAVAILABLE), host);
+
+      expect(res.status).toHaveBeenCalledWith(HttpStatus.INTERNAL_SERVER_ERROR);
+    });
+
+    it('never sends the request body to Sentry', () => {
+      filter = new GlobalExceptionFilter(logger as unknown as LoggerService, { sentryEnabled: true } as never);
+      const { host } = makeHost({ route: { path: '/api/v1/auth/login' }, url: '/api/v1/auth/login' });
+
+      filter.catch(new InternalServerError(), host);
+
+      const [, context] = jest.mocked(Sentry.captureException).mock.calls[0] as [unknown, { extra: object }];
+      expect(context.extra).not.toHaveProperty('body');
+      expect(JSON.stringify(context)).not.toContain('user@example.com');
+    });
+
     it.each([
       ['NotFoundException', new NotFoundException('Cannot GET /x'), HttpStatus.NOT_FOUND],
       ['ThrottlerException', new ThrottlerException(), HttpStatus.TOO_MANY_REQUESTS],
@@ -174,6 +195,17 @@ describe('GlobalExceptionFilter', () => {
         expect.objectContaining({ extra: expect.objectContaining({ traceId: 'ctx-trace-1' }) as unknown }),
       );
     });
+
+    it.each(['/HEALTH', '/Health/Deps', '/health/deps?verbose=1'])(
+      'keeps the Terminus 503 for %s (Express routing is case-insensitive)',
+      (url) => {
+        const { host, res } = makeHost({ url });
+
+        filter.catch(new HttpException({ status: 'error' }, HttpStatus.SERVICE_UNAVAILABLE), host);
+
+        expect(res.status).toHaveBeenCalledWith(HttpStatus.SERVICE_UNAVAILABLE);
+      },
+    );
 
     it('captures exception via Sentry when enabled', () => {
       filter = new GlobalExceptionFilter(logger as unknown as LoggerService, { sentryEnabled: true } as never);

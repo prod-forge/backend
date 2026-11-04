@@ -408,7 +408,10 @@ this.shutdownHealthService.check('shutdown');
 On SIGTERM, readiness switches to `503` first and the HTTP server keeps accepting connections for
 `SHUTDOWN_DRAIN_MS` (10s by default), so the load balancer deregisters the instance before the port closes. The global
 exception filter passes the Terminus status through for health routes, so a failed check is a real `503`, not a `200`
-with `"status":"error"` in the body.
+with `"status":"error"` in the body. `isHealthPassthrough` (`src/error-handler/mappers/resolve-error.ts`) decides this
+from the lowercased `req.path` (`/health` or `/health/...`; Express routing is case-insensitive and the query string is
+ignored), and `HttpMetricsInterceptor` uses the same rule, so the drain `503` is labelled `status="503"` in
+`http_requests_total`, not `500`. Every other 5xx `HttpException` is still reported and labelled as `500`.
 
 ### /health/deps (All)
 

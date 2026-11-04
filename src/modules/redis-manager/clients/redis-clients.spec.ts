@@ -27,10 +27,13 @@ import type { LoggerService } from '../../../logger/logger.service';
 
 import { BaseRedisService } from './_base.client';
 
-const makeConfig = (): { redisHost: string; redisPort: number } => ({ redisHost: 'localhost', redisPort: 6379 });
+type TestConfig = { redisHost: string; redisPassword?: string; redisPort: number; redisTls?: boolean };
+
+const makeConfig = (): TestConfig => ({ redisHost: 'localhost', redisPort: 6379 });
 
 const makeEnvironment = (env: EnvironmentType): EnvironmentService =>
   ({
+    isProduction: jest.fn().mockReturnValue(env === EnvironmentType.production),
     isTest: jest.fn().mockReturnValue(env === EnvironmentType.test),
   }) as unknown as EnvironmentService;
 
@@ -42,7 +45,7 @@ const makeLogger = (): { error: jest.Mock; log: jest.Mock; warn: jest.Mock } => 
 
 class TestRedisService extends BaseRedisService {
   constructor(
-    config: ReturnType<typeof makeConfig>,
+    config: TestConfig,
     env: EnvironmentService,
     logger: { error: jest.Mock; log: jest.Mock; warn: jest.Mock },
   ) {
@@ -76,19 +79,69 @@ describe('BaseRedisService', () => {
       expect(result).toBeNull();
     });
 
-    it('getDefaultProps in production returns retry delay for first attempts', () => {
+    it('getDefaultProps in production backs off exponentially up to the cap and never gives up', () => {
       const service = new TestRedisService(makeConfig(), makeEnvironment(EnvironmentType.production), makeLogger());
       const retryFn = service.getDefaultProps().retryStrategy as (times: number) => null | number;
 
       expect(retryFn(1)).toBe(200);
       expect(retryFn(2)).toBe(400);
+      expect(retryFn(25)).toBe(5000);
+      expect(retryFn(10_000)).toBe(5000);
     });
 
-    it('getDefaultProps in production returns null after MAX_RETRIES', () => {
-      const service = new TestRedisService(makeConfig(), makeEnvironment(EnvironmentType.production), makeLogger());
+    it('retryStrategy warns on the first attempt and every 10th only', () => {
+      const logger = makeLogger();
+      const service = new TestRedisService(makeConfig(), makeEnvironment(EnvironmentType.production), logger);
       const retryFn = service.getDefaultProps().retryStrategy as (times: number) => null | number;
 
-      expect(retryFn(10)).toBeNull();
+      for (let i = 1; i <= 20; i++) retryFn(i);
+
+      expect(logger.warn).toHaveBeenCalledTimes(3);
+    });
+
+    it('getDefaultProps keeps requests failing fast while disconnected', () => {
+      const service = new TestRedisService(makeConfig(), makeEnvironment(EnvironmentType.production), makeLogger());
+      const props = service.getDefaultProps();
+
+      expect(props.maxRetriesPerRequest).toBe(0);
+      expect(props.enableOfflineQueue).toBe(false);
+    });
+
+    it('getDefaultProps omits tls and password by default', () => {
+      const service = new TestRedisService(makeConfig(), makeEnvironment(EnvironmentType.test), makeLogger());
+      const props = service.getDefaultProps();
+
+      expect(props).not.toHaveProperty('tls');
+      expect(props).not.toHaveProperty('password');
+    });
+
+    it('getDefaultProps passes tls with default verification and password when set', () => {
+      const config = { ...makeConfig(), redisPassword: 'secret', redisTls: true };
+      const service = new TestRedisService(config, makeEnvironment(EnvironmentType.production), makeLogger());
+      const props = service.getDefaultProps();
+
+      expect(props.tls).toEqual({});
+      expect(props.password).toBe('secret');
+    });
+
+    it('getDefaultProps warns when tls is on in production without a password', () => {
+      const logger = makeLogger();
+      const config = { ...makeConfig(), redisTls: true };
+      const service = new TestRedisService(config, makeEnvironment(EnvironmentType.production), logger);
+      service.getDefaultProps();
+
+      expect(logger.warn).toHaveBeenCalledWith(
+        expect.objectContaining({ msg: 'REDIS_TLS is enabled in production without REDIS_PASSWORD' }),
+      );
+    });
+
+    it('getDefaultProps does not warn about tls without a password outside production', () => {
+      const logger = makeLogger();
+      const config = { ...makeConfig(), redisTls: true };
+      const service = new TestRedisService(config, makeEnvironment(EnvironmentType.development), logger);
+      service.getDefaultProps();
+
+      expect(logger.warn).not.toHaveBeenCalled();
     });
 
     it('getDefaultProps sets correct host and port from config', () => {

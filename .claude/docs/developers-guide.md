@@ -115,6 +115,8 @@ All variables are validated at startup with `class-validator`. Missing required 
 | `REDIS_ENABLED`                   | `true`                            | Enable Redis (cache + throttler)                  |
 | `REDIS_HOST`                      | `localhost`                       | Redis host                                        |
 | `REDIS_PORT`                      | `6379`                            | Redis port                                        |
+| `REDIS_TLS`                       | `false`                           | `true`/`false` only; TLS with Node's default CAs  |
+| `REDIS_PASSWORD`                  | —                                 | Optional AUTH token (warns if TLS on in prod)     |
 | `THROTTLE_TTL`                    | `60000`                           | Rate-limit window in milliseconds                 |
 | `THROTTLE_LIMIT`                  | `60`                              | Max requests per window (per user, else per IP)   |
 | `THROTTLE_ENABLED`                | `true`                            | Set `false` to disable rate limiting              |

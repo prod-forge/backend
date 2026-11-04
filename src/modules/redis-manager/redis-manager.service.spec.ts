@@ -79,6 +79,14 @@ describe('RedisManagerService', () => {
 
       expect(logger.error).not.toHaveBeenCalled();
     });
+
+    it('destroy still disconnects a client whose quit fails, so reconnecting stops', async () => {
+      cacheMock.quit.mockRejectedValue(new Error('Stream is not writeable'));
+
+      await service.destroy();
+
+      expect(cacheMock.disconnect).toHaveBeenCalled();
+    });
   });
 });
 

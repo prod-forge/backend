@@ -219,3 +219,14 @@ This configuration strategy provides several advantages:
 - configuration is organized into small, predictable modules
 
 As the project grows, this structure allows the configuration system to scale without becoming difficult to maintain.
+
+## Redis TLS and AUTH
+
+`REDIS_TLS` accepts only `true` or `false` (default `false`). When `true`, ioredis connects with `tls: {}`, which uses
+Node's default CA store with certificate verification on; ElastiCache certificates chain to a publicly trusted Amazon
+root, so no custom CA is needed. `rejectUnauthorized` is never disabled, and the TLS server name is taken from
+`REDIS_HOST`, so use the endpoint hostname. `REDIS_PASSWORD` is the optional AUTH token; if `REDIS_TLS=true` in
+production without it, a warning is logged at startup.
+
+Redis clients reconnect forever with capped backoff (`min(attempt * 200, 5000)` ms) and log every 10th attempt, while
+commands fail fast during an outage (cache reads degrade to a miss).

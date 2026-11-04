@@ -29,8 +29,6 @@ export class RedisManagerService {
       clients.map(async (client) => {
         try {
           await client.quit();
-          client.disconnect();
-          void client.removeAllListeners();
         } catch (error) {
           if (error instanceof Error) {
             const err = new RedisErrors('Redis has problem with destroy', error);
@@ -40,6 +38,9 @@ export class RedisManagerService {
               msg: err.message,
             });
           }
+        } finally {
+          client.disconnect();
+          void client.removeAllListeners();
         }
       }),
     );

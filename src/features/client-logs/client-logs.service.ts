@@ -7,7 +7,7 @@ import { LoggerService } from '../../logger/logger.service';
 const CLIENT_LOGS_CTX = 'client-logs';
 
 // Query strings and hashes can carry tokens or personal data, so only origin and path are logged
-const stripQueryAndHash = (value: string): string => value.split(/[?#]/)[0];
+const stripQueryAndHash = (value: string | undefined): string | undefined => value?.split(/[?#]/)[0];
 
 @Injectable()
 export class ClientLogsService {
@@ -22,15 +22,18 @@ export class ClientLogsService {
   }
 
   processWebLog(dto: WebLogDto): void {
+    // Validation requires metadata; the cast keeps this tolerant of a missing one instead of failing a public endpoint
+    const metadata = dto.metadata as Partial<WebLogDto['metadata']> | undefined;
+
     this.loggerService.warn({
       ctx: CLIENT_LOGS_CTX,
       details: {
         actions: dto.actions,
         clientTraceId: dto.traceId,
         env: dto.env,
-        metadata: Object.assign({}, dto.metadata, {
-          fullUrl: stripQueryAndHash(dto.metadata.fullUrl),
-          url: stripQueryAndHash(dto.metadata.url),
+        metadata: Object.assign({}, metadata, {
+          fullUrl: stripQueryAndHash(metadata?.fullUrl),
+          url: stripQueryAndHash(metadata?.url),
         }),
         source: 'web',
         timestamp: dto.timestamp,

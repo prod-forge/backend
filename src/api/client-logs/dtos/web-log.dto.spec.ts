@@ -33,6 +33,14 @@ describe('WebLogDto', () => {
       expect(errors).not.toHaveLength(0);
     });
 
+    it('rejects a log without metadata', async () => {
+      const dto = makeDto();
+
+      delete (dto as Partial<WebLogDto>).metadata;
+
+      expect(await validate(dto)).not.toHaveLength(0);
+    });
+
     it('rejects an oversize message', async () => {
       const errors = await validate(makeDto({ message: 'x'.repeat(2001) }));
 

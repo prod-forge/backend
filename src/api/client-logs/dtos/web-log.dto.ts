@@ -5,6 +5,8 @@ import {
   ArrayNotEmpty,
   IsArray,
   IsDateString,
+  IsDefined,
+  IsObject,
   IsString,
   IsUUID,
   MaxLength,
@@ -28,7 +30,9 @@ export class WebLogDto {
   @MaxLength(50)
   env: string;
 
-  @ApiProperty({ type: () => WebLogMetadataDto })
+  @ApiProperty({ required: true, type: () => WebLogMetadataDto })
+  @IsDefined()
+  @IsObject()
   @Type(() => WebLogMetadataDto)
   @ValidateNested()
   metadata: WebLogMetadataDto;

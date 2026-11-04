@@ -13,6 +13,18 @@ describe('ClientLogsService', () => {
   });
 
   describe('negative cases', () => {
+    it('does not throw when metadata is missing', () => {
+      expect(() =>
+        service.processWebLog({
+          actions: [],
+          env: 'test',
+          timestamp: '2026-05-18T00:00:00.000Z',
+          traceId: '9c226319-abcc-4d6c-a1b6-f5d1cf18b6ae',
+        } as never),
+      ).not.toThrow();
+      expect(logger.warn).toHaveBeenCalledTimes(1);
+    });
+
     it('strips query string and hash from fullUrl and url before logging', () => {
       service.processWebLog({
         actions: [{ ctx: 'app', level: WebLogLevel.INFO, message: 'm', payload: {} }],

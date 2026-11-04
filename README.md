@@ -43,7 +43,9 @@ Requires Node 24, Docker and `jq`.
 
 ```shell
 npm install
-docker compose up -d database cache
+npm run db:generate                   # Prisma client (gitignored); lint, tests and start need it
+docker compose up -d database cache   # works without .env, using local defaults user/user/app
+echo 'DATABASE_PORT=5332' > .env      # host port of the compose database (.env.common says 5432)
 npm run db:migration:deploy && npm run db:seed
 npm run start:dev                     # API on http://localhost:3000, Swagger on /docs
 ./scripts/verify-observability.sh     # app in Docker plus Prometheus, Grafana, Loki, Tempo, checked end to end

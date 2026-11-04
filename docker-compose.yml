@@ -11,7 +11,8 @@ services:
       logging: ${APP_NAME:-prod-forge-backend}
     env_file:
       - .env.common
-      - .env
+      - path: .env
+        required: false
     environment:
       DATABASE_HOST: database
       DATABASE_PORT: 5432
@@ -39,11 +40,13 @@ services:
     image: postgres:18.3
     env_file:
       - .env.common
-      - .env
+      - path: .env
+        required: false
     environment:
-      POSTGRES_USER: ${DATABASE_USER}
-      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
-      POSTGRES_DB: ${DATABASE_NAME}
+      # Non-secret local fallbacks matching .env.common; override in .env.
+      POSTGRES_USER: ${DATABASE_USER:-user}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-user}
+      POSTGRES_DB: ${DATABASE_NAME:-app}
     volumes:
       - database:/data/postgres
     ports:

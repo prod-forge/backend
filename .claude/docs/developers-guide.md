@@ -18,7 +18,10 @@
 
 ```bash
 npm install
+npm run db:generate
 ```
+
+`npm install` does not generate the Prisma client (`database-manager/generated/` is gitignored), and there is no postinstall hook. Run `npm run db:generate` once on a fresh clone; without it `npm run lint` and `npm test` fail with `Cannot find module '.../database-manager/generated/client'`. CI and the Dockerfile run it already.
 
 ### 2. Start infrastructure
 
@@ -30,6 +33,8 @@ This starts:
 
 - PostgreSQL on `localhost:5332`
 - Redis on `localhost:6379`
+
+`docker-compose.yml` falls back to `DATABASE_USER=user`, `DATABASE_PASSWORD=user`, `DATABASE_NAME=app` (the `.env.common` values) and treats `.env` as optional, so this works on a clean clone. Set the variables in `.env` to override them.
 
 ### 3. Configure environment
 
@@ -50,11 +55,13 @@ REDIS_PORT=6379
 
 ### 4. Run migrations and generate Prisma client
 
+On a clean clone, create `.env` with `DATABASE_PORT=5332` first: `.env.common` points at 5432, the compose database is mapped to 5332.
+
 ```bash
 npm run db:init
 ```
 
-This runs `prisma migrate deploy` then `prisma generate`.
+This runs `prisma migrate deploy` then `prisma generate`. For the compose database also run `npm run db:seed` (required by `scripts/verify-observability.sh`).
 
 ### 5. Start the dev server
 

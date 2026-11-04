@@ -1,11 +1,12 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService, ConfigType } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { join } from 'node:path';
 
 import { AuthController } from './api/auth/auth.controller';
+import { UserThrottlerGuard } from './common/guards/user-throttler.guard';
 import { apiConfig } from './config/api.config';
 import { appConfig } from './config/app.config';
 import { authConfig } from './config/auth.config';
@@ -44,6 +45,7 @@ import { VersionModule } from './modules/version/version.module';
         const config = configService.getOrThrow<ConfigType<typeof throttlerConfig>>('throttlerConfig');
 
         return {
+          skipIf: (): boolean => !config.throttlerEnabled,
           storage: throttlerStorage,
           throttlers: [
             {
@@ -94,7 +96,7 @@ import { VersionModule } from './modules/version/version.module';
     RequestTrackingService,
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      useClass: UserThrottlerGuard,
     },
   ],
 })

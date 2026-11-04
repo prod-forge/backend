@@ -1,7 +1,7 @@
 import { registerAs } from '@nestjs/config';
 import { ConfigFactory } from '@nestjs/config/dist/interfaces';
 import { Transform } from 'class-transformer';
-import { IsArray, IsBoolean, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsNumber, IsString } from 'class-validator';
 
 import { validateConfig } from '../common/utils/validate-config.util';
 import { ApiConfigInterface } from './interfaces/api-config.interface';
@@ -26,6 +26,10 @@ class ApiConfig {
 
   @IsString()
   API_PREFIX = 'api';
+
+  @IsNumber()
+  @Transform(({ value }) => Number(value))
+  TRUST_PROXY = 0;
 }
 
 export const apiConfig = registerAs<ApiConfig, ConfigFactory<ApiConfigInterface>>(
@@ -37,6 +41,7 @@ export const apiConfig = registerAs<ApiConfig, ConfigFactory<ApiConfigInterface>
       apiAllowedOrigins: config.API_ALLOWED_ORIGINS,
       apiAllowNonBrowserOrigins: config.API_ALLOWED_NON_BROWSER_ORIGINS,
       apiPrefix: config.API_PREFIX,
+      trustProxy: config.TRUST_PROXY,
     };
   },
 );

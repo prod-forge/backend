@@ -110,8 +110,10 @@ All variables are validated at startup with `class-validator`. Missing required 
 | `REDIS_ENABLED`                   | `true`                            | Enable Redis (cache + throttler)                  |
 | `REDIS_HOST`                      | `localhost`                       | Redis host                                        |
 | `REDIS_PORT`                      | `6379`                            | Redis port                                        |
-| `THROTTLE_TTL`                    | `20000`                           | Rate-limit window in milliseconds                 |
-| `THROTTLE_LIMIT`                  | `10`                              | Max requests per window                           |
+| `THROTTLE_TTL`                    | `60000`                           | Rate-limit window in milliseconds                 |
+| `THROTTLE_LIMIT`                  | `60`                              | Max requests per window (per user, else per IP)   |
+| `THROTTLE_ENABLED`                | `true`                            | Set `false` to disable rate limiting              |
+| `TRUST_PROXY`                     | `0`                               | Express trust-proxy hops; `1` behind ALB          |
 | `JWT_SECRET`                      | required, 32+ chars               | HS256 signing key for access tokens               |
 | `JWT_TTL`                         | `3600`                            | Access token lifetime in seconds                  |
 | `SENTRY_ENABLED`                  | `false`                           | Enable Sentry error capture                       |

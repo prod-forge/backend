@@ -1,19 +1,23 @@
 import { registerAs } from '@nestjs/config';
 import { ConfigFactory } from '@nestjs/config/dist/interfaces';
 import { Transform } from 'class-transformer';
-import { IsNumber } from 'class-validator';
+import { IsBoolean, IsNumber } from 'class-validator';
 
 import { validateConfig } from '../common/utils/validate-config.util';
 import { ThrottlerConfigInterface } from './interfaces/throttler-config.interface';
 
 class ThrottlerConfig {
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
-  THROTTLE_LIMIT = 2;
+  @IsBoolean()
+  @Transform(({ value }) => value !== 'false' && value !== false)
+  THROTTLE_ENABLED = true;
 
   @IsNumber()
   @Transform(({ value }) => Number(value))
-  THROTTLE_TTL = 20000;
+  THROTTLE_LIMIT = 60;
+
+  @IsNumber()
+  @Transform(({ value }) => Number(value))
+  THROTTLE_TTL = 60000;
 }
 
 export const throttlerConfig = registerAs<ThrottlerConfig, ConfigFactory<ThrottlerConfigInterface>>(
@@ -22,6 +26,7 @@ export const throttlerConfig = registerAs<ThrottlerConfig, ConfigFactory<Throttl
     const config = validateConfig(ThrottlerConfig);
 
     return {
+      throttlerEnabled: config.THROTTLE_ENABLED,
       throttlerLimit: config.THROTTLE_LIMIT,
       throttlerTtl: config.THROTTLE_TTL,
     };

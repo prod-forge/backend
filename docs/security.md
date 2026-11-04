@@ -128,7 +128,23 @@ This helps protect the API from:
 - brute-force attacks
 - accidental traffic spikes
 
-Rate limiting can be disabled in development environments to avoid interfering with testing.
+Defaults: 60 requests per 60 seconds per client (`THROTTLE_LIMIT`, `THROTTLE_TTL`). `POST /api/v1/auth/login` has its own stricter limit of 5 per minute.
+
+### Behind ALB: `trust proxy`
+
+Behind an Application Load Balancer the TCP peer of every request is the ALB, so without `trust proxy` Express reports the ALB address as `req.ip` and all clients share one rate-limit bucket: the limit becomes global and one noisy client throttles everybody. `TRUST_PROXY` sets the Express `trust proxy` hop count; use `1` behind a single ALB so `req.ip` is taken from `X-Forwarded-For`. Keep it `0` when the app is reachable directly, otherwise clients could spoof their IP with that header.
+
+### Tracker
+
+`UserThrottlerGuard` counts requests per authenticated user (`user:<id>`) and falls back to the client IP (`ip:<ip>`) for anonymous callers. The global throttler runs before the route-level `AuthGuard`, so the tracker verifies the Bearer token itself through `AuthService.verifyToken`; an invalid or missing token simply falls back to the IP.
+
+### Exempt routes
+
+`/health`, `/health/deps`, `/metrics` and `/version` are marked `@SkipThrottle()`, so probes and scrapers are never blocked.
+
+### Disabling
+
+Set `THROTTLE_ENABLED=false` to turn rate limiting off (for example in local development). It is `true` by default.
 
 ## File Upload Security
 

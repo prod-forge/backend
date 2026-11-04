@@ -77,6 +77,8 @@ THROTTLE_LIMIT=10000
 SENTRY_ENABLED=false
 ```
 
+Throttling variables: `THROTTLE_LIMIT` (default `60`), `THROTTLE_TTL` in ms (default `60000`), `THROTTLE_ENABLED` (default `true`) and `TRUST_PROXY` (Express trust-proxy hop count, default `0`; set `1` behind ALB so the limit is per client rather than global). The throttling e2e file overrides the limits in-process (`THROTTLE_LIMIT=3`) so it does not affect other e2e files.
+
 For such cases, we can use a dedicated `.env.test` file that overrides values from `.env.common` specifically for test
 execution.
 

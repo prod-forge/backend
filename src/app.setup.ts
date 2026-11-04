@@ -1,5 +1,6 @@
 import type { INestApplication } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import type { ValidationError } from 'class-validator';
 
 import { ClassSerializerInterceptor, RequestMethod, ValidationPipe, VersioningType } from '@nestjs/common';
@@ -41,6 +42,9 @@ export const appSetup = (app: INestApplication): void => {
   app.useLogger(logger);
 
   const environmentService = app.get(EnvironmentService);
+
+  // Behind ALB the socket peer is the load balancer; trust X-Forwarded-For so req.ip is the client
+  (app as NestExpressApplication).set('trust proxy', configApi.trustProxy);
 
   // Context (express middleware)
   app.use(httpContext.middleware);

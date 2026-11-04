@@ -10,6 +10,6 @@ export const METRICS_ENDPOINT = 'metrics';
 export const GLOBAL_PREFIX_EXCLUDE: (RouteInfo | string)[] = [
   HEALTH_ENDPOINT,
   METRICS_ENDPOINT,
-  { method: RequestMethod.ALL, path: `${HEALTH_ENDPOINT}/*` },
-  { method: RequestMethod.ALL, path: `${METRICS_ENDPOINT}/*` },
+  { method: RequestMethod.ALL, path: `${HEALTH_ENDPOINT}/*path` },
+  { method: RequestMethod.ALL, path: `${METRICS_ENDPOINT}/*path` },
 ];

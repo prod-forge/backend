@@ -34,7 +34,7 @@ describe('TodoMapper', () => {
         expect(result.completed).toBe(false);
       });
 
-      it('does not include extra fields from the todo record', () => {
+      it('maps userId and ignores other extra fields', () => {
         const todo = {
           completed: false,
           createdAt: new Date(),
@@ -46,7 +46,7 @@ describe('TodoMapper', () => {
 
         const result = TodoMapper.toEntity(todo);
 
-        expect(result).not.toHaveProperty('userId');
+        expect(result.userId).toBe('u1');
         expect(result).not.toHaveProperty('createdAt');
       });
     });

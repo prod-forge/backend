@@ -64,6 +64,17 @@ If Redis becomes unavailable, caching is simply skipped and the application read
 
 This ensures that the system remains functional even if performance temporarily degrades.
 
+Invalidation rules per operation (`<id>` is the todo id, `<userId>` the owner):
+
+| Operation | Cache effect                                                                     |
+| --------- | -------------------------------------------------------------------------------- |
+| create    | delete `todos:<userId>:*` (all cached lists of the owner)                        |
+| update    | delete `todo:<id>` and `todos:<userId>:*`                                        |
+| delete    | delete `todo:<id>` and `todos:<userId>:*`                                        |
+| read      | `todo:<id>` (60 s) and `todos:<userId>:<query>` (30 s) are filled on a miss only |
+
+A request for a todo owned by another user is rejected before any cache write or invalidation.
+
 #### Throttling Strategy
 
 Rate limiting is more important for system stability, so a fallback is implemented.

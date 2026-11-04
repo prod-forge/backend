@@ -66,8 +66,8 @@ export class TodosController {
   })
   @Get(':id')
   @UseGuards(AuthGuard)
-  async findOne(@Param('id') id: string): Promise<TodoResponseDto> {
-    const todo = await this.todoService.findOne(id);
+  async findOne(@Param('id') id: string, @User() { userId }: UserInterface): Promise<TodoResponseDto> {
+    const todo = await this.todoService.findOne(userId, id);
 
     return plainToInstance(TodoResponseDto, todo, {
       excludeExtraneousValues: true,
@@ -82,8 +82,8 @@ export class TodosController {
   @ApiErrors(TodoNotFoundError, UserIsNotAuthorizedError, InternalServerError)
   @Delete(':id')
   @UseGuards(AuthGuard)
-  async remove(@Param('id') id: string): Promise<void> {
-    await this.todoService.remove(id);
+  async remove(@Param('id') id: string, @User() { userId }: UserInterface): Promise<void> {
+    await this.todoService.remove(userId, id);
   }
 
   @ApiErrors(DtoValidationErrors, TodoNotFoundError, UserIsNotAuthorizedError, InternalServerError)
@@ -94,8 +94,12 @@ export class TodosController {
   })
   @Patch(':id')
   @UseGuards(AuthGuard)
-  async update(@Param('id') id: string, @Body() dto: UpdateTodoDto): Promise<TodoResponseDto> {
-    const todo = await this.todoService.update(id, dto);
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateTodoDto,
+    @User() { userId }: UserInterface,
+  ): Promise<TodoResponseDto> {
+    const todo = await this.todoService.update(userId, id, dto);
 
     return plainToInstance(TodoResponseDto, todo, {
       excludeExtraneousValues: true,

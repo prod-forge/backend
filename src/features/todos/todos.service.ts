@@ -45,16 +45,18 @@ export class TodosService {
     return result;
   }
 
-  async findOne(id: string): Promise<TodoEntity> {
+  async findOne(userId: string, id: string): Promise<TodoEntity> {
     const key = TodosCacheKeys.todo(id);
 
     const cached = await this.cacheStorage.get<TodoEntity>(key);
 
-    if (cached) return cached;
+    if (cached) {
+      if (cached.userId !== userId) throw new TodoNotFoundError(id);
 
-    const todo = await this.todosRepository.findOne(id);
+      return cached;
+    }
 
-    if (!todo) throw new TodoNotFoundError(id);
+    const todo = await this.getOwned(userId, id);
 
     await this.cacheStorage.set(key, todo, 60);
 
@@ -91,21 +93,34 @@ export class TodosService {
     return { order: order ?? SortOrder.DESC, sortBy: sortBy };
   }
 
-  async remove(id: string): Promise<void> {
-    const todo = await this.todosRepository.findOne(id);
-
-    if (!todo) throw new TodoNotFoundError(id);
+  async remove(userId: string, id: string): Promise<void> {
+    await this.getOwned(userId, id);
 
     await this.todosRepository.remove(id);
 
-    await this.cacheStorage.del(TodosCacheKeys.todo(id));
+    await this.invalidate(userId, id);
   }
 
-  async update(id: string, dto: UpdateTodoDto): Promise<TodoEntity | undefined> {
+  async update(userId: string, id: string, dto: UpdateTodoDto): Promise<TodoEntity | undefined> {
+    await this.getOwned(userId, id);
+
     const todo = await this.todosRepository.update(id, dto);
 
-    await this.cacheStorage.del(TodosCacheKeys.todo(id));
+    await this.invalidate(userId, id);
 
     return todo;
+  }
+
+  private async getOwned(userId: string, id: string): Promise<TodoEntity> {
+    const todo = await this.todosRepository.findOne(id);
+
+    if (todo?.userId !== userId) throw new TodoNotFoundError(id);
+
+    return todo;
+  }
+
+  private async invalidate(userId: string, id: string): Promise<void> {
+    await this.cacheStorage.del(TodosCacheKeys.todo(id));
+    await this.cacheStorage.delByPattern(TodosCacheKeys.todosByUser(userId));
   }
 }

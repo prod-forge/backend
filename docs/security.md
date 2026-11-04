@@ -19,6 +19,15 @@ The API signs and verifies access tokens, but it does not run an identity provid
 - `JWT_SECRET` is required at startup. Provision a distinct random value (32+ characters) per environment in the secret store that feeds the runtime (for example the ECS task definition secrets) before deploying; rotating it invalidates all issued tokens.
 - For local work, `npm run token:issue -- <userId>` prints a token for a given user id.
 
+### Resource Ownership
+
+Authentication says who is calling; it does not say which records that caller may touch. Every todo has an owner (`userId`), and `TodosService` checks it on read, update and delete.
+
+- A todo owned by another user is reported as 404 `TODO_NOT_FOUND`, the same answer as for a todo that does not exist. A 403 would confirm that the id exists and let an attacker enumerate other users' records.
+- The check lives in the service, not in the controller, so every caller of the service gets it. The controller only passes the authenticated `userId`.
+- `GET /todos/:id` reads the per-todo cache entry first. The cached value carries `userId`, and it is compared with the caller after the hit; a mismatch is a 404 and nothing is written to the cache. Checking only on a cache miss would let user B read user A's cached todo.
+- `PATCH` and `DELETE` load the todo from the database (not from the cache, which could be stale) and compare the owner before any write or cache invalidation.
+
 ## Request Validation
 
 All incoming data should be validated using DTOs.

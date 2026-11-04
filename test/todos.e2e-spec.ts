@@ -1,7 +1,7 @@
 import request from 'supertest';
 
 import { server } from './setup/bootstrap.app';
-import { authHeaders } from './utils/request.headers';
+import { authHeaders, otherUserHeaders } from './utils/request.headers';
 import { type DataBody, type ErrorBody, type ListBody, type TodoItem } from './utils/response.types';
 
 const TODOS_URL = '/api/v1/todos';
@@ -428,6 +428,66 @@ describe('Todos API (e2e)', () => {
         const ids = (listRes.body as ListBody<TodoItem>).data.map((t) => t.id);
 
         expect(ids).not.toContain(id);
+      });
+    });
+  });
+
+  describe('ownership', () => {
+    let ownedId: string;
+
+    beforeAll(async () => {
+      const res = await request(server).post(TODOS_URL).set(authHeaders).send({ title: 'Owned by A' });
+
+      ownedId = (res.body as DataBody<TodoItem>).data.id;
+
+      await request(server).get(`${TODOS_URL}/${ownedId}`).set(authHeaders).expect(200);
+    });
+
+    describe('negative cases', () => {
+      it('returns 404 TODO_NOT_FOUND when another user reads the todo, even when it is cached', async () => {
+        const res = await request(server).get(`${TODOS_URL}/${ownedId}`).set(otherUserHeaders).expect(404);
+
+        expect((res.body as ErrorBody).code).toBe('TODO_NOT_FOUND');
+      });
+
+      it('returns 404 TODO_NOT_FOUND when another user updates the todo', async () => {
+        const res = await request(server)
+          .patch(`${TODOS_URL}/${ownedId}`)
+          .set(otherUserHeaders)
+          .send({ title: 'Hijacked' })
+          .expect(404);
+
+        expect((res.body as ErrorBody).code).toBe('TODO_NOT_FOUND');
+      });
+
+      it('returns 404 TODO_NOT_FOUND when another user deletes the todo', async () => {
+        const res = await request(server).delete(`${TODOS_URL}/${ownedId}`).set(otherUserHeaders).expect(404);
+
+        expect((res.body as ErrorBody).code).toBe('TODO_NOT_FOUND');
+      });
+
+      it('keeps the todo unchanged for the owner after the rejected attempts', async () => {
+        const res = await request(server).get(`${TODOS_URL}/${ownedId}`).set(authHeaders).expect(200);
+
+        expect((res.body as DataBody<TodoItem>).data.title).toBe('Owned by A');
+      });
+    });
+
+    describe('positive cases', () => {
+      it('returns the new title in the list right after the owner updates a todo', async () => {
+        const listUrl = `${TODOS_URL}?search=${encodeURIComponent('by A')}`;
+        await request(server).get(listUrl).set(authHeaders).expect(200);
+        await request(server)
+          .patch(`${TODOS_URL}/${ownedId}`)
+          .set(authHeaders)
+          .send({ title: 'Renamed by A' })
+          .expect(200);
+
+        const listRes = await request(server).get(listUrl).set(authHeaders).expect(200);
+        const titles = (listRes.body as ListBody<TodoItem>).data.map((t) => t.title);
+
+        expect(titles).toContain('Renamed by A');
+        expect(titles).not.toContain('Owned by A');
       });
     });
   });

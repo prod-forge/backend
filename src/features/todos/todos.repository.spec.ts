@@ -188,7 +188,6 @@ describe('TodosRepository', () => {
   describe('remove', () => {
     describe('negative cases', () => {
       it('propagates database error on delete', async () => {
-        prismaMock.todo.findUnique.mockResolvedValue(todoData);
         prismaMock.todo.delete.mockRejectedValue(new Error('db error'));
 
         await expect(repository.remove('todo-1')).rejects.toThrow('db error');
@@ -196,13 +195,12 @@ describe('TodosRepository', () => {
     });
 
     describe('positive cases', () => {
-      it('calls findOne then deletes by id', async () => {
-        prismaMock.todo.findUnique.mockResolvedValue(todoData);
+      it('deletes by id without a prior lookup', async () => {
         prismaMock.todo.delete.mockResolvedValue({});
 
         await repository.remove('todo-1');
 
-        expect(prismaMock.todo.findUnique).toHaveBeenCalledWith({ where: { id: 'todo-1' } });
+        expect(prismaMock.todo.findUnique).not.toHaveBeenCalled();
         expect(prismaMock.todo.delete).toHaveBeenCalledWith({ where: { id: 'todo-1' } });
       });
     });

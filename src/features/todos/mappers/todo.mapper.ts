@@ -9,6 +9,7 @@ export const TodoMapper = {
       description: todo.description,
       id: todo.id,
       title: todo.title,
+      userId: todo.userId,
     });
   },
 };

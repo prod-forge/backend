@@ -58,7 +58,6 @@ export class TodosRepository {
   }
 
   async remove(id: string): Promise<void> {
-    await this.findOne(id);
     await this.prisma.todo.delete({ where: { id } });
   }
 

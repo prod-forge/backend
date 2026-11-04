@@ -221,7 +221,9 @@ Defaults: `THROTTLE_LIMIT=10` requests per `THROTTLE_TTL=20000` ms window, track
 
 **Errors:** `TODO_NOT_FOUND` 404 · `USER_IS_NOT_AUTHORIZED` 401 · `INTERNAL_ERROR` 500
 
-**Caching:** Result cached in Redis for 60 s under key `todo:<id>`.
+**Ownership:** A todo owned by another user returns `TODO_NOT_FOUND` 404 (same as a missing todo).
+
+**Caching:** Result cached in Redis for 60 s under key `todo:<id>`. The cached entry stores `userId`, which is checked against the caller on every hit.
 
 ---
 
@@ -265,7 +267,9 @@ Defaults: `THROTTLE_LIMIT=10` requests per `THROTTLE_TTL=20000` ms window, track
 
 **Errors:** `DTO_VALIDATION_ERROR` 422 · `TODO_NOT_FOUND` 404 · `USER_IS_NOT_AUTHORIZED` 401 · `INTERNAL_ERROR` 500
 
-**Side effects:** Deletes cache key `todo:<id>`
+**Ownership:** A todo owned by another user returns `TODO_NOT_FOUND` 404; nothing is written.
+
+**Side effects:** Deletes cache key `todo:<id>` and pattern `todos:<userId>:*`
 
 ---
 
@@ -281,7 +285,9 @@ Defaults: `THROTTLE_LIMIT=10` requests per `THROTTLE_TTL=20000` ms window, track
 
 **Errors:** `TODO_NOT_FOUND` 404 · `USER_IS_NOT_AUTHORIZED` 401 · `INTERNAL_ERROR` 500
 
-**Side effects:** Deletes cache key `todo:<id>`
+**Ownership:** A todo owned by another user returns `TODO_NOT_FOUND` 404; nothing is written.
+
+**Side effects:** Deletes cache key `todo:<id>` and pattern `todos:<userId>:*`
 
 ---
 

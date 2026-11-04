@@ -12,7 +12,7 @@ import { SortOrder, TodoSearchField, TodoSortField } from './interfaces/queries.
 import { TodosRepository } from './todos.repository';
 import { TodosService } from './todos.service';
 
-const todoData = { completed: false, description: null, id: 'todo-1', title: 'Test Todo' };
+const todoData = { completed: false, description: null, id: 'todo-1', title: 'Test Todo', userId: 'user-1' };
 
 describe('TodosService', () => {
   let service: TodosService;
@@ -128,14 +128,30 @@ describe('TodosService', () => {
         cacheStorageMock.get.mockResolvedValue(null);
         prismaMock.todo.findUnique.mockResolvedValue(null);
 
-        await expect(service.findOne('missing-id')).rejects.toBeInstanceOf(TodoNotFoundError);
+        await expect(service.findOne('user-1', 'missing-id')).rejects.toBeInstanceOf(TodoNotFoundError);
       });
 
       it('TodoNotFoundError contains the requested id', async () => {
         cacheStorageMock.get.mockResolvedValue(null);
         prismaMock.todo.findUnique.mockResolvedValue(null);
 
-        await expect(service.findOne('missing-id')).rejects.toMatchObject({ details: { id: 'missing-id' } });
+        await expect(service.findOne('user-1', 'missing-id')).rejects.toMatchObject({ details: { id: 'missing-id' } });
+      });
+
+      it('throws TodoNotFoundError for another user todo and does not cache it', async () => {
+        cacheStorageMock.get.mockResolvedValue(null);
+        prismaMock.todo.findUnique.mockResolvedValue(todoData);
+
+        await expect(service.findOne('user-2', 'todo-1')).rejects.toBeInstanceOf(TodoNotFoundError);
+        expect(cacheStorageMock.set).not.toHaveBeenCalled();
+      });
+
+      it('throws TodoNotFoundError when the cached todo belongs to another user', async () => {
+        cacheStorageMock.get.mockResolvedValue(todoData);
+
+        await expect(service.findOne('user-2', 'todo-1')).rejects.toBeInstanceOf(TodoNotFoundError);
+        expect(prismaMock.todo.findUnique).not.toHaveBeenCalled();
+        expect(cacheStorageMock.set).not.toHaveBeenCalled();
       });
     });
 
@@ -143,7 +159,7 @@ describe('TodosService', () => {
       it('returns cached todo without querying repository', async () => {
         cacheStorageMock.get.mockResolvedValue(todoData);
 
-        const result = await service.findOne('todo-1');
+        const result = await service.findOne('user-1', 'todo-1');
 
         expect(result).toBe(todoData);
         expect(prismaMock.todo.findUnique).not.toHaveBeenCalled();
@@ -154,7 +170,7 @@ describe('TodosService', () => {
         prismaMock.todo.findUnique.mockResolvedValue(todoData);
         cacheStorageMock.set.mockResolvedValue(undefined);
 
-        const result = await service.findOne('todo-1');
+        const result = await service.findOne('user-1', 'todo-1');
 
         expect(result.id).toBe('todo-1');
         expect(cacheStorageMock.set).toHaveBeenCalledWith('todo:todo-1', expect.objectContaining({ id: 'todo-1' }), 60);
@@ -167,53 +183,85 @@ describe('TodosService', () => {
       it('throws TodoNotFoundError when todo does not exist', async () => {
         prismaMock.todo.findUnique.mockResolvedValue(null);
 
-        await expect(service.remove('missing-id')).rejects.toBeInstanceOf(TodoNotFoundError);
+        await expect(service.remove('user-1', 'missing-id')).rejects.toBeInstanceOf(TodoNotFoundError);
       });
 
       it('does not call delete when todo is not found', async () => {
         prismaMock.todo.findUnique.mockResolvedValue(null);
 
-        await service.remove('missing-id').catch(() => {
+        await service.remove('user-1', 'missing-id').catch(() => {
           return;
         });
 
         expect(prismaMock.todo.delete).not.toHaveBeenCalled();
       });
+
+      it('throws TodoNotFoundError and does not delete or touch cache for another user todo', async () => {
+        prismaMock.todo.findUnique.mockResolvedValue(todoData);
+
+        await expect(service.remove('user-2', 'todo-1')).rejects.toBeInstanceOf(TodoNotFoundError);
+        expect(prismaMock.todo.delete).not.toHaveBeenCalled();
+        expect(cacheStorageMock.del).not.toHaveBeenCalled();
+        expect(cacheStorageMock.delByPattern).not.toHaveBeenCalled();
+      });
     });
 
     describe('positive cases', () => {
-      it('deletes todo from repository and removes from cache', async () => {
+      it('deletes todo and invalidates the todo key and the user list cache', async () => {
         prismaMock.todo.findUnique.mockResolvedValue(todoData);
         prismaMock.todo.delete.mockResolvedValue({});
         cacheStorageMock.del.mockResolvedValue(undefined);
 
-        await service.remove('todo-1');
+        await service.remove('user-1', 'todo-1');
 
         expect(prismaMock.todo.delete).toHaveBeenCalledWith({ where: { id: 'todo-1' } });
         expect(cacheStorageMock.del).toHaveBeenCalledWith('todo:todo-1');
+        expect(cacheStorageMock.delByPattern).toHaveBeenCalledWith('todos:user-1:*');
       });
     });
   });
 
   describe('update', () => {
+    describe('negative cases', () => {
+      it('throws TodoNotFoundError when todo does not exist', async () => {
+        prismaMock.todo.findUnique.mockResolvedValue(null);
+
+        await expect(service.update('user-1', 'missing-id', { title: 'X' })).rejects.toBeInstanceOf(TodoNotFoundError);
+        expect(prismaMock.todo.update).not.toHaveBeenCalled();
+      });
+
+      it('throws TodoNotFoundError and does not write or touch cache for another user todo', async () => {
+        prismaMock.todo.findUnique.mockResolvedValue(todoData);
+
+        await expect(service.update('user-2', 'todo-1', { title: 'X' })).rejects.toBeInstanceOf(TodoNotFoundError);
+        expect(prismaMock.todo.update).not.toHaveBeenCalled();
+        expect(cacheStorageMock.del).not.toHaveBeenCalled();
+        expect(cacheStorageMock.delByPattern).not.toHaveBeenCalled();
+      });
+    });
+
     describe('positive cases', () => {
-      it('updates todo, clears cache, and returns updated entity', async () => {
+      it('updates todo, invalidates todo key and user list cache, and returns updated entity', async () => {
         const updated = { ...todoData, title: 'Updated Title' };
+        prismaMock.todo.findUnique.mockResolvedValue(todoData);
         prismaMock.todo.update.mockResolvedValue(updated);
         cacheStorageMock.del.mockResolvedValue(undefined);
 
-        const result = await service.update('todo-1', { title: 'Updated Title' });
+        const result = await service.update('user-1', 'todo-1', { title: 'Updated Title' });
 
         expect(result?.title).toBe('Updated Title');
         expect(cacheStorageMock.del).toHaveBeenCalledWith('todo:todo-1');
+        expect(cacheStorageMock.delByPattern).toHaveBeenCalledWith('todos:user-1:*');
       });
 
       it('clears cache even when update returns void', async () => {
+        prismaMock.todo.findUnique.mockResolvedValue(todoData);
         prismaMock.todo.update.mockResolvedValue(undefined);
 
-        await service.update('todo-1', { title: 'X' });
+        await service.update('user-1', 'todo-1', { title: 'X' });
 
         expect(cacheStorageMock.del).toHaveBeenCalledWith('todo:todo-1');
+        expect(cacheStorageMock.delByPattern).toHaveBeenCalledWith('todos:user-1:*');
       });
     });
   });

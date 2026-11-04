@@ -226,6 +226,8 @@ Grafana runs on `http://localhost:3001` (`admin` / `admin`). Details:
     - [Test Environment Setup](docs/testing.md#test-environment-setup)
     - [Writing Effective E2E Tests](docs/testing.md#writing-effective-e2e-tests)
   - [Test Specs Design Style](docs/testing.md#test-specs-design-style)
+  - [What E2E Covers](docs/testing.md#what-e2e-covers)
+  - [Load Testing](docs/testing.md#load-testing)
 
 <!-- -->
 
@@ -325,6 +327,7 @@ This project exists as a reminder not to skip them.
 - Cursor pagination: list endpoints use offset pagination with `count(*)`, which is enough for the Todo scale, see [Performance](docs/performance.md#offset-vs-cursor-pagination)
 - Feature flags
 - A/B testing
+- Cost analysis
 - Kubernetes
 
 # Contributing

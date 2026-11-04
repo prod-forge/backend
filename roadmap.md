@@ -14,7 +14,8 @@
   - SLO burn-rate alerts
 - Testing
   - A/B Testing
-  - Load Testing
-- Health
+- Done
+  - Load Testing (k6 smoke, see docs/testing.md)
   - Terminus
   - Graceful shutdown
+  - Database Metrics

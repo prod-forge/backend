@@ -7,6 +7,15 @@ import { type DataBody, type ErrorBody, type ListBody, type TodoItem } from './u
 const TODOS_URL = '/api/v1/todos';
 const NON_EXISTENT_UUID = '00000000-0000-0000-0000-000000000000';
 const INVALID_ID = 'not-a-uuid';
+const METRICS_URL = '/metrics';
+const CACHE_HIT_METRIC = /^cache_operations_total\{[^}]*operation="get"[^}]*result="hit"[^}]*\}\s+(\S+)$/m;
+
+const readCacheHits = async (): Promise<number> => {
+  const res = await request(server).get(METRICS_URL).expect(200);
+  const match = CACHE_HIT_METRIC.exec(res.text);
+
+  return match ? Number(match[1]) : 0;
+};
 
 describe('Todos API (e2e)', () => {
   let todoAId: string;
@@ -532,6 +541,28 @@ describe('Todos API (e2e)', () => {
 
         expect(titles).toContain('Renamed by A');
         expect(titles).not.toContain('Owned by A');
+      });
+    });
+  });
+
+  describe('Cache behaviour', () => {
+    let cachedId: string;
+
+    beforeAll(async () => {
+      const res = await request(server).post(TODOS_URL).set(authHeaders).send({ title: 'Cache probe' });
+
+      cachedId = (res.body as DataBody<TodoItem>).data.id;
+    });
+
+    describe('positive cases', () => {
+      it('serves the second read of the same todo from the cache', async () => {
+        await request(server).get(`${TODOS_URL}/${cachedId}`).set(authHeaders).expect(200);
+        const hitsBefore = await readCacheHits();
+
+        await request(server).get(`${TODOS_URL}/${cachedId}`).set(authHeaders).expect(200);
+        const hitsAfter = await readCacheHits();
+
+        expect(hitsAfter).toBeGreaterThan(hitsBefore);
       });
     });
   });

@@ -121,3 +121,73 @@ The following format is recommended for writing test specs:
 ```
 
 The spec is divided into negative and positive cases. Negative cases are listed first, then positive ones.
+
+## What E2E Covers
+
+The e2e suite runs the real application against Testcontainers PostgreSQL and Redis. It covers:
+
+- auth: login stub, token verification, 401 responses
+- todos: CRUD, validation errors (422), pagination and search, ownership isolation between users, list and item cache
+  invalidation after writes
+- cache behaviour: a repeated read of the same todo increments `cache_operations_total{operation="get",result="hit"}`,
+  scraped from `/metrics` before and after the second request
+- throttling: per-user limits, the login limit, `/metrics` is never throttled
+- health endpoints, version endpoint, client log ingestion, and the OpenAPI contract
+
+It does not cover:
+
+- the observability stack (Prometheus, Grafana, Loki, Tempo); use `scripts/verify-observability.sh`
+- performance under load; see Load Testing below
+- graceful shutdown with in-flight requests, and real AWS or deployment behaviour
+- the browser clients
+
+## Load Testing
+
+`load/k6-smoke.js` is a smoke load test with [k6](https://k6.io): 10 virtual users for 30 seconds, each iteration runs
+list, create, toggle (`PATCH` with `completed`) and delete. Thresholds: `http_req_duration` p(95) < 300ms and
+`http_req_failed` rate < 1%.
+
+Login is throttled to 5 requests per minute per IP, so the script logs in the five seeded users once in `setup()` and
+the virtual users share those tokens. Run it again no sooner than a minute after the previous run.
+
+The global rate limit (`THROTTLE_LIMIT`, default 60 per `THROTTLE_TTL` per user or IP) would reject most of the load
+traffic, so the local run raises it through a compose override that is used for load runs only:
+
+```shell
+docker compose -f docker-compose.yml -f load/docker-compose.load.yml up -d --build
+# the compose database must be migrated and seeded (see README, Getting started)
+BASE_URL=http://localhost:3000 npm run test:load
+docker compose down
+```
+
+Never use the override outside local load tests. The default configuration is unchanged.
+
+Result of a local run (laptop, everything in Docker on one machine), all thresholds passed:
+
+```text
+  █ THRESHOLDS
+
+    http_req_duration
+    ✓ 'p(95)<300' p(95)=25.35ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+  █ TOTAL RESULTS
+
+    checks_total.......: 24408   810.4877/s
+    checks_succeeded...: 100.00% 24408 out of 24408
+    checks_failed......: 0.00%   0 out of 24408
+
+    HTTP
+    http_req_duration..............: avg=12.23ms min=1.39ms  med=9.97ms  max=192.78ms p(90)=19.13ms p(95)=25.35ms
+    http_req_failed................: 0.00%  0 out of 24413
+    http_reqs......................: 24413  810.653729/s
+
+    EXECUTION
+    iteration_duration.............: avg=49.2ms  min=21.75ms med=41.33ms max=314.16ms p(90)=74.78ms p(95)=99.12ms
+    iterations.....................: 6102   202.621925/s
+    vus............................: 10     min=10         max=10
+```
+
+This is a smoke check for regressions on a laptop, not a capacity measurement.

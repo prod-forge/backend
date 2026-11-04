@@ -1,0 +1,6 @@
+# Load-run override: lifts the global rate limit so 10 virtual users from one IP are not throttled.
+# Never use it for anything but local load tests. The login throttle (5 per minute) stays in place.
+services:
+  production:
+    environment:
+      THROTTLE_LIMIT: 100000

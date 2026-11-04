@@ -1,5 +1,7 @@
 {
-  "entry": ["src/main.ts", "scripts/*.ts", "test/*.ts", "database-manager/**/*.ts"],
+  "entry": ["src/main.ts", "scripts/*.ts", "test/*.ts", "database-manager/**/*.ts", "load/*.js"],
+  "ignoreBinaries": ["k6"],
+  "ignoreDependencies": ["k6"],
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "tags": ["-lintignore"],
   "ignore": ["./src/**/*.enum.ts", "src/error-handler/errors/common.errors.ts"]

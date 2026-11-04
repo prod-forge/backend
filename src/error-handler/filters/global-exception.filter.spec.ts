@@ -106,6 +106,16 @@ describe('GlobalExceptionFilter', () => {
       expect(jsonMock).toHaveBeenCalledWith({ status: 'ok' });
     });
 
+    it('keeps 503 and the Terminus body for a failed health check', () => {
+      const { host, jsonMock, res } = makeHost({ url: '/health' });
+      const body = { error: { shutdown: { status: 'down' } }, status: 'error' };
+
+      filter.catch(new HttpException(body, HttpStatus.SERVICE_UNAVAILABLE), host);
+
+      expect(res.status).toHaveBeenCalledWith(HttpStatus.SERVICE_UNAVAILABLE);
+      expect(jsonMock).toHaveBeenCalledWith(body);
+    });
+
     it.each([
       ['NotFoundException', new NotFoundException('Cannot GET /x'), HttpStatus.NOT_FOUND],
       ['ThrottlerException', new ThrottlerException(), HttpStatus.TOO_MANY_REQUESTS],

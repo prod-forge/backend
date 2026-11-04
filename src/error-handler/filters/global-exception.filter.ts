@@ -28,9 +28,9 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     const error = resolveError(exception);
 
-    // Need to skip Health endpoints
+    // Health endpoints keep the Terminus body and status (503 when a check is down, e.g. during shutdown drain)
     if (req.url.slice(1).startsWith(HEALTH_ENDPOINT) && exception instanceof HttpException) {
-      res.status(200).json(exception.getResponse());
+      res.status(exception.getStatus()).json(exception.getResponse());
 
       return;
     }

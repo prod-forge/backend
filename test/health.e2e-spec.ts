@@ -35,4 +35,14 @@ describe('Health API (e2e)', () => {
       });
     });
   });
+
+  describe('GET /health/live', () => {
+    describe('positive cases', () => {
+      it('returns the bare liveness body without dependency checks', async () => {
+        const res = await request(server).get('/health/live').expect(200);
+
+        expect(res.body).toEqual({ status: 'ok' });
+      });
+    });
+  });
 });

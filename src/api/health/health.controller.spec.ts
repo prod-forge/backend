@@ -22,6 +22,15 @@ describe('HealthController', () => {
   });
 
   describe('positive cases', () => {
+    it('live returns ok without running any dependency check, even when they would throw', () => {
+      healthChecks.runAll.mockRejectedValue(new Error('prisma down'));
+      healthChecks.runCritical.mockRejectedValue(new Error('prisma down'));
+
+      expect(controller.live()).toEqual({ status: 'ok' });
+      expect(healthChecks.runAll).not.toHaveBeenCalled();
+      expect(healthChecks.runCritical).not.toHaveBeenCalled();
+    });
+
     it('deps calls healthChecks.runAll', async () => {
       const result = await controller.deps();
 

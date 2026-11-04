@@ -15,6 +15,7 @@ jest.mock('@sentry/node', () => ({
 }));
 
 import * as Sentry from '@sentry/node';
+import { Counter } from 'prom-client';
 
 import type { LoggerService } from '../../logger/logger.service';
 
@@ -66,6 +67,8 @@ const makeHost = (
     res,
   };
 };
+
+const errorsCounterLabels = ((Counter as unknown as jest.Mock).mock.results[0].value as { labels: jest.Mock }).labels;
 
 describe('GlobalExceptionFilter', () => {
   let filter: GlobalExceptionFilter;
@@ -200,12 +203,20 @@ describe('GlobalExceptionFilter', () => {
       expect(Sentry.captureException).toHaveBeenCalled();
     });
 
-    it('falls back to req.url for metrics label when route is undefined', () => {
-      const { host, res } = makeHost();
+    it('labels http_errors_total with a fixed value, never the raw url, when no route matched', () => {
+      const { host } = makeHost({ url: '/api/todos/9c226319?email=a@b.c' });
 
       filter.catch(new TodoNotFoundError('x'), host);
 
-      expect(res.status).toHaveBeenCalledWith(HttpStatus.NOT_FOUND);
+      expect(errorsCounterLabels).toHaveBeenCalledWith('GET', 'unmatched', '404');
+    });
+
+    it('labels http_errors_total with the route template when a route matched', () => {
+      const { host } = makeHost({ route: { path: '/api/todos/:id' }, url: '/api/todos/42' });
+
+      filter.catch(new TodoNotFoundError('x'), host);
+
+      expect(errorsCounterLabels).toHaveBeenCalledWith('GET', '/api/todos/:id', '404');
     });
 
     it('includes details in response when BaseError has details', () => {

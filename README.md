@@ -33,7 +33,7 @@ Every major technical decision is documented and explained.
 | Web Client     | React · Vite · Redux Toolkit · Tailwind CSS · NX |
 | Deploy         | AWS S3 · CloudFront · ECR · ECS                  |
 | Backend        | NestJS · Prisma · PostgreSQL · Redis · Docker    |
-| Infrastructure | AWS · RDS · ElasticCache                         |
+| Infrastructure | AWS · RDS · ElastiCache                          |
 | Observability  | Prometheus · Grafana · Loki · Promtail · Tempo   |
 | Quality        | ESLint · Prettier · Husky · Commitlint · CI/CD   |
 
@@ -213,7 +213,8 @@ Grafana runs on `http://localhost:3001` (`admin` / `admin`). Details:
     - [Critical vs Optional Dependencies](docs/logging-observability.md#critical-vs-optional-dependencies)
     - [/health (Critical)](docs/logging-observability.md#health-critical)
       - [Readiness](docs/logging-observability.md#readiness)
-    - [/health/deps (All)](docs/logging-observability.md#health-deps-all)
+    - [/health/live (Liveness)](docs/logging-observability.md#healthlive-liveness)
+    - [/health/deps (All)](docs/logging-observability.md#healthdeps-all)
       - [Optional Dependencies Handling](docs/logging-observability.md#optional-dependencies-handling)
 
 <!-- -->

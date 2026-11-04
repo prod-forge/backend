@@ -18,12 +18,13 @@ Each task should include:
 
 ## Git Flow
 
-The project follows a simplified Git Flow approach.
+The project follows a simplified Git Flow approach: there are no long-lived `dev` or `stage` branches, only `main`
+and short-lived feature branches merged through pull requests.
 
 Typical workflow:
 
 ```text
-feature branch → pull request → code review → merge to dev/stage
+feature branch → pull request → code review → merge to main
 ```
 
 ### Branch Naming Convention

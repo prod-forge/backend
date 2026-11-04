@@ -6,7 +6,7 @@
 
 ## Fault vs Failure
 
-It’s important to distinguish between two types of issues in a system: fail and failure.
+It’s important to distinguish between two types of issues in a system: fault and failure.
 
 A **Fault (Non-Critical Dependency)** occurs when a non-critical part of the system is not working or is functioning incorrectly.
 In this case, the system as a whole continues to operate, but:
@@ -22,7 +22,7 @@ For example:
 - the application cannot serve requests
 - core business logic is broken
 
-In _Data Intensive Application_ book (Martin Kleppmann):
+In the book _Designing Data-Intensive Applications_ (Martin Kleppmann):
 
 > Faults should be tolerated,
 > while Failures should be prevented or minimized.

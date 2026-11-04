@@ -2,18 +2,34 @@ import { Injectable } from '@nestjs/common';
 
 import { MobileLogDto } from '../../api/client-logs/dtos/mobile-log.dto';
 import { WebLogDto } from '../../api/client-logs/dtos/web-log.dto';
+import { LoggerService } from '../../logger/logger.service';
+
+const CLIENT_LOGS_CTX = 'client-logs';
 
 @Injectable()
 export class ClientLogsService {
-  // eslint-disable-next-line no-warning-comments
-  // TODO: upload to S3
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  processMobileLog(_dto: MobileLogDto): void {
-    /* empty */
+  constructor(private readonly loggerService: LoggerService) {}
+
+  processMobileLog(dto: MobileLogDto): void {
+    this.loggerService.warn({
+      ctx: CLIENT_LOGS_CTX,
+      details: { payload: dto.payload, platform: dto.platform, source: 'mobile', timestamp: dto.timestamp },
+      msg: 'Mobile client log',
+    });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  processWebLog(_dto: WebLogDto): void {
-    /* empty */
+  processWebLog(dto: WebLogDto): void {
+    this.loggerService.warn({
+      ctx: CLIENT_LOGS_CTX,
+      details: {
+        actions: dto.actions,
+        clientTraceId: dto.traceId,
+        env: dto.env,
+        metadata: dto.metadata,
+        source: 'web',
+        timestamp: dto.timestamp,
+      },
+      msg: 'Web client log',
+    });
   }
 }

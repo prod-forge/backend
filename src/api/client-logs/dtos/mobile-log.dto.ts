@@ -1,13 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsObject, IsString, IsUUID } from 'class-validator';
+import { IsDateString, IsObject, IsString, IsUUID, MaxLength } from 'class-validator';
 
 export class MobileLogDto {
   @ApiProperty({ additionalProperties: true, description: 'Arbitrary log payload — structure TBD', type: 'object' })
   @IsObject()
   payload: Record<string, unknown>;
 
-  @ApiProperty({ description: 'Mobile platform', example: 'ios' })
+  @ApiProperty({ description: 'Mobile platform', example: 'ios', maxLength: 50 })
   @IsString()
+  @MaxLength(50)
   platform: string;
 
   @ApiProperty({ example: '2026-05-18T08:16:13.163Z' })

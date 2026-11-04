@@ -712,6 +712,14 @@
         "tags": ["Health"]
       }
     },
+    "/health/live": {
+      "get": {
+        "operationId": "HealthController_live",
+        "parameters": [],
+        "responses": { "200": { "description": "" }, "500": { "description": "Internal server error" } },
+        "tags": ["Health"]
+      }
+    },
     "/health": {
       "get": {
         "operationId": "HealthController_ready",
@@ -925,7 +933,7 @@
             "additionalProperties": true,
             "description": "Arbitrary log payload — structure TBD"
           },
-          "platform": { "type": "string", "description": "Mobile platform", "example": "ios" },
+          "platform": { "type": "string", "description": "Mobile platform", "example": "ios", "maxLength": 50 },
           "timestamp": { "type": "string", "example": "2026-05-18T08:16:13.163Z" },
           "traceId": { "type": "string", "example": "9c226319-abcc-4d6c-a1b6-f5d1cf18b6ae" }
         },
@@ -934,31 +942,32 @@
       "WebLogActionDto": {
         "type": "object",
         "properties": {
-          "ctx": { "type": "string", "description": "Context or module that produced the action" },
+          "ctx": { "type": "string", "description": "Context or module that produced the action", "maxLength": 100 },
           "level": {
             "type": "string",
             "enum": ["critical", "debug", "error", "info", "log", "warn"],
             "example": "info"
           },
-          "message": { "type": "string", "example": "Fetching todo" },
-          "payload": { "type": "object", "additionalProperties": true, "description": "Arbitrary action payload" }
+          "message": { "type": "string", "example": "Fetching todo", "maxLength": 2000 },
+          "payload": { "type": "object", "additionalProperties": true, "description": "Arbitrary action payload" },
+          "stack": { "type": "string", "description": "Error stack trace", "maxLength": 10000 }
         },
         "required": ["ctx", "level", "message", "payload"]
       },
       "WebLogMetadataDto": {
         "type": "object",
         "properties": {
-          "browser": { "type": "string", "example": "Chrome" },
-          "browserVersion": { "type": "string", "example": "148.0.0.0" },
+          "browser": { "type": "string", "example": "Chrome", "maxLength": 100 },
+          "browserVersion": { "type": "string", "example": "148.0.0.0", "maxLength": 100 },
           "devicePixelRatio": { "type": "number", "example": 2 },
-          "fullUrl": { "type": "string", "example": "http://localhost:5173/todo/abc" },
-          "language": { "type": "string", "example": "en-US" },
+          "fullUrl": { "type": "string", "example": "http://localhost:5173/todo/abc", "maxLength": 2000 },
+          "language": { "type": "string", "example": "en-US", "maxLength": 35 },
           "mobile": { "type": "boolean", "example": false },
-          "os": { "type": "string", "example": "macOS 10.15.7" },
-          "screen": { "type": "string", "example": "1728x1117" },
-          "timezone": { "type": "string", "example": "Europe/London" },
-          "url": { "type": "string", "example": "/todo/abc" },
-          "viewport": { "type": "string", "example": "1046x920" }
+          "os": { "type": "string", "example": "macOS 10.15.7", "maxLength": 100 },
+          "screen": { "type": "string", "example": "1728x1117", "maxLength": 50 },
+          "timezone": { "type": "string", "example": "Europe/London", "maxLength": 100 },
+          "url": { "type": "string", "example": "/todo/abc", "maxLength": 2000 },
+          "viewport": { "type": "string", "example": "1046x920", "maxLength": 50 }
         },
         "required": [
           "browser",
@@ -977,8 +986,8 @@
       "WebLogDto": {
         "type": "object",
         "properties": {
-          "actions": { "type": "array", "items": { "$ref": "#/components/schemas/WebLogActionDto" } },
-          "env": { "type": "string", "example": "production" },
+          "actions": { "maxItems": 100, "type": "array", "items": { "$ref": "#/components/schemas/WebLogActionDto" } },
+          "env": { "type": "string", "example": "production", "maxLength": 50 },
           "metadata": { "$ref": "#/components/schemas/WebLogMetadataDto" },
           "timestamp": { "type": "string", "example": "2026-05-18T08:16:13.163Z" },
           "traceId": { "type": "string", "example": "9c226319-abcc-4d6c-a1b6-f5d1cf18b6ae" }

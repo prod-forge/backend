@@ -5,7 +5,7 @@ import type { NextFunction, Request, Response } from 'express';
 import { Inject, Injectable } from '@nestjs/common';
 
 import { metricsConfig } from '../../../config/metrics.config';
-import { METRICS_ENDPOINT } from '../../../constants/url.contants';
+import { METRICS_ENDPOINT } from '../../../constants/url.constants';
 import { HealthMetricsService } from '../health-metrics.service';
 
 @Injectable()

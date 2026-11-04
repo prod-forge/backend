@@ -104,7 +104,7 @@ src/
 
 ### PrismaModule
 
-Wraps `PrismaService` which extends the generated Prisma client. Connects on `onModuleInit`, disconnects on shutdown. Exported globally from `PrismaModule`.
+Wraps `PrismaService` which extends the generated Prisma client. Connects on `onModuleInit`, disconnects on shutdown. Exported from `PrismaModule`, which is not global: modules that need `PrismaService` import `PrismaModule`.
 
 ### RedisManagerModule
 
@@ -117,8 +117,9 @@ Both clients inherit from `BaseRedisService` (exponential retry, no offline queu
 
 ### Health
 
-Two endpoints, both excluded from the global prefix:
+Three endpoints, all excluded from the global prefix:
 
+- `GET /health/live` — liveness, no checks (Docker `HEALTHCHECK`, ECS container `healthCheck`)
 - `GET /health` — critical checks: DB ping + shutdown state
 - `GET /health/deps` — all checks: DB + Redis
 

@@ -1,20 +1,31 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { ArrayNotEmpty, IsArray, IsDateString, IsString, IsUUID, ValidateNested } from 'class-validator';
+import {
+  ArrayMaxSize,
+  ArrayNotEmpty,
+  IsArray,
+  IsDateString,
+  IsString,
+  IsUUID,
+  MaxLength,
+  ValidateNested,
+} from 'class-validator';
 
 import { WebLogActionDto } from './web-log-action.dto';
 import { WebLogMetadataDto } from './web-log-metadata.dto';
 
 export class WebLogDto {
-  @ApiProperty({ isArray: true, type: () => WebLogActionDto })
+  @ApiProperty({ isArray: true, maxItems: 100, type: () => WebLogActionDto })
+  @ArrayMaxSize(100)
   @ArrayNotEmpty()
   @IsArray()
   @Type(() => WebLogActionDto)
   @ValidateNested({ each: true })
   actions: WebLogActionDto[];
 
-  @ApiProperty({ example: 'production' })
+  @ApiProperty({ example: 'production', maxLength: 50 })
   @IsString()
+  @MaxLength(50)
   env: string;
 
   @ApiProperty({ type: () => WebLogMetadataDto })

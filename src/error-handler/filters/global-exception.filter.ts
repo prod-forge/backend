@@ -5,12 +5,12 @@ import * as Sentry from '@sentry/node';
 import { Request, Response } from 'express';
 
 import { sentryConfig } from '../../config/sentry.config';
-import { HEALTH_ENDPOINT } from '../../constants/url.contants';
+import { HEALTH_ENDPOINT } from '../../constants/url.constants';
 import { RequestContext } from '../../logger/context/request-context';
 import { LoggerService } from '../../logger/logger.service';
 import { frontendMapper } from '../mappers/frontend.mapper';
 import { resolveError } from '../mappers/resolve-error';
-import { httpErrorsTotal } from './http-errors.metrics';
+import { httpErrorsTotal, UNMATCHED_ROUTE } from './http-errors.metrics';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
@@ -36,8 +36,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     }
 
     if (error.status >= HttpStatus.BAD_REQUEST) {
-      const route = req.route as undefined | { path: string };
-      httpErrorsTotal.labels(req.method, route?.path || req.url, error.status.toString()).inc();
+      const route = req.route as undefined | { path?: string };
+      httpErrorsTotal.labels(req.method, route?.path || UNMATCHED_ROUTE, error.status.toString()).inc();
     }
 
     // Only incidents go to Sentry: 5xx and unexpected errors, never domain 4xx

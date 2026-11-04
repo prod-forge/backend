@@ -8,9 +8,10 @@ import { loggingMiddleware } from './logging.middleware';
 const makeConfig = (excludeEndpoints: string[] = []): LogConfigInterface =>
   ({ logExcludeEndpoints: excludeEndpoints }) as LogConfigInterface;
 
-const makeLogger = (): { log: jest.Mock } => ({ log: jest.fn() });
+const makeLogger = (): { debug: jest.Mock; log: jest.Mock } => ({ debug: jest.fn(), log: jest.fn() });
 
-const makeReq = (url: string, method = 'GET', body = {}): Request => ({ body, method, url }) as unknown as Request;
+const makeReq = (url: string, method = 'GET', body = {}): Request =>
+  ({ body, method, path: url.split('?')[0], url }) as unknown as Request;
 
 describe('loggingMiddleware', () => {
   describe('negative cases', () => {
@@ -44,6 +45,20 @@ describe('loggingMiddleware', () => {
 
       expect(logger.log).not.toHaveBeenCalled();
     });
+
+    it('never puts the request body or query string in the info log', () => {
+      const logger = makeLogger();
+      const middleware = loggingMiddleware(makeConfig(), logger as unknown as LoggerService);
+      const body = { email: 'a@b.c', password: 'secret' };
+
+      middleware(makeReq('/api/todos?email=a@b.c', 'POST', body), {} as Response, jest.fn());
+
+      const [entry] = logger.log.mock.calls[0] as [Record<string, unknown>];
+
+      expect(JSON.stringify(entry)).not.toMatch(/secret|a@b\.c/);
+      expect(entry).not.toHaveProperty('details');
+      expect(entry).not.toHaveProperty('req');
+    });
   });
 
   describe('positive cases', () => {
@@ -74,15 +89,16 @@ describe('loggingMiddleware', () => {
       expect(next).toHaveBeenCalled();
     });
 
-    it('serializes request body in log details', () => {
+    it('passes the body only to the debug log', () => {
       const logger = makeLogger();
-      const next = jest.fn() as NextFunction;
       const middleware = loggingMiddleware(makeConfig(), logger as unknown as LoggerService);
       const body = { title: 'test' };
 
-      middleware(makeReq('/api/todos', 'POST', body), {} as Response, next);
+      middleware(makeReq('/api/todos', 'POST', body), {} as Response, jest.fn());
 
-      expect(logger.log).toHaveBeenCalledWith(expect.objectContaining({ details: JSON.stringify(body) }));
+      expect(logger.debug).toHaveBeenCalledWith(
+        expect.objectContaining({ method: 'POST', path: '/api/todos', req: { body } }),
+      );
     });
   });
 });

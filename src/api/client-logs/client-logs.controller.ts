@@ -1,6 +1,8 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 
+import { Public } from '../../common/decorators/public.decorator';
 import { ApiErrors } from '../../common/decorators/swagger.decorators';
 import { InternalServerError } from '../../error-handler/errors/common.errors';
 import { DtoValidationErrors } from '../../error-handler/errors/dto-validation.errors';
@@ -13,6 +15,8 @@ import { WebLogDto } from './dtos/web-log.dto';
   path: 'client-logs',
   version: '1',
 })
+@Public()
+@Throttle({ default: { limit: 20, ttl: 60000 } })
 export class ClientLogsController {
   constructor(private readonly clientLogsService: ClientLogsService) {}
 

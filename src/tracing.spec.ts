@@ -1,4 +1,4 @@
-import { createSentryAwarePropagator, isTracingEnabled } from './tracing';
+import { createSentryAwarePropagator, duplicateRoutingInstrumentation, isTracingEnabled } from './tracing';
 
 describe('tracing', () => {
   const original = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
@@ -21,6 +21,10 @@ describe('tracing', () => {
       process.env.OTEL_EXPORTER_OTLP_ENDPOINT = 'http://tempo:4318';
 
       expect(isTracingEnabled()).toBe(true);
+    });
+
+    it('disables the router instrumentation that adds a finish listener per middleware layer', () => {
+      expect(duplicateRoutingInstrumentation).toEqual({ '@opentelemetry/instrumentation-router': { enabled: false } });
     });
 
     it('propagates both W3C traceparent and sentry-trace', () => {

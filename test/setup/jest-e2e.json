@@ -22,8 +22,7 @@
     "!src/**/*.dto.ts",
     "!src/**/*.entity.ts",
     "!src/**/*di.types.ts",
-    "!src/**/*.constants.ts",
-    "!src/**/*.contants.ts"
+    "!src/**/*.constants.ts"
   ],
   "coverageDirectory": "coverage-e2e",
   "coverageProvider": "v8",

@@ -70,9 +70,8 @@ Tasks performed here include:
 bootstrap.app.ts
 ```
 
-Creates a fresh application instance for each test scenario.
-
-This ensures that tests remain isolated and do not affect each other.
+Creates one application instance per test file (`beforeAll`) and closes it in `afterAll`. All files share the same
+seeded database, so tests must create their own data and avoid depending on rows left by other files.
 
 ```shell
 teardown.global.ts

@@ -23,6 +23,11 @@ const sentryInstrumented = {
   '@opentelemetry/instrumentation-pg': { enabled: false },
 };
 
+// Express 5 routes through the `router` package, which the express instrumentation already covers. The router
+// instrumentation would add a second span and one response `finish` listener per middleware layer, exceeding Node's
+// default of 10 and logging MaxListenersExceededWarning on every request.
+export const duplicateRoutingInstrumentation = { '@opentelemetry/instrumentation-router': { enabled: false } };
+
 // Accepts and emits both W3C `traceparent` and Sentry's `sentry-trace`/`baggage`.
 export const createSentryAwarePropagator = (): TextMapPropagator =>
   new CompositePropagator({ propagators: [new W3CTraceContextPropagator(), new SentryPropagator()] });
@@ -49,6 +54,7 @@ export const startTracing = (sentryClient?: NodeClient): void => {
     }),
     instrumentations: [
       getNodeAutoInstrumentations({
+        ...duplicateRoutingInstrumentation,
         '@opentelemetry/instrumentation-fs': { enabled: false },
         ...(sentryClient && sentryInstrumented),
       }),

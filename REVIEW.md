@@ -156,7 +156,7 @@ export class TodosService {
 - Live in `src/features/<feature>/`.
 - Only place that interacts with Prisma directly.
 - Use `this.prisma.$transaction([...])` for multi-step reads/writes.
-- Map Prisma models to domain entities via the feature's `Mapper` class.
+- Map Prisma models to domain entities via the feature's `Mapper` object.
 - Do not throw domain errors — return `void` or `undefined` for not-found, let the service decide.
 
 ```ts
@@ -191,16 +191,16 @@ export class TodoEntity {
 
 ## Mappers
 
-- Static classes with static methods only (no instances).
+- `const` objects with plain methods only (no classes, no instances).
 - Single responsibility: map from Prisma model to domain entity.
 - Use `import type` for Prisma-generated types.
 
 ```ts
-export class TodoMapper {
-  static toEntity(todo: Todo): TodoEntity {
+export const TodoMapper = {
+  toEntity(todo: Todo): TodoEntity {
     return new TodoEntity({ ... });
-  }
-}
+  },
+};
 ```
 
 ---
@@ -295,7 +295,7 @@ export const appConfig = registerAs<AppConfig, ConfigFactory<AppConfigInterface>
 
 - All cache operations are in `CacheStorage` (wraps Redis).
 - Every method has a `try/catch` that logs a warning on failure — cache errors never propagate to callers.
-- Cache keys defined in a static class with static methods per key type.
+- Cache keys defined in a `const` object with one function per key type (e.g. `TodosCacheKeys`).
 - Key naming pattern: `resource:id`, `resource:userId:*` (for pattern invalidation).
 
 ```ts
@@ -462,7 +462,7 @@ Use this checklist when reviewing a pull request against this codebase.
 
 - [ ] Entities are plain classes with no NestJS or Prisma decorators
 - [ ] Entity constructor uses `Object.assign(this, partial)`
-- [ ] Mapper is a static class — no instantiation
+- [ ] Mapper is a `const` object of plain functions — no classes, no instantiation
 - [ ] Prisma types imported with `import type`
 
 ### Error Handling
@@ -475,7 +475,7 @@ Use this checklist when reviewing a pull request against this codebase.
 
 ### Cache
 
-- [ ] Cache keys defined as static methods in a `*CacheKeys` class
+- [ ] Cache keys defined as functions on a `*CacheKeys` const object
 - [ ] `CacheStorage` used for all Redis operations — no direct Redis access in services
 - [ ] Cache invalidated on every mutation (create/update/delete)
 - [ ] Cache-aside pattern followed: check → miss → fetch → store

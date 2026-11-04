@@ -3,7 +3,7 @@ import type { NextFunction, Request, Response } from 'express';
 import type { LogConfigInterface } from '../../config/interfaces/log-config.interface';
 import type { LoggerService } from '../logger.service';
 
-import { HEALTH_ENDPOINT, METRICS_ENDPOINT } from '../../constants/url.contants';
+import { HEALTH_ENDPOINT, METRICS_ENDPOINT } from '../../constants/url.constants';
 
 export const loggingMiddleware =
   (config: LogConfigInterface, loggerService: LoggerService) =>
@@ -14,13 +14,17 @@ export const loggingMiddleware =
       return;
     }
 
-    loggerService.log({
+    const entry = {
       ctx: 'loggingMiddleware',
-      details: JSON.stringify(req.body),
       method: req.method,
       msg: `Request income`,
-      path: req.url,
-    });
+      path: req.path,
+    };
+
+    loggerService.log(entry);
+
+    // The body may hold personal data; it is only emitted at debug level and redacted by the logger
+    loggerService.debug({ ...entry, req: { body: req.body } });
 
     next();
   };

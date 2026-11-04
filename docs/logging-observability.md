@@ -64,7 +64,7 @@ _Log application-level events, not internal implementation details._
 
 Typical examples of useful logs:
 
-- incoming requests
+- incoming requests (method, path and trace ID only, never the body)
 - business operations
 - important state changes
 - unexpected errors
@@ -97,6 +97,15 @@ Sentry.setUser({ userId });
 ```
 
 Using only a userId allows engineers to identify the affected user in the database without exposing personal data.
+
+The request logging middleware follows the same rule. The `info` entry carries `method`, `path` (without the query
+string) and the trace ID, and never the request body. The body is emitted only at `debug` level, under `req.body`, and
+the pino `redact` configuration (`src/logger/log-redact.ts`) replaces `req.body.password`, `req.body.email` and
+`req.body.token` with `[REDACTED]`. Keep `LOG_LEVEL` at `info` or above in production anyway.
+
+Client-submitted logs (`POST /api/v1/client-logs/web` and `/mobile`) are written at `warn` with `ctx: 'client-logs'`.
+Free-text fields have `MaxLength` limits, and the endpoints are public (signed-out pages such as login send logs) but
+throttled to 20 requests per minute per client.
 
 ## Trace ID
 
@@ -132,7 +141,9 @@ answer "where did the time go".
 auto-instrumentation patches `http`, `express`, `pg` and `ioredis` at require time). Spans are exported over OTLP/HTTP to
 Tempo. Tracing is enabled only when `OTEL_EXPORTER_OTLP_ENDPOINT` is set (compose sets `http://tempo:4318` on
 `production`); without it `startTracing()` does nothing, so unit and e2e tests are unaffected. The service name is
-`APP_NAME` and the version is `APP_VERSION`.
+`APP_NAME` and the version is `APP_VERSION`. The `@opentelemetry/instrumentation-router` instrumentation is disabled:
+Express 5 routes through the `router` package that the express instrumentation already covers, and the router one adds a
+response `finish` listener per middleware layer, which triggers `MaxListenersExceededWarning` on every request.
 
 When an OpenTelemetry span is active, `traceIdMiddleware` uses its trace id for `x-trace-id`, the response header and
 the log `traceId`. Without a span (tracing disabled) it falls back to an incoming `x-trace-id` header, then a random
@@ -201,7 +212,7 @@ is not set in the shell or in `.env`; never use that value outside a laptop.
 
 | Service    | URL                     | Notes                                                         |
 | ---------- | ----------------------- | ------------------------------------------------------------- |
-| App        | `http://localhost:3000` | `/health`, `/health/deps`, `/metrics`                         |
+| App        | `http://localhost:3000` | `/health`, `/health/live`, `/health/deps`, `/metrics`         |
 | Grafana    | `http://localhost:3001` | `admin` / `admin`; datasources and 3 dashboards provisioned   |
 | Prometheus | `http://localhost:9090` | Scrapes `production:3000/metrics` as job `nestjs-app`, alerts |
 | Loki       | `http://localhost:3100` | Logs shipped by Promtail from the Docker socket               |
@@ -357,6 +368,21 @@ Dependencies should be split into:
 
 Failure of a critical dependency must stop traffic.
 Failure of an optional dependency should only degrade functionality.
+
+Three endpoints serve three purposes:
+
+| Endpoint       | Checks                          | Used by                                           |
+| -------------- | ------------------------------- | ------------------------------------------------- |
+| `/health/live` | none, returns `{"status":"ok"}` | Docker `HEALTHCHECK`, ECS container `healthCheck` |
+| `/health`      | database and shutdown state     | ALB target group (readiness)                      |
+| `/health/deps` | database and Redis              | debugging and monitoring                          |
+
+### /health/live (Liveness)
+
+Answers only "is the process up?" and runs no dependency check, so it stays `200` during a database outage. Use it
+wherever a failure means the container is killed and restarted: the Dockerfile `HEALTHCHECK` (it honours `APP_PORT`)
+and, in the Terraform phase, the ECS container `healthCheck`. Pointing those at `/health` would make a database outage
+restart healthy tasks. The ALB target group keeps using `/health`, because there a failure should only stop traffic.
 
 ### /health (Critical)
 

@@ -11,6 +11,7 @@ All routes are prefixed with `/api` (configurable via `API_PREFIX`) and versione
 **Exceptions** — these routes bypass the global prefix entirely:
 
 - `GET /health`
+- `GET /health/live`
 - `GET /health/deps`
 - `GET /metrics`
 - `GET /metrics/database`
@@ -293,7 +294,9 @@ Defaults: `THROTTLE_LIMIT=10` requests per `THROTTLE_TTL=20000` ms window, track
 
 ### Client Logs
 
-> Base path: `/api/v1/client-logs` · No auth required · Fire-and-forget (always `204`)
+> Base path: `/api/v1/client-logs` · No auth required (`@Public()`) · Throttled to 20 requests per minute · Fire-and-forget (always `204`)
+>
+> Entries are logged at `warn` with `ctx: 'client-logs'`. Free-text fields have `MaxLength` limits (action `message` 2000, optional `stack` 10000, `ctx`/`env`/`platform` 50-100, `actions` at most 100 items); longer values fail validation.
 
 ---
 
@@ -380,6 +383,12 @@ Returns `503` when any check fails (used by load balancer readiness probe).
 
 ---
 
+#### `GET /health/live` — Liveness
+
+No dependency checks. **Response `200`** — `{ "status": "ok" }`. Used by the Docker `HEALTHCHECK` and the ECS container `healthCheck` so a database outage never restarts healthy tasks; the ALB target group uses `/health`.
+
+---
+
 #### `GET /health/deps` — Dependency Health
 
 Checks: PostgreSQL ping + Redis ping.
@@ -399,7 +408,7 @@ Checks: PostgreSQL ping + Redis ping.
 Returns default prom-client metrics plus:
 
 - `http_requests_total{method, route, status}`
-- `http_errors_total{method, route, status}`
+- `http_errors_total{method, route, status}` (`route` is the route template, or `unmatched` when no route matched)
 - `http_request_duration_seconds{method, route, status}` (histogram)
 - `http_requests_in_flight` (gauge)
 - `prisma_query_duration_seconds` (histogram), `prisma_queries_total`, `prisma_queries_per_request` (histogram)

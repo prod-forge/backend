@@ -18,7 +18,7 @@ import type { sentryConfig } from './config/sentry.config';
 
 import { AppModule } from './app.module';
 import { UnifiedResponseInterceptor } from './common/interceptors/unified-response.interceptor';
-import { HEALTH_ENDPOINT, METRICS_ENDPOINT } from './constants/url.contants';
+import { HEALTH_ENDPOINT, METRICS_ENDPOINT } from './constants/url.constants';
 import { DtoValidationErrors } from './error-handler/errors/dto-validation.errors';
 import { GlobalExceptionFilter } from './error-handler/filters/global-exception.filter';
 import { parseValidationErrors } from './error-handler/parsers/validation-error.parser';
@@ -121,6 +121,7 @@ export const appSetup = (app: INestApplication): void => {
         `/${METRICS_ENDPOINT}/database`,
         `/${HEALTH_ENDPOINT}`,
         `/${HEALTH_ENDPOINT}/deps`,
+        `/${HEALTH_ENDPOINT}/live`,
       ],
     }),
     new HttpMetricsInterceptor(),

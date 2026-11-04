@@ -1,5 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 
+import { EventEmitter } from 'node:events';
+
 import { RequestTrackingMiddleware } from './request-tracking.middleware';
 import { RequestTrackingService } from './request-tracking.service';
 
@@ -60,6 +62,23 @@ describe('RequestTrackingMiddleware', () => {
       middleware.use({} as Request, res as unknown as Response, jest.fn() as NextFunction);
       res.handlers.finish();
       res.handlers.close();
+
+      expect(tracker.getActiveRequests()).toBe(0);
+    });
+
+    it('adds one finish and one close listener per request, regardless of how many requests ran', () => {
+      const requests = 50;
+
+      for (let i = 0; i < requests; i++) {
+        const res = new EventEmitter();
+
+        middleware.use({} as Request, res as unknown as Response, jest.fn() as NextFunction);
+
+        expect(res.listenerCount('finish')).toBe(1);
+        expect(res.listenerCount('close')).toBe(1);
+
+        res.emit('finish');
+      }
 
       expect(tracker.getActiveRequests()).toBe(0);
     });

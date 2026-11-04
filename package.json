@@ -57,8 +57,7 @@
       "!**/*.dto.ts",
       "!**/*.entity.ts",
       "!**/*di.types.ts",
-      "!**/*.constants.ts",
-      "!**/*.contants.ts"
+      "!**/*.constants.ts"
     ],
     "coverageDirectory": "../coverage",
     "moduleFileExtensions": [

@@ -7,6 +7,7 @@ import pretty from 'pino-pretty';
 import { logConfig } from '../config/log.config';
 import { EnvironmentService } from '../modules/environment/environment.service';
 import { RequestContext } from './context/request-context';
+import { logRedact } from './log-redact';
 
 type Details = unknown;
 
@@ -17,6 +18,7 @@ type Message = {
   method?: string;
   msg: string;
   path?: string;
+  req?: { body: unknown };
   stack?: string;
 };
 
@@ -54,10 +56,7 @@ export class LoggerService implements NestLoggerService {
           env: environment.getEnv(),
         },
         level: config.logLevel,
-        redact: {
-          censor: '[REDACTED]',
-          paths: ['req.headers.authorization', 'req.headers.cookie', 'password', 'token'],
-        },
+        redact: logRedact,
         timestamp: () => `,"timestamp":"${new Date().toISOString()}"`,
       },
       stream,

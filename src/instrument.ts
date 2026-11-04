@@ -31,6 +31,7 @@ if (dsn && process.env.SENTRY_ENABLED !== 'false') {
     dsn,
     environment: process.env.NODE_ENV,
     integrations: [nodeProfilingIntegration()],
+    propagateTraceparent: true,
     release: process.env.APP_VERSION || packageJson.version,
     sendDefaultPii: true,
     // With an OTLP endpoint the NodeSDK in tracing.ts owns the single TracerProvider.

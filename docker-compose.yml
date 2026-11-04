@@ -104,6 +104,9 @@ services:
     volumes:
       - ./observability/tempo/config.yml:/etc/tempo/config.yml
       - tempo-data:/var/tempo
+    networks:
+      - database
+      - default
     restart: unless-stopped
 
 networks:

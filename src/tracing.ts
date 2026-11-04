@@ -1,6 +1,8 @@
+import type { TextMapPropagator } from '@opentelemetry/api';
 import type { NodeClient } from '@sentry/node';
 
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
+import { CompositePropagator, W3CTraceContextPropagator } from '@opentelemetry/core';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { NodeSDK, tracing } from '@opentelemetry/sdk-node';
 import { SentryContextManager } from '@sentry/node';
@@ -21,6 +23,10 @@ const sentryInstrumented = {
   '@opentelemetry/instrumentation-pg': { enabled: false },
 };
 
+// Accepts and emits both W3C `traceparent` and Sentry's `sentry-trace`/`baggage`.
+export const createSentryAwarePropagator = (): TextMapPropagator =>
+  new CompositePropagator({ propagators: [new W3CTraceContextPropagator(), new SentryPropagator()] });
+
 /**
  * Starts the single global OpenTelemetry TracerProvider (NodeSDK). No-op without OTEL_EXPORTER_OTLP_ENDPOINT.
  * When Sentry is active it must be initialised with `skipOpenTelemetrySetup: true`; Sentry's span processor,
@@ -39,7 +45,7 @@ export const startTracing = (sentryClient?: NodeClient): void => {
     ...(sentryClient && {
       contextManager: new SentryContextManager(),
       sampler: new SentrySampler(sentryClient),
-      textMapPropagator: new SentryPropagator(),
+      textMapPropagator: createSentryAwarePropagator(),
     }),
     instrumentations: [
       getNodeAutoInstrumentations({

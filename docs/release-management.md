@@ -216,13 +216,39 @@ Typical deployment workflow:
 
 Once AWS replaces the running containers with the new version, the deployment is complete.
 
+### GitHub Variables
+
+`cd.yml`, `rollback.yml` and `show-ecs-revisions.yml` hard-code no AWS names. They run in the `prod` GitHub environment
+and read every name from GitHub variables that are filled from `terraform output` of the
+[terraform](https://github.com/prod-forge/terraform) environment root (see
+[Deploy workflow variables](https://github.com/prod-forge/terraform/blob/main/docs/workflow.md#deploy-workflow-variables)).
+The publish job fails before pushing an image when one of them is empty.
+
+| Variable                    | Terraform output                       | prod value                                                                 |
+| --------------------------- | -------------------------------------- | -------------------------------------------------------------------------- |
+| `AWS_DEPLOY_ROLE_ARN`       | `github_backend_role_arn`              | `arn:aws:iam::<account>:role/prod-forge-todolist-prod-github-backend-role` |
+| `ECR_REPOSITORY`            | `ecr_repository_name`                  | `prod-forge-todolist-prod`                                                 |
+| `ECS_CLUSTER`               | `ecs_cluster_name`                     | `prod-forge-todolist-prod-cluster`                                         |
+| `ECS_SERVICE`               | `ecs_service_name`                     | `prod-forge-todolist-prod-service`                                         |
+| `ECS_TASK_FAMILY`           | `ecs_task_definition_family`           | `prod-forge-todolist-prod-task`                                            |
+| `ECS_MIGRATION_TASK_FAMILY` | `ecs_migration_task_definition_family` | `prod-forge-todolist-prod-migration-task`                                  |
+| `ECS_MIGRATION_LOG_GROUP`   | `ecs_migration_log_group_name`         | `/ecs/prod-forge-todolist-prod-task-migration`                             |
+| `PRIVATE_SUBNET_IDS`        | `private_subnet_ids`, comma-joined     | `subnet-0aaa,subnet-0bbb,subnet-0ccc`                                      |
+| `ECS_SECURITY_GROUP_ID`     | `ecs_security_group_id`                | `sg-0123456789abcdef0`                                                     |
+
+The role trusts only jobs of this repository that declare the `prod` environment, so every AWS job sets
+`environment: prod`. The image contains no `.env` files: in ECS the configuration comes from the task definition (see
+[Configuration Management](configuration-management.md#variable-reference-and-production-values)).
+
 ### Database Migration Step
 
 Database migrations are executed as a one-time ECS task.
 
 This ensures:
 
-- migrations run in the same environment as the application
+- migrations run in the same environment as the application: the roles, `environment` and `secrets` of the current
+  app task definition, the private subnets and the ECS security group of the service, with no public IP
+  (`assignPublicIp=DISABLED`)
 - the deployment process remains fully automated
 
 Because migrations follow a forward-only strategy, schema updates should not break the currently running version of the

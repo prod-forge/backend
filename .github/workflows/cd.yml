@@ -8,12 +8,15 @@ on:
 env:
   NODE_VERSION: 24.21.0
   AWS_REGION: eu-central-1
-  ECR_REPO: prod-forge-todolist
-  TASK_MIGRATION_NAME: prod-forge-todolist-migration-task
-  TASK_NAME: prod-forge-todolist-task
-  ECS_CLUSTER: prod-forge-todolist-cluster
-  ECS_SERVICE: prod-forge-todolist-service
-  TASK_MIGRATION_LOGS: /ecs/prod-forge-todolist-task-migration
+  # Names and network ids are terraform outputs, stored as GitHub variables (docs/release-management.md).
+  ECR_REPO: ${{ vars.ECR_REPOSITORY }}
+  TASK_MIGRATION_NAME: ${{ vars.ECS_MIGRATION_TASK_FAMILY }}
+  TASK_NAME: ${{ vars.ECS_TASK_FAMILY }}
+  ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
+  ECS_SERVICE: ${{ vars.ECS_SERVICE }}
+  TASK_MIGRATION_LOGS: ${{ vars.ECS_MIGRATION_LOG_GROUP }}
+  PRIVATE_SUBNET_IDS: ${{ vars.PRIVATE_SUBNET_IDS }}
+  ECS_SECURITY_GROUP_ID: ${{ vars.ECS_SECURITY_GROUP_ID }}
   KEEP: 3
 
 permissions:
@@ -140,10 +143,27 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      - name: Check deploy variables
+        env:
+          AWS_DEPLOY_ROLE_ARN: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+        run: |
+          MISSING=""
+          for NAME in AWS_DEPLOY_ROLE_ARN ECR_REPO TASK_NAME TASK_MIGRATION_NAME ECS_CLUSTER ECS_SERVICE \
+            TASK_MIGRATION_LOGS PRIVATE_SUBNET_IDS ECS_SECURITY_GROUP_ID; do
+            if [ -z "${!NAME}" ]; then
+              MISSING="$MISSING $NAME"
+            fi
+          done
+
+          if [ -n "$MISSING" ]; then
+            echo "Missing GitHub variables (set them from terraform output):$MISSING"
+            exit 1
+          fi
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
-          role-to-assume: arn:aws:iam::${{ vars.USER_ID }}:role/github-actions-ecs-ecr-role
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Log in to Amazon ECR
@@ -164,12 +184,6 @@ jobs:
       - name: Extract version from tag
         id: extract
         run: echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
-
-      - name: Generate .env
-        uses: ./.github/actions/generate-env
-        with:
-          DATABASE_SSL: true
-          LOG_PRETTY: false
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -211,7 +225,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
-          role-to-assume: arn:aws:iam::${{ vars.USER_ID }}:role/github-actions-ecs-ecr-role
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Get current task definition
@@ -239,25 +253,17 @@ jobs:
             --output text)
           echo "task_def_arn=$TASK_DEF_ARN" >> "$GITHUB_OUTPUT"
 
+      # Same private subnets and security group as the service: no public IP, egress through NAT or VPC endpoints.
       - name: Run migration task
         id: run-task
         env:
           TASK_DEF_ARN: ${{ steps.register.outputs.task_def_arn }}
         run: |
-          NET_JSON=$(aws ecs describe-services \
-            --cluster "${ECS_CLUSTER}" \
-            --services "${ECS_SERVICE}" \
-            --query 'services[0].networkConfiguration.awsvpcConfiguration' \
-            --output json)
-
-          SUBNETS=$(echo "$NET_JSON" | jq -r '.subnets | join(",")')
-          SG=$(echo "$NET_JSON" | jq -r '.securityGroups[0]')
-
           TASK_ARN=$(aws ecs run-task \
             --cluster "${ECS_CLUSTER}" \
             --launch-type FARGATE \
             --task-definition "${TASK_DEF_ARN}" \
-            --network-configuration "awsvpcConfiguration={subnets=[$SUBNETS],securityGroups=[$SG],assignPublicIp=ENABLED}" \
+            --network-configuration "awsvpcConfiguration={subnets=[${PRIVATE_SUBNET_IDS}],securityGroups=[${ECS_SECURITY_GROUP_ID}],assignPublicIp=DISABLED}" \
             --query 'tasks[0].taskArn' \
             --output text)
 
@@ -306,7 +312,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
-          role-to-assume: arn:aws:iam::${{ vars.USER_ID }}:role/github-actions-ecs-ecr-role
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Get current task definition
@@ -362,14 +368,14 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
-          role-to-assume: arn:aws:iam::${{ vars.USER_ID }}:role/github-actions-ecs-ecr-role
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       ###############################################
-      # Cleanup prod-forge-todolist-task (keep last 3)
+      # Cleanup the app task family (keep last 3)
       ###############################################
 
-      - name: Cleanup prod-forge-todolist-task (keep last 3)
+      - name: Cleanup app task revisions (keep last 3)
         run: |
           echo "Fetching ACTIVE revisions for $TASK_NAME"
 
@@ -395,10 +401,10 @@ jobs:
           done
 
       #########################################################
-      # Cleanup prod-forge-todolist-migration-task (remove all)
+      # Cleanup the migration task family (remove all)
       #########################################################
 
-      - name: Cleanup prod-forge-todolist-migration-task (remove all ACTIVE)
+      - name: Cleanup migration task revisions (remove all ACTIVE)
         run: |
           echo "Fetching ACTIVE revisions for $TASK_MIGRATION_NAME"
 

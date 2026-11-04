@@ -264,6 +264,7 @@ Grafana runs on `http://localhost:3001` (`admin` / `admin`). Details:
     - [Build](docs/release-management.md#build)
     - [Optional Quality Gates](docs/release-management.md#optional-quality-gates)
   - [Continuous Deployment (CD)](docs/release-management.md#continuous-deployment-cd)
+    - [GitHub Variables](docs/release-management.md#github-variables)
     - [Database Migration Step](docs/release-management.md#database-migration-step)
       - [Important Note About Migrations](docs/release-management.md#important-note-about-migrations)
     - [Revision Cleanup](docs/release-management.md#revision-cleanup)

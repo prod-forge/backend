@@ -24,7 +24,7 @@ services:
       # Non-secret local fallback; set JWT_SECRET in .env (>= 32 chars) to override it.
       JWT_SECRET: ${JWT_SECRET:-local-dev-only-jwt-secret-0123456789}
     ports:
-      - '3000:3000'
+      - '127.0.0.1:3000:3000'
     depends_on:
       database:
         condition: service_healthy
@@ -50,7 +50,7 @@ services:
     volumes:
       - database:/data/postgres
     ports:
-      - '5332:5432'
+      - '127.0.0.1:5332:5432'
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
       interval: 5s
@@ -72,7 +72,7 @@ services:
     image: redis:8.6-alpine
     restart: always
     ports:
-      - '6379:6379'
+      - '127.0.0.1:6379:6379'
     volumes:
       - cache:/data
     healthcheck:
@@ -87,7 +87,7 @@ services:
     image: prom/prometheus:v3.5.0
     container_name: prometheus
     ports:
-      - '9090:9090'
+      - '127.0.0.1:9090:9090'
     volumes:
       - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./observability/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
@@ -100,7 +100,7 @@ services:
     container_name: promtail
     command: -config.file=/etc/promtail/config.yml
     ports:
-      - '9080:9080'
+      - '127.0.0.1:9080:9080'
     volumes:
       - ./observability/promtail/promtail-config.yml:/etc/promtail/config.yml:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -114,7 +114,7 @@ services:
     image: grafana/grafana:12.2.0
     container_name: grafana
     ports:
-      - '3001:3000'
+      - '127.0.0.1:3001:3000'
     restart: unless-stopped
     environment:
       GF_SECURITY_ADMIN_USER: admin
@@ -135,7 +135,7 @@ services:
     image: grafana/loki:3.5.0
     container_name: loki
     ports:
-      - '3100:3100'
+      - '127.0.0.1:3100:3100'
     command: -config.file=/etc/loki/config.yml
     volumes:
       - ./observability/loki/config.yml:/etc/loki/config.yml:ro
@@ -149,7 +149,7 @@ services:
     container_name: tempo
     command: -config.file=/etc/tempo/config.yml
     ports:
-      - '3200:3200'
+      - '127.0.0.1:3200:3200'
     volumes:
       - ./observability/tempo/config.yml:/etc/tempo/config.yml:ro
       - tempo-data:/var/tempo

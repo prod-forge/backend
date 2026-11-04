@@ -7,13 +7,13 @@ export class CreateTodoDto {
   @IsOptional()
   completed?: boolean = false;
 
-  @ApiPropertyOptional({ required: false })
+  @ApiPropertyOptional({ maxLength: 2000, required: false })
   @IsOptional()
   @IsString()
   @MaxLength(2000)
   description?: string;
 
-  @ApiProperty()
+  @ApiProperty({ maxLength: 200 })
   @IsString()
   @MaxLength(200)
   title: string;

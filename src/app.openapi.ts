@@ -1,19 +1,19 @@
 import type { INestApplication } from '@nestjs/common';
-import type { ConfigType } from '@nestjs/config';
 import type { OpenAPIObject } from '@nestjs/swagger';
 
-import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
-import type { appConfig } from './config/app.config';
+import packageJson from '../package.json';
+
+// Fixed values keep docs/openapi.json independent of APP_NAME and APP_DESCRIPTION in the environment
+const API_TITLE = 'Prod Forge Todo API';
+const API_DESCRIPTION = 'REST API of the Prod Forge todo list';
 
 export const createOpenApiDocument = (app: INestApplication): OpenAPIObject => {
-  const configApp = app.get(ConfigService).getOrThrow<ConfigType<typeof appConfig>>('appConfig');
-
   const swaggerOptions = new DocumentBuilder()
-    .setTitle(configApp.appName)
-    .setDescription(configApp.appDescription)
-    .setVersion(configApp.appVersion)
+    .setTitle(API_TITLE)
+    .setDescription(API_DESCRIPTION)
+    .setVersion(packageJson.version)
     .setExternalDoc(
       'For Validation Errors please check class-validator',
       'https://github.com/typestack/class-validator#validation-errors',

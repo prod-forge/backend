@@ -218,7 +218,7 @@
             "name": "offset",
             "required": false,
             "in": "query",
-            "schema": { "default": 0, "example": 0, "type": "number" }
+            "schema": { "minimum": 0, "default": 0, "example": 0, "type": "number" }
           },
           {
             "name": "order",
@@ -226,7 +226,12 @@
             "in": "query",
             "schema": { "type": "string", "enum": ["asc", "desc"] }
           },
-          { "name": "search", "required": false, "in": "query", "schema": { "example": "buy milk", "type": "string" } },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": { "maxLength": 100, "example": "buy milk", "type": "string" }
+          },
           {
             "name": "searchField",
             "required": false,
@@ -902,8 +907,8 @@
     }
   },
   "info": {
-    "title": "Todo_inst1",
-    "description": "Real-world backend architecture patterns, production mistakes and lessons learned building scalable systems.",
+    "title": "Prod Forge Todo API",
+    "description": "REST API of the Prod Forge todo list",
     "version": "0.2.0",
     "contact": {}
   },
@@ -984,8 +989,8 @@
         "type": "object",
         "properties": {
           "completed": { "type": "boolean", "default": false },
-          "description": { "type": "string" },
-          "title": { "type": "string" }
+          "description": { "type": "string", "maxLength": 2000 },
+          "title": { "type": "string", "maxLength": 200 }
         },
         "required": ["title"]
       },
@@ -1048,13 +1053,13 @@
         "type": "object",
         "properties": {
           "completed": { "type": "boolean", "default": false },
-          "description": { "type": "string" },
-          "title": { "type": "string" }
+          "description": { "type": "string", "maxLength": 2000 },
+          "title": { "type": "string", "maxLength": 200 }
         }
       },
       "LoginDto": {
         "type": "object",
-        "properties": { "email": { "type": "string", "example": "user1@example.com" } },
+        "properties": { "email": { "type": "string", "example": "user1@example.com", "maxLength": 254 } },
         "required": ["email"]
       }
     }

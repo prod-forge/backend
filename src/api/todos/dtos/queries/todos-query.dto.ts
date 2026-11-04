@@ -20,7 +20,7 @@ export class TodosQueryDto {
   @Type(() => Number)
   limit?: number = 10;
 
-  @ApiPropertyOptional({ default: 0, example: 0 })
+  @ApiPropertyOptional({ default: 0, example: 0, minimum: 0 })
   @IsInt()
   @IsOptional()
   @Min(0)
@@ -32,7 +32,7 @@ export class TodosQueryDto {
   @IsOptional()
   order?: SortOrder;
 
-  @ApiPropertyOptional({ example: 'buy milk' })
+  @ApiPropertyOptional({ example: 'buy milk', maxLength: 100 })
   @IsOptional()
   @IsString()
   @MaxLength(100)

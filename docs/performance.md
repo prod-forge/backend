@@ -58,14 +58,25 @@ Too many indexes can negatively affect:
 - write performance
 - storage usage
 
-Indexes should be introduced only when necessary. Current `Todo` indexes:
+Indexes should be introduced only when necessary. `Todo` indexes in the migrations today:
 
 - `(userId, createdAt)` and `(userId, completed, createdAt)` for the default and the `completed` filtered lists
-- `(userId, title)` for sorting a user's todos by title
-- trigram GIN indexes on `title` and `description` (`pg_trgm`, `gin_trgm_ops`) for the case-insensitive
-  `contains` search, which becomes `ILIKE '%term%'` and cannot use a btree index
 
-The trigram indexes are created in a hand-written migration because Prisma cannot declare them in `schema.prisma`.
+Declared in `schema.prisma` (`@@index([userId, title])`) but not yet in any migration: `(userId, title)` for sorting a
+user's todos by title. Planned and not yet created: trigram GIN indexes on `title` and `description` (`pg_trgm`,
+`gin_trgm_ops`) for the case-insensitive `contains` search, which becomes `ILIKE '%term%'` and cannot use a btree index.
+Until the migration below lands, search is a sequential scan within the user's rows and the schema and the migrations
+have drifted.
+
+Prisma cannot declare trigram indexes in `schema.prisma`, so the migration is hand-written (`prisma migrate dev
+--create-only`, then paste). It is a pending item for the repository owner, because migrations are protected by a hook:
+
+```sql
+CREATE INDEX "Todo_userId_title_idx" ON "Todo"("userId", "title");
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE INDEX "Todo_title_trgm_idx" ON "Todo" USING GIN ("title" gin_trgm_ops);
+CREATE INDEX "Todo_description_trgm_idx" ON "Todo" USING GIN ("description" gin_trgm_ops);
+```
 
 ## Connection Pool and Timeouts
 

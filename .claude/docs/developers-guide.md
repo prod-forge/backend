@@ -151,6 +151,8 @@ npm run lint:ts            # tsc --noEmit only
 npm run lint:code          # ESLint only
 npm run format             # Prettier + ESLint auto-fix
 npm run knip               # Dead code / unused exports check
+npm run openapi:export     # Regenerate docs/openapi.json (run after any HTTP contract change)
+npm run openapi:check      # Fail if docs/openapi.json is out of date
 
 # Testing
 npm test                   # Unit tests

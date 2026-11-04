@@ -435,3 +435,6 @@ Response: `[{ queryId, query, calls, meanMs, maxMs, totalMs }]`. Prometheus read
 
 Available in non-production environments at the path configured by `SWAGGER_ENDPOINT` (default `/docs`).
 Powered by Scalar (`@scalar/nestjs-api-reference`). Includes Bearer auth input for testing protected routes.
+
+The contract is committed as `docs/openapi.json`. After any change to routes, DTOs or Swagger decorators run
+`npm run openapi:export` and commit the result; `npm run openapi:check` and `test/openapi.e2e-spec.ts` fail on drift.

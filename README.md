@@ -111,7 +111,7 @@ Every major technical decision is documented and explained.
 - [6. Documentation](docs/documentation.md)
   - [Recommended Documentation Structure](docs/documentation.md#recommended-documentation-structure)
     - [README.md](docs/documentation.md#readmemd)
-    - [Swagger / OpenAPI](docs/documentation.md#swagger--openapi)
+    - [Swagger / OpenAPI](docs/documentation.md#swagger--openapi) (committed contract: [docs/openapi.json](docs/openapi.json))
   - [Additional Useful Documents](docs/documentation.md#additional-useful-documents)
     - [CHANGELOG.md](docs/documentation.md#changelogmd)
     - [Incident Log](docs/documentation.md#incident-log)

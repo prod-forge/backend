@@ -54,6 +54,21 @@ It provides:
 - validation rules
 - example requests
 
+The API contract is committed as `docs/openapi.json`. It is generated from the controllers and DTO decorators by
+`npm run openapi:export`, which needs neither Postgres nor Redis nor real secrets. The frontend and mobile clients
+consume this file to generate their API types, so it is the single source of truth for the HTTP surface.
+
+Rules:
+
+- any change to a route, DTO or Swagger decorator must be followed by `npm run openapi:export` and the updated
+  `docs/openapi.json` must be committed in the same change
+- `npm run openapi:check` regenerates the document in memory and fails when it differs from the committed file
+- the e2e test `test/openapi.e2e-spec.ts` fails with the same hint when the committed file has drifted, so CI blocks a
+  contract change that was not exported
+
+The interactive reference (Scalar) is served at `SWAGGER_ENDPOINT` outside production and is not protected by
+credentials.
+
 In this project, Swagger also includes custom decorators that simplify repetitive patterns such as pagination.
 
 It is important to document not only successful responses, but also error responses, so that API consumers understand

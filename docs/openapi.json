@@ -1,0 +1,1066 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/metrics": {
+      "get": {
+        "operationId": "PrometheusScrapeController_index",
+        "parameters": [],
+        "responses": { "200": { "description": "" }, "500": { "description": "Internal server error" } },
+        "tags": ["PrometheusScrape"]
+      }
+    },
+    "/api/metrics/database": {
+      "get": {
+        "operationId": "MetricsController_metrics",
+        "parameters": [],
+        "responses": { "200": { "description": "" }, "500": { "description": "Internal server error" } },
+        "tags": ["Metrics"]
+      }
+    },
+    "/api/v1/client-logs/mobile": {
+      "post": {
+        "operationId": "ClientLogsController_postMobileLogs_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MobileLogDto" } } }
+        },
+        "responses": {
+          "204": { "description": "Logs accepted" },
+          "422": {
+            "description": "DTO_VALIDATION_ERROR: Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "DTO_VALIDATION_ERROR" },
+                        "message": { "example": "Validation Error" },
+                        "status": { "example": 422 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "INTERNAL_ERROR: Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "INTERNAL_ERROR" },
+                        "message": { "example": "Internal Server Error" },
+                        "status": { "example": 500 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "summary": "Ingest mobile client logs",
+        "tags": ["Client Logs"]
+      }
+    },
+    "/api/v1/client-logs/web": {
+      "post": {
+        "operationId": "ClientLogsController_postWebLogs_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/WebLogDto" } } }
+        },
+        "responses": {
+          "204": { "description": "Logs accepted" },
+          "422": {
+            "description": "DTO_VALIDATION_ERROR: Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "DTO_VALIDATION_ERROR" },
+                        "message": { "example": "Validation Error" },
+                        "status": { "example": 422 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "INTERNAL_ERROR: Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "INTERNAL_ERROR" },
+                        "message": { "example": "Internal Server Error" },
+                        "status": { "example": 500 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "summary": "Ingest web client logs",
+        "tags": ["Client Logs"]
+      }
+    },
+    "/api/v1/todos": {
+      "post": {
+        "operationId": "TodosController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateTodoDto" } } }
+        },
+        "responses": {
+          "200": {
+            "description": "Create new todo item for user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [{ "properties": { "data": { "$ref": "#/components/schemas/TodoResponseDto" } } }]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "USER_IS_NOT_AUTHORIZED: User is not authorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "USER_IS_NOT_AUTHORIZED" },
+                        "message": { "example": "User is not authorized" },
+                        "status": { "example": 401 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "DTO_VALIDATION_ERROR: Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "DTO_VALIDATION_ERROR" },
+                        "message": { "example": "Validation Error" },
+                        "status": { "example": 422 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "INTERNAL_ERROR: Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "INTERNAL_ERROR" },
+                        "message": { "example": "Internal Server Error" },
+                        "status": { "example": 500 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "access-token": [] }],
+        "summary": "Create todo 🔒",
+        "tags": ["Todos"]
+      },
+      "get": {
+        "operationId": "TodosController_findAll_v1",
+        "parameters": [
+          { "name": "completed", "required": false, "in": "query", "schema": { "example": true, "type": "boolean" } },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": { "minimum": 1, "maximum": 100, "default": 10, "example": 10, "type": "number" }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": { "default": 0, "example": 0, "type": "number" }
+          },
+          {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": { "type": "string", "enum": ["asc", "desc"] }
+          },
+          { "name": "search", "required": false, "in": "query", "schema": { "example": "buy milk", "type": "string" } },
+          {
+            "name": "searchField",
+            "required": false,
+            "in": "query",
+            "schema": { "example": "title", "type": "string", "enum": ["description", "title"] }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "schema": { "type": "string", "enum": ["completed", "createdAt", "title"] }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get all todo items for user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/PaginatedResponseDto" },
+                    {
+                      "properties": {
+                        "data": { "items": { "$ref": "#/components/schemas/TodoResponseDto" }, "type": "array" },
+                        "meta": { "$ref": "#/components/schemas/PaginationMetaDto" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "USER_IS_NOT_AUTHORIZED: User is not authorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "USER_IS_NOT_AUTHORIZED" },
+                        "message": { "example": "User is not authorized" },
+                        "status": { "example": 401 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "DTO_VALIDATION_ERROR: Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "DTO_VALIDATION_ERROR" },
+                        "message": { "example": "Validation Error" },
+                        "status": { "example": 422 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "INTERNAL_ERROR: Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "INTERNAL_ERROR" },
+                        "message": { "example": "Internal Server Error" },
+                        "status": { "example": 500 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "access-token": [] }],
+        "summary": "Find All Todos 🔒",
+        "tags": ["Todos"]
+      }
+    },
+    "/api/v1/todos/{id}": {
+      "get": {
+        "operationId": "TodosController_findOne_v1",
+        "parameters": [{ "name": "id", "required": true, "in": "path", "schema": { "type": "string" } }],
+        "responses": {
+          "200": {
+            "description": "Get todo item for user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [{ "properties": { "data": { "$ref": "#/components/schemas/TodoResponseDto" } } }]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "USER_IS_NOT_AUTHORIZED: User is not authorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "USER_IS_NOT_AUTHORIZED" },
+                        "message": { "example": "User is not authorized" },
+                        "status": { "example": 401 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "TODO_NOT_FOUND: Todo not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "TODO_NOT_FOUND" },
+                        "message": { "example": "Todo not found" },
+                        "status": { "example": 404 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "DTO_VALIDATION_ERROR: Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "DTO_VALIDATION_ERROR" },
+                        "message": { "example": "Validation Error" },
+                        "status": { "example": 422 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "INTERNAL_ERROR: Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "INTERNAL_ERROR" },
+                        "message": { "example": "Internal Server Error" },
+                        "status": { "example": 500 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "access-token": [] }],
+        "summary": "Find One Todo 🔒",
+        "tags": ["Todos"]
+      },
+      "delete": {
+        "operationId": "TodosController_remove_v1",
+        "parameters": [{ "name": "id", "required": true, "in": "path", "schema": { "type": "string" } }],
+        "responses": {
+          "204": { "description": "Todo was successfully deleted" },
+          "401": {
+            "description": "USER_IS_NOT_AUTHORIZED: User is not authorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "USER_IS_NOT_AUTHORIZED" },
+                        "message": { "example": "User is not authorized" },
+                        "status": { "example": 401 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "TODO_NOT_FOUND: Todo not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "TODO_NOT_FOUND" },
+                        "message": { "example": "Todo not found" },
+                        "status": { "example": 404 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "DTO_VALIDATION_ERROR: Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "DTO_VALIDATION_ERROR" },
+                        "message": { "example": "Validation Error" },
+                        "status": { "example": 422 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "INTERNAL_ERROR: Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "INTERNAL_ERROR" },
+                        "message": { "example": "Internal Server Error" },
+                        "status": { "example": 500 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "access-token": [] }],
+        "summary": "Remove Todo 🔒",
+        "tags": ["Todos"]
+      },
+      "patch": {
+        "operationId": "TodosController_update_v1",
+        "parameters": [{ "name": "id", "required": true, "in": "path", "schema": { "type": "string" } }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpdateTodoDto" } } }
+        },
+        "responses": {
+          "200": {
+            "description": "Update todo item for user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [{ "properties": { "data": { "$ref": "#/components/schemas/TodoResponseDto" } } }]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "USER_IS_NOT_AUTHORIZED: User is not authorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "USER_IS_NOT_AUTHORIZED" },
+                        "message": { "example": "User is not authorized" },
+                        "status": { "example": 401 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "TODO_NOT_FOUND: Todo not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "TODO_NOT_FOUND" },
+                        "message": { "example": "Todo not found" },
+                        "status": { "example": 404 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "DTO_VALIDATION_ERROR: Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "DTO_VALIDATION_ERROR" },
+                        "message": { "example": "Validation Error" },
+                        "status": { "example": 422 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "INTERNAL_ERROR: Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "INTERNAL_ERROR" },
+                        "message": { "example": "Internal Server Error" },
+                        "status": { "example": 500 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "access-token": [] }],
+        "summary": "Update Todo 🔒",
+        "tags": ["Todos"]
+      }
+    },
+    "/health/deps": {
+      "get": {
+        "operationId": "HealthController_deps",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The Health Check is successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "ok" },
+                    "info": {
+                      "type": "object",
+                      "example": { "database": { "status": "up" } },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": ["status"],
+                        "properties": { "status": { "type": "string" } },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "error": {
+                      "type": "object",
+                      "example": {},
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": ["status"],
+                        "properties": { "status": { "type": "string" } },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "details": {
+                      "type": "object",
+                      "example": { "database": { "status": "up" } },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": ["status"],
+                        "properties": { "status": { "type": "string" } },
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": { "description": "Internal server error" },
+          "503": {
+            "description": "The Health Check is not successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "error" },
+                    "info": {
+                      "type": "object",
+                      "example": { "database": { "status": "up" } },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": ["status"],
+                        "properties": { "status": { "type": "string" } },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "error": {
+                      "type": "object",
+                      "example": { "redis": { "status": "down", "message": "Could not connect" } },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": ["status"],
+                        "properties": { "status": { "type": "string" } },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "details": {
+                      "type": "object",
+                      "example": {
+                        "database": { "status": "up" },
+                        "redis": { "status": "down", "message": "Could not connect" }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": ["status"],
+                        "properties": { "status": { "type": "string" } },
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["Health"]
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "HealthController_ready",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The Health Check is successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "ok" },
+                    "info": {
+                      "type": "object",
+                      "example": { "database": { "status": "up" } },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": ["status"],
+                        "properties": { "status": { "type": "string" } },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "error": {
+                      "type": "object",
+                      "example": {},
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": ["status"],
+                        "properties": { "status": { "type": "string" } },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "details": {
+                      "type": "object",
+                      "example": { "database": { "status": "up" } },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": ["status"],
+                        "properties": { "status": { "type": "string" } },
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": { "description": "Internal server error" },
+          "503": {
+            "description": "The Health Check is not successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "error" },
+                    "info": {
+                      "type": "object",
+                      "example": { "database": { "status": "up" } },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": ["status"],
+                        "properties": { "status": { "type": "string" } },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "error": {
+                      "type": "object",
+                      "example": { "redis": { "status": "down", "message": "Could not connect" } },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": ["status"],
+                        "properties": { "status": { "type": "string" } },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "details": {
+                      "type": "object",
+                      "example": {
+                        "database": { "status": "up" },
+                        "redis": { "status": "down", "message": "Could not connect" }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": ["status"],
+                        "properties": { "status": { "type": "string" } },
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["Health"]
+      }
+    },
+    "/api/version": {
+      "get": {
+        "operationId": "VersionController_check",
+        "parameters": [],
+        "responses": { "200": { "description": "" }, "500": { "description": "Internal server error" } },
+        "tags": ["Version"]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "operationId": "AuthController_login_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LoginDto" } } }
+        },
+        "responses": {
+          "200": {
+            "description": "Exchange a registered email for a signed access token. Development stub: no password is checked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [{ "properties": { "data": { "$ref": "#/components/schemas/TokenResponseDto" } } }]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "USER_IS_NOT_AUTHORIZED: User is not authorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "USER_IS_NOT_AUTHORIZED" },
+                        "message": { "example": "User is not authorized" },
+                        "status": { "example": 401 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "DTO_VALIDATION_ERROR: Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "DTO_VALIDATION_ERROR" },
+                        "message": { "example": "Validation Error" },
+                        "status": { "example": 422 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "INTERNAL_ERROR: Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "INTERNAL_ERROR" },
+                        "message": { "example": "Internal Server Error" },
+                        "status": { "example": 500 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "none": [] }],
+        "summary": "Login",
+        "tags": ["Auth"]
+      }
+    }
+  },
+  "info": {
+    "title": "Todo_inst1",
+    "description": "Real-world backend architecture patterns, production mistakes and lessons learned building scalable systems.",
+    "version": "0.2.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": { "access-token": { "scheme": "bearer", "bearerFormat": "JWT", "type": "http" } },
+    "schemas": {
+      "MobileLogDto": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Arbitrary log payload — structure TBD"
+          },
+          "platform": { "type": "string", "description": "Mobile platform", "example": "ios" },
+          "timestamp": { "type": "string", "example": "2026-05-18T08:16:13.163Z" },
+          "traceId": { "type": "string", "example": "9c226319-abcc-4d6c-a1b6-f5d1cf18b6ae" }
+        },
+        "required": ["payload", "platform", "timestamp", "traceId"]
+      },
+      "WebLogActionDto": {
+        "type": "object",
+        "properties": {
+          "ctx": { "type": "string", "description": "Context or module that produced the action" },
+          "level": {
+            "type": "string",
+            "enum": ["critical", "debug", "error", "info", "log", "warn"],
+            "example": "info"
+          },
+          "message": { "type": "string", "example": "Fetching todo" },
+          "payload": { "type": "object", "additionalProperties": true, "description": "Arbitrary action payload" }
+        },
+        "required": ["ctx", "level", "message", "payload"]
+      },
+      "WebLogMetadataDto": {
+        "type": "object",
+        "properties": {
+          "browser": { "type": "string", "example": "Chrome" },
+          "browserVersion": { "type": "string", "example": "148.0.0.0" },
+          "devicePixelRatio": { "type": "number", "example": 2 },
+          "fullUrl": { "type": "string", "example": "http://localhost:5173/todo/abc" },
+          "language": { "type": "string", "example": "en-US" },
+          "mobile": { "type": "boolean", "example": false },
+          "os": { "type": "string", "example": "macOS 10.15.7" },
+          "screen": { "type": "string", "example": "1728x1117" },
+          "timezone": { "type": "string", "example": "Europe/London" },
+          "url": { "type": "string", "example": "/todo/abc" },
+          "viewport": { "type": "string", "example": "1046x920" }
+        },
+        "required": [
+          "browser",
+          "browserVersion",
+          "devicePixelRatio",
+          "fullUrl",
+          "language",
+          "mobile",
+          "os",
+          "screen",
+          "timezone",
+          "url",
+          "viewport"
+        ]
+      },
+      "WebLogDto": {
+        "type": "object",
+        "properties": {
+          "actions": { "type": "array", "items": { "$ref": "#/components/schemas/WebLogActionDto" } },
+          "env": { "type": "string", "example": "production" },
+          "metadata": { "$ref": "#/components/schemas/WebLogMetadataDto" },
+          "timestamp": { "type": "string", "example": "2026-05-18T08:16:13.163Z" },
+          "traceId": { "type": "string", "example": "9c226319-abcc-4d6c-a1b6-f5d1cf18b6ae" }
+        },
+        "required": ["actions", "env", "metadata", "timestamp", "traceId"]
+      },
+      "CreateTodoDto": {
+        "type": "object",
+        "properties": {
+          "completed": { "type": "boolean", "default": false },
+          "description": { "type": "string" },
+          "title": { "type": "string" }
+        },
+        "required": ["title"]
+      },
+      "PaginationMetaDto": {
+        "type": "object",
+        "properties": {
+          "limit": { "type": "number", "example": 10 },
+          "offset": { "type": "number", "description": "Zero-based number of rows skipped", "example": 0 },
+          "total": { "type": "number", "example": 20 }
+        },
+        "required": ["limit", "offset", "total"]
+      },
+      "PaginatedResponseDto": {
+        "type": "object",
+        "properties": {
+          "data": { "type": "array", "items": { "type": "array" } },
+          "meta": { "$ref": "#/components/schemas/PaginationMetaDto" }
+        },
+        "required": ["data", "meta"]
+      },
+      "ApiErrorDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "BAD_REQUEST",
+              "DATABASE_ERROR",
+              "DTO_VALIDATION_ERROR",
+              "FORBIDDEN",
+              "HTTP_EXCEPTION",
+              "INFRA_FAILURE",
+              "INTERNAL_ERROR",
+              "NOT_FOUND",
+              "PAYLOAD_TOO_LARGE",
+              "REDIS_ERROR",
+              "TODO_NOT_FOUND",
+              "TOO_MANY_REQUESTS",
+              "USER_IS_NOT_AUTHORIZED",
+              "USER_NOT_FOUND"
+            ]
+          },
+          "details": { "type": "object" },
+          "message": { "type": "string", "example": "Error message" },
+          "traceId": { "type": "string", "example": "trace-id" }
+        },
+        "required": ["code", "message"]
+      },
+      "TodoResponseDto": {
+        "type": "object",
+        "properties": {
+          "completed": { "type": "boolean" },
+          "description": { "type": "object", "nullable": true },
+          "id": { "type": "string" },
+          "title": { "type": "string" }
+        },
+        "required": ["completed", "id", "title"]
+      },
+      "UpdateTodoDto": {
+        "type": "object",
+        "properties": {
+          "completed": { "type": "boolean", "default": false },
+          "description": { "type": "string" },
+          "title": { "type": "string" }
+        }
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": { "email": { "type": "string", "example": "user1@example.com" } },
+        "required": ["email"]
+      }
+    }
+  },
+  "externalDocs": {
+    "description": "For Validation Errors please check class-validator",
+    "url": "https://github.com/typestack/class-validator#validation-errors"
+  }
+}

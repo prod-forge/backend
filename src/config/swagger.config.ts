@@ -13,12 +13,6 @@ class SwaggerConfig {
 
   @IsString()
   SWAGGER_ENDPOINT = 'docs';
-
-  @IsString()
-  SWAGGER_PASSWORD = 'admin';
-
-  @IsString()
-  SWAGGER_USERNAME = 'admin';
 }
 
 export const swaggerConfig = registerAs<SwaggerConfig, ConfigFactory<SwaggerConfigInterface>>(
@@ -29,8 +23,6 @@ export const swaggerConfig = registerAs<SwaggerConfig, ConfigFactory<SwaggerConf
     return {
       swaggerEnabled: config.SWAGGER_ENABLED,
       swaggerEndpoint: config.SWAGGER_ENDPOINT,
-      swaggerPassword: config.SWAGGER_PASSWORD,
-      swaggerUsername: config.SWAGGER_USERNAME,
     };
   },
 );

@@ -26,6 +26,8 @@
     "lint:code": "eslint .",
     "lint:commit": "commitlint --config .commitlintrc.cjs --edit",
     "lint:ts": "tsc --noEmit",
+    "openapi:check": "ts-node ./scripts/export-openapi.ts --check",
+    "openapi:export": "ts-node ./scripts/export-openapi.ts",
     "pre-commit": "lint-staged --config .lintstagedrc.cjs",
     "prepare": "husky",
     "release": "tsx release/before-release.ts && npx release-it",

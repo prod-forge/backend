@@ -362,7 +362,7 @@ describe('Todos API (e2e)', () => {
           .expect(404);
         const body = res.body as ErrorBody;
 
-        expect(body.code).toBe('DATABASE_ERROR');
+        expect(body.code).toBe('TODO_NOT_FOUND');
       });
 
       it('returns 422 when completed is not a boolean', async () => {

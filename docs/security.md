@@ -106,6 +106,7 @@ Example:
 ```typescript
 app.enableCors({
   credentials: true,
+  exposedHeaders: ['X-Trace-Id'],
   origin: (origin, cb) => {
     if (!origin) {
       return configApi.apiAllowNonBrowserOrigins ? cb(null, true) : cb(null, false);
@@ -116,7 +117,7 @@ app.enableCors({
 });
 ```
 
-This allows only trusted origins to access the API.
+This allows only trusted origins to access the API. `exposedHeaders` lets the web client read the `X-Trace-Id` response header cross-origin (browsers hide non-simple headers otherwise), so an error can be matched to its backend logs.
 
 ## Rate Limiting
 

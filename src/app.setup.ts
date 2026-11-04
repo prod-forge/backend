@@ -16,6 +16,7 @@ import type { appConfig } from './config/app.config';
 import type { logConfig } from './config/log.config';
 import type { sentryConfig } from './config/sentry.config';
 
+import { buildCorsOptions } from './app.cors';
 import { AppModule } from './app.module';
 import { UnifiedResponseInterceptor } from './common/interceptors/unified-response.interceptor';
 import { GLOBAL_PREFIX_EXCLUDE, HEALTH_ENDPOINT, METRICS_ENDPOINT } from './constants/url.constants';
@@ -76,18 +77,7 @@ export const appSetup = (app: INestApplication): void => {
   app.use(compression({ threshold: 1024 }));
 
   // CORS
-  app.enableCors({
-    credentials: true,
-    origin: (origin: string, cb: (a: null, b: boolean) => void) => {
-      if (!origin) {
-        cb(null, configApi.apiAllowNonBrowserOrigins);
-
-        return;
-      }
-
-      cb(null, configApi.apiAllowedOrigins.includes(origin));
-    },
-  });
+  app.enableCors(buildCorsOptions(configApi));
 
   // Routing layer
   app.setGlobalPrefix(configApi.apiPrefix, { exclude: GLOBAL_PREFIX_EXCLUDE });

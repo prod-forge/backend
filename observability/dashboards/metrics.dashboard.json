@@ -162,6 +162,17 @@
           "refId": "A"
         }
       ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Cache hit ratio",
+      "gridPos": { "x": 0, "y": 28, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(cache_operations_total{operation=\"get\",result=\"hit\"}[5m])) / clamp_min(sum(rate(cache_operations_total{operation=\"get\",result=~\"hit|miss\"}[5m])), 1e-9)",
+          "legendFormat": "hit ratio"
+        }
+      ]
     }
   ]
 }

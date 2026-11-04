@@ -75,6 +75,12 @@ Invalidation rules per operation (`<id>` is the todo id, `<userId>` the owner):
 
 A request for a todo owned by another user is rejected before any cache write or invalidation.
 
+Pattern invalidation uses `SCAN` (`scanStream` with `COUNT 100`) and `UNLINK` in batches, never `KEYS`. `KEYS` walks the whole keyspace in one blocking call, so on a large Redis it stalls every other command (including throttling and health checks) for the duration. `SCAN` is incremental and non-blocking, at the cost of weaker guarantees: it is not atomic, keys created during the scan may be missed, and a key can be returned twice (harmless for deletion). The cache client uses the `cache:` key prefix, which ioredis does not apply to `SCAN` `MATCH`, so the storage adds it to the match pattern and strips it from returned keys before `UNLINK`.
+
+Known limitation: there is no stampede protection. When a hot key expires or is invalidated, concurrent requests all miss and hit the database until one of them refills the cache. TTL jitter or request coalescing can be added if this becomes a measurable problem.
+
+Metrics: `cache_operations_total{operation="get|set|del", result="hit|miss|ok|error"}`. The "Cache hit ratio" panel in `observability/dashboards/metrics.dashboard.json` shows `hit / (hit + miss)` for `get`.
+
 #### Throttling Strategy
 
 Rate limiting is more important for system stability, so a fallback is implemented.

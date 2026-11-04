@@ -73,6 +73,11 @@
       ".+\\.(t|j)s$": "ts-jest"
     }
   },
+  "overrides": {
+    "@nestjs/platform-express": {
+      "multer": "2.5.0"
+    }
+  },
   "dependencies": {
     "@nest-lab/throttler-storage-redis": "1.2.0",
     "@nestjs/common": "11.1.21",

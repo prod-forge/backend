@@ -160,7 +160,8 @@ Sentry's `SentrySpanProcessor`, `SentrySampler`, `SentryPropagator` and `SentryC
 Sentry keeps instrumenting `http`, `express`, `pg` and `ioredis` itself, so those four are disabled in the auto
 instrumentations to avoid duplicate spans. Without the endpoint Sentry owns its own setup as before.
 `@sentry/opentelemetry` is pinned to the same version as `@sentry/node`, and the OpenTelemetry packages are pinned to the
-2.x line that Sentry uses (`sdk-node` 0.214.0), because mixing OpenTelemetry SDK majors breaks the shared context.
+`core` 2.x line that Sentry 10 accepts (`sdk-node` 0.223.0; the 0.300 line moves to `core` 3), because mixing
+OpenTelemetry SDK majors breaks the shared context.
 
 ### Context propagation
 

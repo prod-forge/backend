@@ -128,3 +128,8 @@ npm i -g npm-check-updates
 ncu -u
 npm install
 ```
+
+When `npm audit` flags a transitive dependency that the direct dependency has not patched yet, `overrides` in
+`package.json` pins the fixed version for that one parent. The entry is a temporary exception: it names the parent, and the
+roadmap tracks the upgrade that removes it. Current example: `multer` 2.5.0 under `@nestjs/platform-express`, until
+NestJS 12.

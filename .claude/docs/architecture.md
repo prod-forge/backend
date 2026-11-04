@@ -190,6 +190,10 @@ Every error is logged via `LoggerService`, counted in Prometheus, and sent to Se
 | Promtail   | 9080 | Reads Docker logs, ships to Loki |
 | Tempo      | 3200 | Trace storage (OTLP on 4318)     |
 
+All services share one `backend` network. Configs live in `observability/` (`prometheus/prometheus.yml` + `alerts.yml`,
+`grafana/datasources.yml` + `dashboards.yml`, `loki/`, `promtail/`, `tempo/`, `dashboards/*.json`); image tags are
+pinned to the terraform monitoring host versions. `scripts/verify-observability.sh` checks the stack end to end.
+
 Tracing: `src/tracing.ts` (`startTracing`, called from `src/instrument.ts`) starts the OpenTelemetry `NodeSDK` only when
 `OTEL_EXPORTER_OTLP_ENDPOINT` is set; with Sentry active it owns the single TracerProvider and Sentry is initialised with
 `skipOpenTelemetrySetup`. `shutdownTracing()` flushes spans from `ShutdownService.onApplicationShutdown`.

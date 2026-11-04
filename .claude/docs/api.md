@@ -384,7 +384,7 @@ Returns `503` when any check fails (used by load balancer readiness probe).
 
 Checks: PostgreSQL ping + Redis ping.
 
-**Response `200`** — same shape as `/health`
+**Response `200`** — same shape as `/health`; `503` with the same body when a check is down (monitoring only, not used for routing)
 
 ---
 

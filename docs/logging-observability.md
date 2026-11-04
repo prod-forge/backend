@@ -158,7 +158,8 @@ is active the propagator is a composite of the W3C propagator and Sentry's, and 
 `propagateTraceparent: true`, so both `traceparent` and `sentry-trace`/`baggage` are accepted and emitted. The frontend
 can send either: `@sentry/react` sends `sentry-trace`/`baggage` out of the box, and `traceparent` also works. Until the
 frontend sends one, every API request starts a new trace. Whether the Sentry sampler respects a sampling decision
-extracted from a W3C parent is checked live in Task 13.
+extracted from a W3C parent cannot be checked in the local stack (it runs with `SENTRY_ENABLED=false`); verify it in an
+environment with a Sentry DSN.
 
 ### Sampling and cost
 
@@ -178,6 +179,44 @@ The stack consists of the following components:
 - Grafana – visualization and dashboards
 - Prometheus – metrics collection system
 - Tempo – distributed trace storage
+
+## Running the Stack Locally
+
+`docker-compose.yml` runs the app together with the full stack on one `backend` network. All images are pinned
+(Prometheus `v3.5.0`, Grafana `12.2.0`, Loki and Promtail `3.5.0`, Tempo `2.8.2`), and the versions match the
+monitoring host in `prod-forge/terraform`.
+
+```shell
+docker compose up -d database cache
+npm run db:migration:deploy && npm run db:seed   # once, against the compose database on localhost:5332
+./scripts/verify-observability.sh                # builds and starts everything, then checks it end to end
+docker compose down                              # stop the stack, volumes are kept
+```
+
+The `production` container reads `.env.common` and `.env` through `env_file`, and compose `environment:` overrides
+what must differ inside the network: `DATABASE_HOST=database`, `DATABASE_PORT=5432`, `REDIS_HOST=cache`,
+`OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4318` and `LOG_PRETTY=false` (JSON lines, so Promtail and the Loki trace
+link can parse them). `JWT_SECRET` falls back to the non-secret value `local-dev-only-jwt-secret-0123456789` when it
+is not set in the shell or in `.env`; never use that value outside a laptop.
+
+| Service    | URL                     | Notes                                                         |
+| ---------- | ----------------------- | ------------------------------------------------------------- |
+| App        | `http://localhost:3000` | `/health`, `/health/deps`, `/metrics`                         |
+| Grafana    | `http://localhost:3001` | `admin` / `admin`; datasources and 3 dashboards provisioned   |
+| Prometheus | `http://localhost:9090` | Scrapes `production:3000/metrics` as job `nestjs-app`, alerts |
+| Loki       | `http://localhost:3100` | Logs shipped by Promtail from the Docker socket               |
+| Tempo      | `http://localhost:3200` | Traces over OTLP HTTP on `tempo:4318` (network only)          |
+
+`scripts/verify-observability.sh` (needs `curl` and `jq`) asserts, in order: `/health` is 200, login with a seeded user
+works, 50 authenticated requests to `/api/v1/todos` return at least one 200 (the per-user throttler answers the rest
+with 429), `prisma_queries_total` is above zero, Prometheus reports `up{job="nestjs-app"} == 1`, Grafana is healthy and
+has exactly 3 dashboards, Tempo is ready and its search API returns a trace, and Loki holds an app log line whose
+`"traceId":"<32 hex>"` matches the Grafana derived field that links logs to Tempo. The stack is left running for
+inspection.
+
+Grafana provisions dashboards from `observability/grafana/dashboards.yml`, which points at the
+`observability/dashboards` folder mounted into `/var/lib/grafana/dashboards`. Edit dashboards in that folder, not in
+the UI: provisioned dashboards are read-only.
 
 ## Logging Pipeline
 
@@ -251,6 +290,41 @@ http_requests_total{method="GET",route="/api/v1/todos/:id",status="200"} 42
 
 Grafana can then use Prometheus as a data source to build dashboards and alerts based on these metrics.
 
+## Alerting and SLOs
+
+Service level objectives for the API, measured over a rolling 30 days:
+
+| SLO          | Target               | Measured with                                                       |
+| ------------ | -------------------- | ------------------------------------------------------------------- |
+| Availability | 99.9%                | Share of non-5xx responses in `http_requests_total`                 |
+| Latency      | p95 < 300 ms         | `histogram_quantile(0.95, ...http_request_duration_seconds_bucket)` |
+| Error rate   | < 1% of requests 5xx | `http_requests_total{status=~"5.."}` over all requests              |
+
+Alert rules live in `observability/prometheus/alerts.yml` and are loaded by Prometheus through `rule_files`. They fire
+on symptoms well past the SLO, so a page means users are hurting now rather than that the error budget is shrinking:
+
+| Alert            | Condition                                                   | For    | Severity |
+| ---------------- | ----------------------------------------------------------- | ------ | -------- |
+| `HighErrorRate`  | 5xx responses above 5% of all requests                      | 5 min  | critical |
+| `HighLatencyP95` | p95 request duration above 500 ms                           | 10 min | warning  |
+| `ServiceDown`    | `up{job="nestjs-app"} == 0`, or no target at all (`absent`) | 1 min  | critical |
+| `InFlightStuck`  | more than 50 requests in flight                             | 10 min | warning  |
+
+There is no Redis alert: Redis is an optional dependency and no metric reports its state (`service_health_status`
+covers the readiness checks only). A Redis outage shows up as `cache_operations_total{result="error"}`.
+
+Check the rules after editing them:
+
+```shell
+docker run --rm --entrypoint promtool -v "$PWD/observability/prometheus:/etc/prometheus:ro" \
+  prom/prometheus:v3.5.0 check rules /etc/prometheus/alerts.yml
+```
+
+Locally the alerts are visible in Prometheus (`/alerts`) and Grafana only. In AWS the same rules run on the monitoring
+host (`prod-forge/terraform` keeps a copy; this repository is the source of truth), still without Alertmanager, and
+paging goes through CloudWatch alarms on the ALB, ECS and RDS that notify an SNS topic. Routing these Prometheus alerts
+to SNS through Alertmanager is planned for phase 2b.
+
 ## Why Observability Matters
 
 Combining structured logging, metrics, and monitoring dashboards allows teams to quickly:
@@ -300,14 +374,16 @@ this.shutdownHealthService.check('shutdown');
 ```
 
 On SIGTERM, readiness switches to `503` first and the HTTP server keeps accepting connections for
-`SHUTDOWN_DRAIN_MS` (10s by default), so the load balancer deregisters the instance before the port closes.
+`SHUTDOWN_DRAIN_MS` (10s by default), so the load balancer deregisters the instance before the port closes. The global
+exception filter passes the Terminus status through for health routes, so a failed check is a real `503`, not a `200`
+with `"status":"error"` in the body.
 
 ### /health/deps (All)
 
 Includes all dependencies (critical + optional).
 
 Used for debugging and monitoring.
-May report failures without affecting traffic.
+May report failures without affecting traffic: it returns `503` when a check is down, but nothing routes traffic on it.
 
 #### Optional Dependencies Handling
 

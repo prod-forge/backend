@@ -10,7 +10,8 @@
 - Logging & Observability
   - More metrics
   - Global Dashboard
-  - Database Metrics
+  - Alertmanager routing of Prometheus alerts to SNS (phase 2b)
+  - SLO burn-rate alerts
 - Testing
   - A/B Testing
   - Load Testing

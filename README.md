@@ -34,8 +34,23 @@ Every major technical decision is documented and explained.
 | Deploy         | AWS S3 · CloudFront · ECR · ECS                  |
 | Backend        | NestJS · Prisma · PostgreSQL · Redis · Docker    |
 | Infrastructure | AWS · RDS · ElasticCache                         |
-| Observability  | Prometheus · Grafana · Loki · Promtail           |
+| Observability  | Prometheus · Grafana · Loki · Promtail · Tempo   |
 | Quality        | ESLint · Prettier · Husky · Commitlint · CI/CD   |
+
+## Getting started
+
+Requires Node 24, Docker and `jq`.
+
+```shell
+npm install
+docker compose up -d database cache
+npm run db:migration:deploy && npm run db:seed
+npm run start:dev                     # API on http://localhost:3000, Swagger on /docs
+./scripts/verify-observability.sh     # app in Docker plus Prometheus, Grafana, Loki, Tempo, checked end to end
+```
+
+Grafana runs on `http://localhost:3001` (`admin` / `admin`). Details:
+[Running the Stack Locally](docs/logging-observability.md#running-the-stack-locally).
 
 # Table of contents
 
@@ -188,9 +203,11 @@ Every major technical decision is documented and explained.
     - [Context propagation](docs/logging-observability.md#context-propagation)
     - [Sampling and cost](docs/logging-observability.md#sampling-and-cost)
   - [Observability Stack](docs/logging-observability.md#observability-stack)
+  - [Running the Stack Locally](docs/logging-observability.md#running-the-stack-locally)
   - [Logging Pipeline](docs/logging-observability.md#logging-pipeline)
   - [Dashboards](docs/logging-observability.md#dashboards)
   - [Metrics with Prometheus](docs/logging-observability.md#metrics-with-prometheus)
+  - [Alerting and SLOs](docs/logging-observability.md#alerting-and-slos)
   - [Why Observability Matters](docs/logging-observability.md#why-observability-matters)
   - [Health Checks and Terminus](docs/logging-observability.md#health-checks-and-terminus)
     - [Critical vs Optional Dependencies](docs/logging-observability.md#critical-vs-optional-dependencies)

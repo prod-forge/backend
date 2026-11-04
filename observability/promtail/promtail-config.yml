@@ -16,26 +16,19 @@ scrape_configs:
         refresh_interval: 5s
 
     relabel_configs:
-      - source_labels: [ __meta_docker_container_label_logging ]
+      - source_labels: [__meta_docker_container_label_logging]
         target_label: appName
         action: replace
-      - source_labels: [ __meta_docker_container_name ]
+      - source_labels: [__meta_docker_container_name]
+        regex: /(.*)
         target_label: container
         action: replace
 
+    # docker_sd_configs delivers the raw stdout line, so the pino JSON is parsed directly.
+    # Only `level` becomes a stream label (bounded cardinality); other fields are parsed in LogQL.
     pipeline_stages:
-      - docker: {}
       - json:
-          field: log
           expressions:
-            level: level
-            time: time
-            env: env
-            appName: appName
-            traceId: traceId
-            levelName: levelName
-            ctx: ctx
-            msg: msg
-            method: method
-            path: path
-            stack: stack
+            level: levelName
+      - labels:
+          level:

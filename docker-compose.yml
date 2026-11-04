@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   production:
     build:
@@ -9,13 +7,32 @@ services:
     container_name: production
     restart: always
     labels:
-      logging: ${APP_NAME}
+      # Promtail turns this label into the `appName` Loki label used by the logs dashboard.
+      logging: ${APP_NAME:-prod-forge-backend}
+    env_file:
+      - .env.common
+      - .env
     environment:
+      DATABASE_HOST: database
+      DATABASE_PORT: 5432
+      REDIS_HOST: cache
+      REDIS_PORT: 6379
+      # JSON logs so Promtail and the Loki traceId derived field can parse them.
+      LOG_PRETTY: 'false'
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
+      # Non-secret local fallback; set JWT_SECRET in .env (>= 32 chars) to override it.
+      JWT_SECRET: ${JWT_SECRET:-local-dev-only-jwt-secret-0123456789}
     ports:
-      - "3000:3000"
+      - '3000:3000'
+    depends_on:
+      database:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+      tempo:
+        condition: service_started
     networks:
-      - database
+      - backend
 
   database:
     container_name: postgres
@@ -30,9 +47,14 @@ services:
     volumes:
       - database:/data/postgres
     ports:
-      - "5332:5432"
+      - '5332:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 5s
+      timeout: 5s
+      retries: 10
     networks:
-      - database
+      - backend
     restart: unless-stopped
     command:
       - postgres
@@ -47,70 +69,93 @@ services:
     image: redis:8.6-alpine
     restart: always
     ports:
-      - "6379:6379"
+      - '6379:6379'
     volumes:
       - cache:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - backend
 
   prometheus:
-    image: prom/prometheus
+    image: prom/prometheus:v3.5.0
     container_name: prometheus
     ports:
-      - "9090:9090"
+      - '9090:9090'
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./observability/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+    networks:
+      - backend
     restart: unless-stopped
 
   promtail:
-    image: grafana/promtail
+    image: grafana/promtail:3.5.0
     container_name: promtail
     command: -config.file=/etc/promtail/config.yml
     ports:
-      - "9080:9080"
+      - '9080:9080'
     volumes:
-      - ./promtail-config.yml:/etc/promtail/config.yml
-      - /var/run/docker.sock:/var/run/docker.sock
+      - ./observability/promtail/promtail-config.yml:/etc/promtail/config.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
       - loki
+    networks:
+      - backend
+    restart: unless-stopped
 
   grafana:
-    image: grafana/grafana
+    image: grafana/grafana:12.2.0
     container_name: grafana
     ports:
-      - "3001:3000"
+      - '3001:3000'
     restart: unless-stopped
     environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
     volumes:
       - grafana-data:/var/lib/grafana
-      - ./grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+      - ./observability/grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+      - ./observability/grafana/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro
+      - ./observability/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+      - loki
+      - tempo
+    networks:
+      - backend
 
   loki:
-    image: grafana/loki:2.9.3
+    image: grafana/loki:3.5.0
     container_name: loki
     ports:
-      - "3100:3100"
+      - '3100:3100'
     command: -config.file=/etc/loki/config.yml
     volumes:
-      - ./loki/config.yml:/etc/loki/config.yml
+      - ./observability/loki/config.yml:/etc/loki/config.yml:ro
       - loki-data:/loki
+    networks:
+      - backend
+    restart: unless-stopped
 
   tempo:
     image: grafana/tempo:2.8.2
     container_name: tempo
     command: -config.file=/etc/tempo/config.yml
     ports:
-      - "3200:3200"
+      - '3200:3200'
     volumes:
-      - ./observability/tempo/config.yml:/etc/tempo/config.yml
+      - ./observability/tempo/config.yml:/etc/tempo/config.yml:ro
       - tempo-data:/var/tempo
     networks:
-      - database
-      - default
+      - backend
     restart: unless-stopped
 
 networks:
-  database:
+  backend:
     driver: bridge
 
 volumes:

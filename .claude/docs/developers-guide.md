@@ -358,13 +358,23 @@ The `Dockerfile` uses a two-stage build:
 ### Full observability stack
 
 ```bash
-docker-compose up -d
+./scripts/verify-observability.sh   # docker compose up -d --build, then end-to-end checks; needs curl and jq
+docker compose down                 # volumes are kept
 ```
 
-Starts: app · PostgreSQL · Redis · Prometheus · Grafana · Loki · Promtail
+Starts: app · PostgreSQL · Redis · Prometheus · Grafana · Loki · Promtail · Tempo, all on the `backend` network.
+Migrate and seed the compose database first (`npm run db:migration:deploy && npm run db:seed`): the script logs in as
+`user1@example.com`.
 
-- Grafana: `http://localhost:3001` (admin/admin)
-- Prometheus: `http://localhost:9090`
+- Grafana: `http://localhost:3001` (admin/admin), 3 provisioned dashboards
+- Prometheus: `http://localhost:9090`, job `nestjs-app`, alert rules from `observability/prometheus/alerts.yml`
+- Tempo: `http://localhost:3200`; Loki: `http://localhost:3100`
+
+The `production` service overrides `DATABASE_HOST`, `DATABASE_PORT`, `REDIS_HOST`, `LOG_PRETTY=false` and
+`OTEL_EXPORTER_OTLP_ENDPOINT` via compose `environment:`. `JWT_SECRET` falls back to the non-secret
+`local-dev-only-jwt-secret-0123456789` when `.env` does not set it.
+
+Check alert rules after editing: `docker run --rm --entrypoint promtool -v "$PWD/observability/prometheus:/etc/prometheus:ro" prom/prometheus:v3.5.0 check rules /etc/prometheus/alerts.yml`.
 
 ---
 

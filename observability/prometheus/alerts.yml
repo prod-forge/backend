@@ -1,0 +1,36 @@
+# Source of truth for the terraform copy (prod-forge/terraform/infrastructure/observability/prometheus/alerts.yml).
+groups:
+  - name: backend
+    rules:
+      - alert: HighErrorRate
+        expr: sum(rate(http_requests_total{job="nestjs-app",status=~"5.."}[5m])) / sum(rate(http_requests_total{job="nestjs-app"}[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'More than 5% of requests fail with 5xx'
+
+      - alert: HighLatencyP95
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="nestjs-app"}[5m])) by (le)) > 0.5
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'p95 request latency is above 500 ms'
+
+      # absent() also fires when no target is discovered at all (total outage, broken service discovery).
+      - alert: ServiceDown
+        expr: up{job="nestjs-app"} == 0 or absent(up{job="nestjs-app"})
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Backend target {{ $labels.instance }} is down or not discovered'
+
+      - alert: InFlightStuck
+        expr: sum(http_requests_in_flight{job="nestjs-app"}) > 50
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'More than 50 requests have been in flight for 10 minutes'

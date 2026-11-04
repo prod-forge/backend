@@ -56,8 +56,9 @@ It provides:
 
 The API contract is committed as `docs/openapi.json`. It is generated from the controllers and DTO decorators by
 `npm run openapi:export`, which needs neither Postgres nor Redis nor real secrets nor any `.env` file: the script sets a
-placeholder (`??=`, so real values still win) for every config value that has no default. The frontend and mobile clients
-consume this file to generate their API types, so it is the single source of truth for the HTTP surface.
+placeholder (`??=`, so real values still win) for every config value that has no default. The clients keep their request and
+response types by hand today (generating them from this file is a documented option in the frontend guide), so this
+file is the single source of truth for the HTTP surface.
 
 Rules:
 

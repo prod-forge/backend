@@ -167,9 +167,10 @@ instrumentations to avoid duplicate spans. Without the endpoint Sentry owns its 
 Services pass the trace on with the W3C `traceparent` header (`00-<trace-id>-<parent-span-id>-<flags>`). The SDK reads it
 on incoming requests and writes it on outgoing ones, so a trace started in the browser continues in the API. When Sentry
 is active the propagator is a composite of the W3C propagator and Sentry's, and Sentry runs with
-`propagateTraceparent: true`, so both `traceparent` and `sentry-trace`/`baggage` are accepted and emitted. The frontend
-can send either: `@sentry/react` sends `sentry-trace`/`baggage` out of the box, and `traceparent` also works. Until the
-frontend sends one, every API request starts a new trace. Whether the Sentry sampler respects a sampling decision
+`propagateTraceparent: true`, so both `traceparent` and `sentry-trace`/`baggage` are accepted and emitted. A client
+can send either `traceparent` or `sentry-trace`/`baggage`. The web client sends neither today (only `x-trace-id`, and
+`browserTracingIntegration` adds `sentry-trace` only to same-origin and localhost requests by default), so every API
+request from it starts a new trace. Whether the Sentry sampler respects a sampling decision
 extracted from a W3C parent cannot be checked in the local stack (it runs with `SENTRY_ENABLED=false`); verify it in an
 environment with a Sentry DSN.
 

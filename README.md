@@ -31,9 +31,10 @@ Every major technical decision is documented and explained.
 | Layer          | Tools                                            |
 | -------------- | ------------------------------------------------ |
 | Web Client     | React · Vite · Redux Toolkit · Tailwind CSS · NX |
+| Mobile Client  | Expo · React Native · Redux Toolkit              |
 | Deploy         | AWS S3 · CloudFront · ECR · ECS                  |
 | Backend        | NestJS · Prisma · PostgreSQL · Redis · Docker    |
-| Infrastructure | AWS · RDS · ElastiCache                          |
+| Infrastructure | Terraform · AWS · RDS · ElastiCache              |
 | Observability  | Prometheus · Grafana · Loki · Promtail · Tempo   |
 | Quality        | ESLint · Prettier · Husky · Commitlint · CI/CD   |
 

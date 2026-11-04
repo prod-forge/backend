@@ -174,7 +174,7 @@ In addition to logs, the application also exposes metrics using Prometheus.
 
 Prometheus periodically scrapes metrics from the application endpoint (usually /metrics).
 
-Prometheus scrapes `/metrics` only. `/metrics/database` returns the slow-query gauge as plain text for humans and is not scraped.
+Prometheus scrapes `/metrics` only. `/metrics/database` returns the slowest queries as JSON for humans and is not scraped.
 
 Custom metrics (default `prom-client` process metrics are exposed as well):
 

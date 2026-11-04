@@ -1,5 +1,6 @@
 import type { CallHandler, ExecutionContext } from '@nestjs/common';
 
+import { HttpException } from '@nestjs/common';
 import { lastValueFrom, of, throwError } from 'rxjs';
 
 const mockInFlight = { dec: jest.fn(), inc: jest.fn() };
@@ -19,6 +20,8 @@ jest.mock('prom-client', () => ({
     ),
 }));
 
+import { Prisma } from '../../../../database-manager/generated/client';
+import { TodoNotFoundError } from '../../../error-handler/errors/todo.errors';
 import { RequestContext } from '../../../logger/context/request-context';
 import { HttpMetricsInterceptor } from './http-metrics.interceptor';
 
@@ -42,13 +45,13 @@ describe('HttpMetricsInterceptor', () => {
 
   describe('negative cases', () => {
     it('records the error status once and rethrows when the handler throws', async () => {
-      const error = Object.assign(new Error('test'), { status: 400 });
+      const error = new TodoNotFoundError('42');
       const handler: CallHandler = { handle: jest.fn().mockReturnValue(throwError(() => error)) };
 
       await expect(lastValueFrom(interceptor.intercept(makeContext(), handler))).rejects.toBe(error);
 
       expect(mockCounterLabels).toHaveBeenCalledTimes(1);
-      expect(mockCounterLabels).toHaveBeenCalledWith('GET', '/api/v1/todos/:id', '400');
+      expect(mockCounterLabels).toHaveBeenCalledWith('GET', '/api/v1/todos/:id', '404');
       expect(mockCounterInc).toHaveBeenCalledTimes(1);
       expect(mockDurationObserve).toHaveBeenCalledTimes(1);
     });
@@ -60,6 +63,24 @@ describe('HttpMetricsInterceptor', () => {
 
       expect(mockInFlight.inc).toHaveBeenCalledTimes(1);
       expect(mockInFlight.dec).toHaveBeenCalledTimes(1);
+    });
+
+    it('labels a Prisma P2025 error with 404 like the exception filter', async () => {
+      const error = new Prisma.PrismaClientKnownRequestError('not found', { clientVersion: 'test', code: 'P2025' });
+      const handler: CallHandler = { handle: jest.fn().mockReturnValue(throwError(() => error)) };
+
+      await expect(lastValueFrom(interceptor.intercept(makeContext(), handler))).rejects.toBe(error);
+
+      expect(mockCounterLabels).toHaveBeenCalledWith('GET', '/api/v1/todos/:id', '404');
+    });
+
+    it('labels a plain HttpException with 500 like the exception filter', async () => {
+      const error = new HttpException('teapot', 418);
+      const handler: CallHandler = { handle: jest.fn().mockReturnValue(throwError(() => error)) };
+
+      await expect(lastValueFrom(interceptor.intercept(makeContext(), handler))).rejects.toBe(error);
+
+      expect(mockCounterLabels).toHaveBeenCalledWith('GET', '/api/v1/todos/:id', '500');
     });
 
     it('uses 500 as fallback status when the error has no status', async () => {

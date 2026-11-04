@@ -1,38 +1,14 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { Counter, Gauge, Histogram } from 'prom-client';
 import { Observable } from 'rxjs';
 import { catchError, finalize } from 'rxjs/operators';
 
-import { BaseError } from '../../../error-handler/errors/_base.error';
+import { resolveErrorStatus } from '../../../error-handler/mappers/resolve-error';
 import { RequestContext } from '../../../logger/context/request-context';
+import { httpInFlight, httpRequestDuration, httpRequestsTotal, queriesPerRequest } from './http.metrics';
 
 @Injectable()
 export class HttpMetricsInterceptor implements NestInterceptor {
-  private readonly httpInFlight = new Gauge({
-    help: 'Number of HTTP requests currently being processed',
-    name: 'http_requests_in_flight',
-  });
-
-  private readonly httpRequestDuration = new Histogram({
-    buckets: [0.05, 0.1, 0.2, 0.5, 1, 2, 5],
-    help: 'HTTP request duration in seconds',
-    labelNames: ['method', 'route', 'status'],
-    name: 'http_request_duration_seconds',
-  });
-
-  private readonly httpRequestsTotal = new Counter({
-    help: 'Total HTTP requests',
-    labelNames: ['method', 'route', 'status'],
-    name: 'http_requests_total',
-  });
-
-  private readonly queriesPerRequest = new Histogram({
-    buckets: [0, 1, 2, 3, 5, 10, 20, 50],
-    help: 'Number of database queries executed per HTTP request',
-    name: 'prisma_queries_per_request',
-  });
-
   intercept<T>(context: ExecutionContext, next: CallHandler<T>): Observable<T> {
     const httpContext = context.switchToHttp();
     const req = httpContext.getRequest<Request>();
@@ -49,17 +25,17 @@ export class HttpMetricsInterceptor implements NestInterceptor {
       this.recordMetrics(method, route, status, start);
     };
 
-    this.httpInFlight.inc();
+    httpInFlight.inc();
 
     return next.handle().pipe(
       catchError((err: unknown) => {
-        record((err as null | Partial<BaseError<unknown>> | undefined)?.status ?? 500);
+        record(resolveErrorStatus(err));
         throw err;
       }),
       finalize(() => {
         record(res.statusCode);
-        this.httpInFlight.dec();
-        this.queriesPerRequest.observe(RequestContext.getQueryCount());
+        httpInFlight.dec();
+        queriesPerRequest.observe(RequestContext.getQueryCount());
       }),
     );
   }
@@ -70,7 +46,7 @@ export class HttpMetricsInterceptor implements NestInterceptor {
 
     const statusStr = status.toString();
 
-    this.httpRequestsTotal.labels(method, route, statusStr).inc();
-    this.httpRequestDuration.labels(method, route, statusStr).observe(duration);
+    httpRequestsTotal.labels(method, route, statusStr).inc();
+    httpRequestDuration.labels(method, route, statusStr).observe(duration);
   }
 }

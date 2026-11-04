@@ -44,10 +44,10 @@ export class DatabaseMetrics {
   `);
 
     return rows.map<DatabaseMetricInterface>((row) => ({
-      ...row,
       calls: Number(row.calls), // BigInt -> number
       maxMs: Number(row.max_ms), // string -> number
       meanMs: Number(row.mean_ms), // string -> number
+      query: row.query,
       queryId: row.queryid,
       totalMs: Number(row.total_ms), // string -> number
     }));

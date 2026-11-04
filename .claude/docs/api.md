@@ -413,9 +413,9 @@ Content-Type: `text/plain; version=0.0.4`
 
 #### `GET /metrics/database` — Database Metrics
 
-Returns the `db_slow_query_mean_ms{queryid}` gauge in Prometheus text format (empty when `pg_stat_statements` is not installed).
+Returns the 10 slowest statements from `pg_stat_statements` as JSON for humans (empty array when the extension is not installed).
 
-Content-Type: `text/plain; version=0.0.4`
+Response: `[{ queryId, query, calls, meanMs, maxMs, totalMs }]`. Prometheus reads the same data from `db_slow_query_mean_ms{queryid}` on `/metrics`.
 
 ---
 

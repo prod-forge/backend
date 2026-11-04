@@ -3,24 +3,16 @@ import type { ConfigType } from '@nestjs/config';
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, Inject } from '@nestjs/common';
 import * as Sentry from '@sentry/node';
 import { Request, Response } from 'express';
-import { Counter } from 'prom-client';
 
 import { sentryConfig } from '../../config/sentry.config';
 import { HEALTH_ENDPOINT } from '../../constants/url.contants';
 import { LoggerService } from '../../logger/logger.service';
-import { BaseError } from '../errors/_base.error';
-import { InternalServerError } from '../errors/common.errors';
 import { frontendMapper } from '../mappers/frontend.mapper';
-import { mapPrismaError } from '../mappers/prisma-error.mapper';
+import { resolveError } from '../mappers/resolve-error';
+import { httpErrorsTotal } from './http-errors.metrics';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
-  private readonly httpErrors = new Counter({
-    help: 'Total HTTP errors',
-    labelNames: ['method', 'route', 'status'],
-    name: 'http_errors_total',
-  });
-
   constructor(
     private readonly loggerService: LoggerService,
     @Inject(sentryConfig.KEY)
@@ -33,23 +25,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const res = ctx.getResponse<Response>();
     const traceId = req.traceId;
 
-    let error: BaseError<unknown> | null = null;
-
-    // 1) Domain errors
-    if (exception instanceof BaseError) {
-      error = exception;
-    }
-
-    // 2) Prisma errors
-    error ??= mapPrismaError(exception);
-
-    // 3) Nest HttpException fallback (not show details to user)
-    if (!error && exception instanceof HttpException) {
-      error = new InternalServerError();
-    }
-
-    // 4) Unknown error (not show details to user)
-    error ??= new InternalServerError();
+    const error = resolveError(exception);
 
     // Need to skip Health endpoints
     if (req.url.slice(1).startsWith(HEALTH_ENDPOINT) && exception instanceof HttpException) {
@@ -60,7 +36,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     if (error.status >= HttpStatus.BAD_REQUEST) {
       const route = req.route as undefined | { path: string };
-      this.httpErrors.labels(req.method, route?.path || req.url, error.status.toString()).inc();
+      httpErrorsTotal.labels(req.method, route?.path || req.url, error.status.toString()).inc();
     }
 
     if (this.configSentry.sentryEnabled) {

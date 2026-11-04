@@ -1,49 +1,46 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { Gauge, register } from 'prom-client';
 
 import { LoggerService } from '../../logger/logger.service';
+import { DatabaseMetricInterface } from './interfaces/database-metric.interface';
 import { DatabaseMetrics } from './metrics/database.metrics';
+import { setSlowQueryRefresher, slowQueryMeanMs } from './metrics/slow-query.metrics';
 
 const SLOW_QUERY_LIMIT = 10;
-const SLOW_QUERY_METRIC = 'db_slow_query_mean_ms';
 
 @Injectable()
 export class MetricsService implements OnModuleInit {
   private missingExtensionWarned = false;
-  private slowQueryGauge: Gauge<'queryid'>;
 
   constructor(
     private readonly databaseMetrics: DatabaseMetrics,
     private readonly logger: LoggerService,
   ) {}
 
-  getDatabaseMetrics(): Promise<string> {
-    return register.getSingleMetricAsString(SLOW_QUERY_METRIC);
+  getDatabaseMetrics(): Promise<DatabaseMetricInterface[]> {
+    return this.fetchSlowQueries();
   }
 
   onModuleInit(): void {
-    this.slowQueryGauge = new Gauge({
-      collect: (): Promise<void> => this.updateDatabaseMetrics(),
-      help: 'Mean execution time in milliseconds of the slowest queries from pg_stat_statements',
-      labelNames: ['queryid'],
-      name: SLOW_QUERY_METRIC,
-    });
+    setSlowQueryRefresher(() => this.updateDatabaseMetrics());
   }
 
   async updateDatabaseMetrics(): Promise<void> {
-    let queries;
+    const queries = await this.fetchSlowQueries();
+
+    slowQueryMeanMs.reset();
+    queries.forEach((q) => {
+      slowQueryMeanMs.set({ queryid: q.queryId }, q.meanMs);
+    });
+  }
+
+  private async fetchSlowQueries(): Promise<DatabaseMetricInterface[]> {
     try {
-      queries = await this.databaseMetrics.getTopSlowQueries(SLOW_QUERY_LIMIT);
+      return await this.databaseMetrics.getTopSlowQueries(SLOW_QUERY_LIMIT);
     } catch (err) {
       this.handleSlowQueryError(err);
 
-      return;
+      return [];
     }
-
-    this.slowQueryGauge.reset();
-    queries.forEach((q) => {
-      this.slowQueryGauge.set({ queryid: q.queryId }, q.meanMs);
-    });
   }
 
   private handleSlowQueryError(err: unknown): void {

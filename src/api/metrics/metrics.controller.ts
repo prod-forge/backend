@@ -1,8 +1,9 @@
-import { Controller, Get, Header } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 
 import { Public } from '../../common/decorators/public.decorator';
 import { METRICS_ENDPOINT } from '../../constants/url.contants';
+import { DatabaseMetricInterface } from '../../modules/metrics/interfaces/database-metric.interface';
 import { MetricsService } from '../../modules/metrics/metrics.service';
 
 @Controller(METRICS_ENDPOINT)
@@ -12,8 +13,7 @@ export class MetricsController {
   constructor(private readonly metricsService: MetricsService) {}
 
   @Get('database')
-  @Header('Content-Type', 'text/plain; version=0.0.4')
-  metrics(): Promise<string> {
+  metrics(): Promise<DatabaseMetricInterface[]> {
     return this.metricsService.getDatabaseMetrics();
   }
 }

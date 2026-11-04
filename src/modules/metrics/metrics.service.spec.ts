@@ -2,20 +2,12 @@ import { Test } from '@nestjs/testing';
 
 const mockGaugeSet = jest.fn();
 const mockGaugeReset = jest.fn();
-let mockCollect: (() => Promise<void>) | undefined;
+const mockSetRefresher = jest.fn();
 
-jest.mock('prom-client', () => ({
-  Gauge: jest.fn().mockImplementation((config: { collect?: () => Promise<void> }) => {
-    mockCollect = config.collect;
-
-    return { reset: mockGaugeReset, set: mockGaugeSet };
-  }),
-  register: { getSingleMetricAsString: jest.fn().mockResolvedValue('metrics_output') },
+jest.mock('./metrics/slow-query.metrics', () => ({
+  setSlowQueryRefresher: mockSetRefresher,
+  slowQueryMeanMs: { reset: mockGaugeReset, set: mockGaugeSet },
 }));
-
-jest.mock('../prisma/prisma.metrics', () => ({}));
-
-import { register } from 'prom-client';
 
 import { LoggerService } from '../../logger/logger.service';
 import { MetricsService } from './metrics.service';
@@ -67,13 +59,22 @@ describe('MetricsService', () => {
   });
 
   describe('positive cases', () => {
-    it('getDatabaseMetrics returns the gauge as text', async () => {
-      await expect(service.getDatabaseMetrics()).resolves.toBe('metrics_output');
-      expect(register.getSingleMetricAsString).toHaveBeenCalledWith('db_slow_query_mean_ms');
+    it('getDatabaseMetrics returns the slow queries as JSON-ready objects', async () => {
+      const rows = [{ calls: 1, maxMs: 2, meanMs: 1, query: 'SELECT 1', queryId: '11', totalMs: 1 }];
+      databaseMetrics.getTopSlowQueries.mockResolvedValue(rows);
+
+      await expect(service.getDatabaseMetrics()).resolves.toEqual(rows);
     });
 
-    it('refreshes the gauge on every scrape through collect', async () => {
-      await mockCollect?.();
+    it('getDatabaseMetrics returns an empty list when pg_stat_statements is missing', async () => {
+      databaseMetrics.getTopSlowQueries.mockRejectedValue(new Error('relation "pg_stat_statements" does not exist'));
+
+      await expect(service.getDatabaseMetrics()).resolves.toEqual([]);
+    });
+
+    it('refreshes the gauge on every scrape through the installed refresher', async () => {
+      const [[refresher]] = mockSetRefresher.mock.calls as [[() => Promise<void>]];
+      await refresher();
 
       expect(databaseMetrics.getTopSlowQueries).toHaveBeenCalledWith(10);
     });

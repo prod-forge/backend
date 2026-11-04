@@ -16,6 +16,7 @@ The API signs and verifies access tokens, but it does not run an identity provid
 - `AuthGuard` verifies the signature and expiry on every protected route and rejects anything else with 401. A token without `sub` is rejected too.
 - `POST /api/v1/auth/login` is a stub. It accepts an email and returns a token if the user exists. It has no password on purpose: identity is not authorization, and a stub that pretends to check passwords would be worse than an honest one. It is throttled to 5 requests per minute. A real system delegates login to an identity provider and never exposes such an endpoint.
 - Plugging in a real IdP means changing one function, `AuthService.verifyToken`: verify RS256 tokens against the provider's JWKS instead of HS256 with a shared secret. The guard and the controllers stay untouched.
+- `JWT_SECRET` is required at startup. Provision a distinct random value (32+ characters) per environment in the secret store that feeds the runtime (for example the ECS task definition secrets) before deploying; rotating it invalidates all issued tokens.
 - For local work, `npm run token:issue -- <userId>` prints a token for a given user id.
 
 ## Request Validation

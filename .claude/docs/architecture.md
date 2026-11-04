@@ -149,7 +149,7 @@ Every error is logged via `LoggerService`, counted in Prometheus, and optionally
 
 ### Authentication
 
-`AuthGuard` is applied per-route with `@UseGuards(AuthGuard)`. Routes decorated with `@Public()` bypass it. The guard reads the `Authorization: Bearer <token>` header and Base64-decodes the token as the `userId`. This is a simplified placeholder — no JWT verification is performed.
+`AuthGuard` is applied per-route with `@UseGuards(AuthGuard)`. Routes decorated with `@Public()` bypass it. The guard reads the `Authorization: Bearer <token>` header and verifies the HS256 signature and expiry through `AuthService.verifyToken` (`AuthModule`, signed with `JWT_SECRET`), then sets `req.userId` from the `sub` claim. `POST /api/v1/auth/login` (`AuthController`, backed by `UsersModule`) is a public login stub that issues tokens for registered emails.
 
 ### Response envelope
 
@@ -166,7 +166,7 @@ Every error is logged via `LoggerService`, counted in Prometheus, and optionally
 1. `traceIdMiddleware` — attaches UUID trace ID to request and `AsyncLocalStorage` context
 2. `loggingMiddleware` — logs incoming request with trace ID
 3. `ThrottlerGuard` — checks rate-limit bucket in Redis
-4. `AuthGuard` — decodes Bearer token, sets `req.userId`
+4. `AuthGuard` — verifies the signed Bearer JWT, sets `req.userId`
 5. `ValidationPipe` — transforms and validates query params
 6. `TodosController.findAll` — delegates to `TodosService`
 7. `TodosService.findAll` — checks Redis cache; on miss queries DB, stores result

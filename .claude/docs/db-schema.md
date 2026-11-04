@@ -11,7 +11,7 @@
 ### `User`
 
 Represents an application user. Currently populated externally (no registration endpoint).
-The `AuthGuard` decodes the Bearer token to obtain a `userId`, which must exist in this table.
+`POST /api/v1/auth/login` looks a user up by email here and issues a signed JWT whose `sub` is the user id; `AuthGuard` verifies that token on protected routes.
 
 ```prisma
 model User {

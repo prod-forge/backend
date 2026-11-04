@@ -27,6 +27,11 @@ RUN npm ci --omit=dev --ignore-scripts
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/database-manager ./database-manager
 
+# RDS enforces TLS and pg verifies the server certificate (sslmode=require means verify-full in pg 8).
+# The RDS CA is not in Node's built-in store, so the AWS global bundle (all regions) is trusted on top of it.
+ADD --chmod=644 https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem /etc/ssl/certs/rds-global-bundle.pem
+ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/rds-global-bundle.pem
+
 # Changing file ownership
 RUN chown -R nodeuser:nodegroup /app
 

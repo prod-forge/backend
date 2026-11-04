@@ -122,7 +122,7 @@ Connection string is assembled at runtime from individual environment variables 
 postgresql://<DATABASE_USER>:<DATABASE_PASSWORD>@<DATABASE_HOST>:<DATABASE_PORT>/<DATABASE_NAME>
 ```
 
-SSL is controlled by `DATABASE_SSL`. Log levels for Prisma query logging are set via `DATABASE_LOG_LEVELS`.
+SSL is controlled by `DATABASE_SSL` (`sslmode=require`, which `pg` verifies; the production image trusts the RDS CA bundle through `NODE_EXTRA_CA_CERTS`). Log levels for Prisma query logging are set via `DATABASE_LOG_LEVELS`.
 
 `DATABASE_FAIL_FAST=true` causes the app to exit on startup if the database is unreachable.
 

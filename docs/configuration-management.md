@@ -220,6 +220,75 @@ This configuration strategy provides several advantages:
 
 As the project grows, this structure allows the configuration system to scale without becoming difficult to maintain.
 
+## Variable Reference and Production Values
+
+The image contains no `.env` files, so in ECS every variable comes from the task definition that the terraform
+repository renders (`infrastructure/modules/task_definition`, documented in its `docs/workflow.md`, section "Backend
+configuration"). Secrets come from AWS Secrets Manager through the task definition `secrets`, never from plain
+`environment`. The migration task (`ecs/migration-task.json`) is rendered by CD from the `environment` and `secrets` of
+the current application task definition, so `prisma migrate deploy` sees the same `DATABASE_*` values.
+
+"Default" is the value in `src/config/*.config.ts` (or `database-manager/generate-url.ts`, `src/tracing.ts`), used when
+the variable is unset. "Required" means the backend refuses to start without it. In the ECS column, "constant" is fixed
+by the infrastructure and `backend_config.<name>` is a per-environment terraform setting whose default equals the backend
+default.
+
+| Variable                                     | Default             | Required        | ECS task definition                                                            |
+| -------------------------------------------- | ------------------- | --------------- | ------------------------------------------------------------------------------ |
+| `NODE_ENV`                                   | `development`       | no              | env, constant `production`                                                     |
+| `APP_HOST`                                   | `0.0.0.0`           | no              | env, constant `0.0.0.0`                                                        |
+| `APP_PORT`                                   | `3000`              | no              | env, constant `3000` (container port)                                          |
+| `APP_NAME`, `APP_DESCRIPTION`, `APP_VERSION` | `package.json`      | no              | not set: taken from the image                                                  |
+| `SHUTDOWN_DRAIN_MS`                          | `10000`             | no              | env, `backend_config.shutdown_drain_ms`                                        |
+| `SHUTDOWN_INFLIGHT_TIMEOUT_MS`               | `20000`             | no              | env, `backend_config.shutdown_inflight_timeout_ms`                             |
+| `API_PREFIX`                                 | `api`               | no              | env, constant `api`                                                            |
+| `API_ALLOWED_ORIGINS`                        | `[]`                | no              | env, `https://<domain>` and `https://<cloudfront domain>` of the web client    |
+| `API_ALLOWED_NON_BROWSER_ORIGINS`            | `true`              | no              | env, `backend_config.api_allowed_non_browser_origins`                          |
+| `TRUST_PROXY`                                | `0`                 | no              | env, constant `1` (the ALB)                                                    |
+| `JWT_SECRET`                                 | -                   | yes (32+ chars) | secret, `<project>/<env>/jwt-secret`                                           |
+| `JWT_TTL`                                    | `3600`              | no              | env, `backend_config.jwt_ttl`                                                  |
+| `DATABASE_HOST`                              | -                   | yes             | env, RDS endpoint                                                              |
+| `DATABASE_PORT`                              | -                   | yes             | env, RDS port                                                                  |
+| `DATABASE_NAME`                              | -                   | yes             | env, RDS database name                                                         |
+| `DATABASE_USER`                              | -                   | yes             | env, RDS master user                                                           |
+| `DATABASE_PASSWORD`                          | -                   | yes             | secret, RDS-managed master secret (`password` key)                             |
+| `DATABASE_SSL`                               | `false`             | no              | env, constant `true`                                                           |
+| `DATABASE_POOL_MAX`                          | `10`                | no              | env, `backend_config.database_pool_max`                                        |
+| `DATABASE_CONNECT_TIMEOUT_MS`                | `5000`              | no              | env, `backend_config.database_connect_timeout_ms`                              |
+| `DATABASE_STATEMENT_TIMEOUT_MS`              | `5000`              | no              | env, `backend_config.database_statement_timeout_ms`                            |
+| `DATABASE_FAIL_FAST`                         | `true`              | no              | env, `backend_config.database_fail_fast`                                       |
+| `DATABASE_LOG_LEVELS`                        | `[]`                | no              | env, `backend_config.database_log_levels`                                      |
+| `LOG_LEVEL`                                  | `info`              | no              | env, `backend_config.log_level`                                                |
+| `LOG_PRETTY`                                 | `true`              | no              | env, constant `false` (JSON for CloudWatch Logs)                               |
+| `LOG_EXCLUDE_ENDPOINTS`                      | `[]`                | no              | env, `backend_config.log_exclude_endpoints`                                    |
+| `HEALTH_CHECK_TRIGGER_MS`                    | `15000`             | no              | env, `backend_config.health_check_trigger_ms`                                  |
+| `REDIS_ENABLED`                              | `true`              | no              | env, constant `true`                                                           |
+| `REDIS_HOST`                                 | `localhost`         | no              | env, ElastiCache primary endpoint                                              |
+| `REDIS_PORT`                                 | `6379`              | no              | env, ElastiCache port                                                          |
+| `REDIS_TLS`                                  | `false`             | no              | env, constant `true`                                                           |
+| `REDIS_PASSWORD`                             | -                   | no              | secret, `<project>/<env>/redis-auth`                                           |
+| `SENTRY_ENABLED`                             | `false`             | no              | env, `backend_config.sentry_enabled`                                           |
+| `SENTRY_DSN`                                 | `""`                | no              | secret, `SENTRY_DSN` key of the app config secret, only when Sentry is enabled |
+| `SENTRY_IGNORED_ERRORS`                      | `[]`                | no              | env, `backend_config.sentry_ignored_errors`                                    |
+| `SWAGGER_ENABLED`                            | `true`              | no              | env, constant `false` (docs are never served in production anyway)             |
+| `SWAGGER_ENDPOINT`                           | `docs`              | no              | not set (unused in production)                                                 |
+| `THROTTLE_ENABLED`                           | `true`              | no              | env, `backend_config.throttle_enabled`                                         |
+| `THROTTLE_LIMIT`                             | `60`                | no              | env, `backend_config.throttle_limit`                                           |
+| `THROTTLE_TTL`                               | `60000`             | no              | env, `backend_config.throttle_ttl`                                             |
+| `OTEL_EXPORTER_OTLP_ENDPOINT`                | unset (tracing off) | no              | env, `backend_config.otel_exporter_otlp_endpoint`, omitted when empty          |
+
+Sentry sends events only when `SENTRY_ENABLED=true` and `SENTRY_DSN` is non-empty; either one alone keeps it off.
+
+## Database TLS
+
+`DATABASE_SSL=true` appends `sslmode=require` to the connection URL. The application connects through `pg`, which treats
+`require` as `verify-full`: the server certificate and host name are verified. RDS certificates are issued by the RDS
+CA, which is not in Node's built-in CA store, so the production image downloads the AWS global RDS bundle
+(`https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem`) to `/etc/ssl/certs/rds-global-bundle.pem` and
+sets `NODE_EXTRA_CA_CERTS` to it. Node then trusts the RDS CA in addition to the public roots; verification stays on.
+`prisma migrate deploy` (the migration task) uses Prisma's schema engine, which encrypts with `sslmode=require` and does
+not verify the certificate.
+
 ## Redis TLS and AUTH
 
 `REDIS_TLS` accepts only `true` or `false` (default `false`). When `true`, ioredis connects with `tls: {}`, which uses

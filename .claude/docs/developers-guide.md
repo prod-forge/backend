@@ -86,47 +86,51 @@ Or call `POST /api/v1/auth/login` with a seeded email (for example `user1@exampl
 
 All variables are validated at startup with `class-validator`. Missing required vars crash the process with a clear error.
 
-| Variable                          | Default                           | Description                                       |
-| --------------------------------- | --------------------------------- | ------------------------------------------------- |
-| `NODE_ENV`                        | `development`                     | `development` \| `production` \| `test`           |
-| `APP_PORT`                        | `3000`                            | HTTP listen port                                  |
-| `APP_HOST`                        | `0.0.0.0`                         | HTTP listen host                                  |
-| `SHUTDOWN_DRAIN_MS`               | `10000`                           | Readiness returns 503 before the server closes    |
-| `SHUTDOWN_INFLIGHT_TIMEOUT_MS`    | `20000`                           | Max wait for in-flight requests on shutdown       |
-| `APP_NAME`                        | `Todo_inst1`                      | Used in logs and Swagger title                    |
-| `API_PREFIX`                      | `api`                             | Global route prefix                               |
-| `API_ALLOWED_ORIGINS`             | `["http://localhost:3001"]`       | JSON array of allowed CORS origins                |
-| `API_ALLOWED_NON_BROWSER_ORIGINS` | `true`                            | Allow requests with no `Origin` header            |
-| `LOG_LEVEL`                       | `info`                            | `trace` \| `debug` \| `info` \| `warn` \| `error` |
-| `LOG_PRETTY`                      | `true`                            | Enable pino-pretty colored output                 |
-| `SWAGGER_ENABLED`                 | `true`                            | Toggle Swagger UI (disabled in production)        |
-| `SWAGGER_ENDPOINT`                | `/docs`                           | Swagger UI path                                   |
-| `DATABASE_HOST`                   | —                                 | PostgreSQL host                                   |
-| `DATABASE_PORT`                   | —                                 | PostgreSQL port                                   |
-| `DATABASE_USER`                   | —                                 | PostgreSQL username                               |
-| `DATABASE_PASSWORD`               | —                                 | PostgreSQL password                               |
-| `DATABASE_NAME`                   | —                                 | PostgreSQL database name                          |
-| `DATABASE_SSL`                    | `false`                           | Enable SSL for DB connection                      |
-| `DATABASE_LOG_LEVELS`             | `["query","error","info","warn"]` | Prisma log levels                                 |
-| `DATABASE_FAIL_FAST`              | `true`                            | Exit on DB connection failure at startup          |
-| `DATABASE_POOL_MAX`               | `10`                              | Max connections in the Prisma pg pool             |
-| `DATABASE_CONNECT_TIMEOUT_MS`     | `5000`                            | Pool connection timeout                           |
-| `DATABASE_STATEMENT_TIMEOUT_MS`   | `5000`                            | Postgres `statement_timeout` per query            |
-| `REDIS_ENABLED`                   | `true`                            | Enable Redis (cache + throttler)                  |
-| `REDIS_HOST`                      | `localhost`                       | Redis host                                        |
-| `REDIS_PORT`                      | `6379`                            | Redis port                                        |
-| `REDIS_TLS`                       | `false`                           | `true`/`false` only; TLS with Node's default CAs  |
-| `REDIS_PASSWORD`                  | —                                 | Optional AUTH token (warns if TLS on in prod)     |
-| `THROTTLE_TTL`                    | `60000`                           | Rate-limit window in milliseconds                 |
-| `THROTTLE_LIMIT`                  | `60`                              | Max requests per window (per user, else per IP)   |
-| `THROTTLE_ENABLED`                | `true`                            | Set `false` to disable rate limiting              |
-| `TRUST_PROXY`                     | `0`                               | Express trust-proxy hops; `1` behind ALB          |
-| `JWT_SECRET`                      | required, 32+ chars               | HS256 signing key for access tokens               |
-| `JWT_TTL`                         | `3600`                            | Access token lifetime in seconds                  |
-| `SENTRY_ENABLED`                  | `false`                           | Sentry on only with `SENTRY_DSN` and `true`       |
-| `SENTRY_DSN`                      | —                                 | Sentry DSN (required when enabled)                |
-| `OTEL_EXPORTER_OTLP_ENDPOINT`     | —                                 | OTLP/HTTP trace endpoint; tracing off when unset  |
-| `HEALTH_CHECK_TRIGGER_MS`         | `15000`                           | Min interval between DB pings on /metrics scrapes |
+Defaults are the code defaults (`.env.common` sets local values for some). Production values come from the ECS task definition; see `docs/configuration-management.md` for the full mapping.
+
+| Variable                          | Default             | Description                                       |
+| --------------------------------- | ------------------- | ------------------------------------------------- |
+| `NODE_ENV`                        | `development`       | `development` \| `production` \| `test`           |
+| `APP_PORT`                        | `3000`              | HTTP listen port                                  |
+| `APP_HOST`                        | `0.0.0.0`           | HTTP listen host                                  |
+| `SHUTDOWN_DRAIN_MS`               | `10000`             | Readiness returns 503 before the server closes    |
+| `SHUTDOWN_INFLIGHT_TIMEOUT_MS`    | `20000`             | Max wait for in-flight requests on shutdown       |
+| `APP_NAME`                        | `package.json` name | Used in logs and Swagger title                    |
+| `API_PREFIX`                      | `api`               | Global route prefix                               |
+| `API_ALLOWED_ORIGINS`             | `[]`                | JSON array of allowed CORS origins                |
+| `API_ALLOWED_NON_BROWSER_ORIGINS` | `true`              | Allow requests with no `Origin` header            |
+| `LOG_LEVEL`                       | `info`              | `trace` \| `info` \| `warn` \| `error`            |
+| `LOG_PRETTY`                      | `true`              | Enable pino-pretty colored output                 |
+| `SWAGGER_ENABLED`                 | `true`              | Toggle Swagger UI (disabled in production)        |
+| `SWAGGER_ENDPOINT`                | `docs`              | Swagger UI path                                   |
+| `DATABASE_HOST`                   | —                   | PostgreSQL host                                   |
+| `DATABASE_PORT`                   | —                   | PostgreSQL port                                   |
+| `DATABASE_USER`                   | —                   | PostgreSQL username                               |
+| `DATABASE_PASSWORD`               | —                   | PostgreSQL password                               |
+| `DATABASE_NAME`                   | —                   | PostgreSQL database name                          |
+| `DATABASE_SSL`                    | `false`             | `sslmode=require` (pg verifies the certificate)   |
+| `DATABASE_LOG_LEVELS`             | `[]`                | Prisma log levels                                 |
+| `DATABASE_FAIL_FAST`              | `true`              | Exit on DB connection failure at startup          |
+| `DATABASE_POOL_MAX`               | `10`                | Max connections in the Prisma pg pool             |
+| `DATABASE_CONNECT_TIMEOUT_MS`     | `5000`              | Pool connection timeout                           |
+| `DATABASE_STATEMENT_TIMEOUT_MS`   | `5000`              | Postgres `statement_timeout` per query            |
+| `REDIS_ENABLED`                   | `true`              | Enable Redis (cache + throttler)                  |
+| `REDIS_HOST`                      | `localhost`         | Redis host                                        |
+| `REDIS_PORT`                      | `6379`              | Redis port                                        |
+| `REDIS_TLS`                       | `false`             | `true`/`false` only; TLS with Node's default CAs  |
+| `REDIS_PASSWORD`                  | —                   | Optional AUTH token (warns if TLS on in prod)     |
+| `THROTTLE_TTL`                    | `60000`             | Rate-limit window in milliseconds                 |
+| `THROTTLE_LIMIT`                  | `60`                | Max requests per window (per user, else per IP)   |
+| `THROTTLE_ENABLED`                | `true`              | Set `false` to disable rate limiting              |
+| `TRUST_PROXY`                     | `0`                 | Express trust-proxy hops; `1` behind ALB          |
+| `JWT_SECRET`                      | required, 32+ chars | HS256 signing key for access tokens               |
+| `JWT_TTL`                         | `3600`              | Access token lifetime in seconds                  |
+| `SENTRY_ENABLED`                  | `false`             | Sentry on only with `SENTRY_DSN` and `true`       |
+| `SENTRY_DSN`                      | `""`                | Sentry DSN (needed when enabled)                  |
+| `SENTRY_IGNORED_ERRORS`           | `[]`                | JSON array of error names not sent to Sentry      |
+| `LOG_EXCLUDE_ENDPOINTS`           | `[]`                | JSON array of routes not logged                   |
+| `OTEL_EXPORTER_OTLP_ENDPOINT`     | —                   | OTLP/HTTP trace endpoint; tracing off when unset  |
+| `HEALTH_CHECK_TRIGGER_MS`         | `15000`             | Min interval between DB pings on /metrics scrapes |
 
 ---
 
@@ -355,7 +359,7 @@ docker-compose up --build production
 The `Dockerfile` uses a two-stage build:
 
 1. **builder** — installs all deps, generates Prisma client, compiles TypeScript
-2. **production** — copies only compiled output and prod deps, runs as unprivileged `nodeuser`
+2. **production** — copies only compiled output and prod deps, adds the AWS RDS CA bundle (`NODE_EXTRA_CA_CERTS`, so `pg` can verify RDS certificates), runs as unprivileged `nodeuser`
 
 ### Full observability stack
 

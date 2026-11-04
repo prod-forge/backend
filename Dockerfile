@@ -18,6 +18,12 @@ FROM node:24.21.0-alpine AS production
 # Create an unprivileged user
 RUN addgroup -S nodegroup && adduser -S nodeuser -G nodegroup
 
+# RDS enforces TLS and the app verifies the server certificate (the connection string sets verify-full explicitly).
+# The RDS CA is not in Node's built-in store, so the AWS global bundle (all regions) is trusted on top of it.
+# Placed before the code layers so code changes do not re-download the bundle.
+ADD --chmod=644 https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem /etc/ssl/certs/rds-global-bundle.pem
+ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/rds-global-bundle.pem
+
 WORKDIR /app
 
 COPY prisma.config.ts ./
@@ -26,11 +32,6 @@ RUN npm ci --omit=dev --ignore-scripts
 
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/database-manager ./database-manager
-
-# RDS enforces TLS and pg verifies the server certificate (sslmode=require means verify-full in pg 8).
-# The RDS CA is not in Node's built-in store, so the AWS global bundle (all regions) is trusted on top of it.
-ADD --chmod=644 https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem /etc/ssl/certs/rds-global-bundle.pem
-ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/rds-global-bundle.pem
 
 # Changing file ownership
 RUN chown -R nodeuser:nodegroup /app

@@ -30,7 +30,7 @@ model User {
 | ----------- | -------------- | ---------------------- | --------------------------------------------------------------------- |
 | `id`        | `UUID`         | PK, auto (`uuid()`)    | Stable surrogate key. Used as the authenticated identity in requests. |
 | `email`     | `TEXT`         | UNIQUE, NOT NULL       | User's email address. Unique constraint prevents duplicate accounts.  |
-| `name`      | `TEXT`         | NOT NULL               | Display name of the user. Not included in todo responses.             |
+| `name`      | `TEXT`         | NOT NULL               | Display name of the user. Not included in any API response.           |
 | `todos`     | relation       | —                      | Virtual back-reference — not a column; owned todos resolved via FK.   |
 | `createdAt` | `TIMESTAMP(3)` | NOT NULL, default now  | Record creation time. Indexed for time-range queries and sorting.     |
 | `updatedAt` | `TIMESTAMP(3)` | NOT NULL, auto-updated | Automatically bumped on every `UPDATE` via Prisma `@updatedAt`.       |
@@ -39,6 +39,7 @@ model User {
 
 | Index                | Columns     | Rationale                                      |
 | -------------------- | ----------- | ---------------------------------------------- |
+| `User_email_key`     | `email`     | Unique constraint on `email`                   |
 | `User_createdAt_idx` | `createdAt` | Supports listing users sorted by creation date |
 
 ---
@@ -77,13 +78,31 @@ model Todo {
 
 **Indexes**
 
+Created by the `init` migration:
+
 | Index                                 | Columns                          | Rationale                                                                              |
 | ------------------------------------- | -------------------------------- | -------------------------------------------------------------------------------------- |
 | `Todo_userId_createdAt_idx`           | `(userId, createdAt)`            | Covers the default list query: all todos for a user ordered by creation date.          |
 | `Todo_userId_completed_createdAt_idx` | `(userId, completed, createdAt)` | Covers filtered list query: todos for a user filtered by `completed`, ordered by date. |
-| `Todo_userId_title_idx`               | `(userId, title)`                | Supports listing and sorting a user's todos by title.                                  |
-| `Todo_title_trgm_idx`                 | GIN `title gin_trgm_ops`         | Speeds up `ILIKE '%term%'` title search (`pg_trgm`, created by hand in the migration). |
-| `Todo_description_trgm_idx`           | GIN `description gin_trgm_ops`   | Same for description search.                                                           |
+
+Declared in `schema.prisma` but not yet in any migration (so the schema and the migrations have drifted):
+
+| Index                   | Columns           | Rationale                                                  |
+| ----------------------- | ----------------- | ---------------------------------------------------------- |
+| `Todo_userId_title_idx` | `(userId, title)` | Would support listing and sorting a user's todos by title. |
+
+Planned, not declared (Prisma cannot declare trigram indexes): GIN `gin_trgm_ops` indexes on `title` and `description` (`pg_trgm`) for the `ILIKE '%term%'` search. Until they exist, search scans the user's rows sequentially.
+
+The migration that closes the gap is a pending owner action, because migrations are protected by a hook. Create it with `prisma migrate dev --create-only` and paste:
+
+```sql
+CREATE INDEX "Todo_userId_title_idx" ON "Todo"("userId", "title");
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE INDEX "Todo_title_trgm_idx" ON "Todo" USING GIN ("title" gin_trgm_ops);
+CREATE INDEX "Todo_description_trgm_idx" ON "Todo" USING GIN ("description" gin_trgm_ops);
+```
+
+See `docs/performance.md`.
 
 ---
 
@@ -95,7 +114,7 @@ User 1 ──── * Todo
 ```
 
 - One `User` can have many `Todo`s.
-- Deleting a `User` without first deleting their `Todo`s will violate the FK constraint (no cascade delete configured).
+- The foreign key from `Todo.userId` is `ON DELETE RESTRICT ON UPDATE CASCADE`: deleting a `User` that still has `Todo`s is rejected.
 
 ---
 
@@ -124,6 +143,6 @@ postgresql://<DATABASE_USER>:<DATABASE_PASSWORD>@<DATABASE_HOST>:<DATABASE_PORT>
 
 SSL is controlled by `DATABASE_SSL` (`sslmode=verify-full` for `pg`, `sslmode=require` for the Prisma schema engine in `prisma.config.ts`; the production image trusts the RDS CA bundle through `NODE_EXTRA_CA_CERTS`). Log levels for Prisma query logging are set via `DATABASE_LOG_LEVELS`.
 
-`DATABASE_FAIL_FAST=true` causes the app to exit on startup if the database is unreachable.
+`DATABASE_FAIL_FAST` (default `true`) makes the app exit on startup if the database is unreachable.
 
 Pool and timeouts are passed to the `@prisma/adapter-pg` pool in `PrismaService`: `DATABASE_POOL_MAX` (default `10`), `DATABASE_CONNECT_TIMEOUT_MS` (default `5000`), `DATABASE_STATEMENT_TIMEOUT_MS` (default `5000`, sent as the pg `statement_timeout`). Idle connections are closed after 30 s.

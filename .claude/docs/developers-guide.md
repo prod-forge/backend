@@ -2,13 +2,13 @@
 
 ## Prerequisites
 
-| Tool       | Version  | Notes                      |
-| ---------- | -------- | -------------------------- |
-| Node.js    | ≥ 24.0.0 | Enforced in `package.json` |
-| npm        | ≥ 11.0.0 | Enforced in `package.json` |
-| Docker     | any      | For local infra            |
-| PostgreSQL | 18       | Or via docker-compose      |
-| Redis      | 8        | Or via docker-compose      |
+| Tool       | Version   | Notes                                  |
+| ---------- | --------- | -------------------------------------- |
+| Node.js    | ≥ 24.15.0 | Enforced in `package.json` (`engines`) |
+| npm        | ≥ 11.0.0  | Enforced in `package.json` (`engines`) |
+| Docker     | any       | For local infra                        |
+| PostgreSQL | 18        | Or via docker-compose                  |
+| Redis      | 8         | Or via docker-compose                  |
 
 ---
 
@@ -38,7 +38,7 @@ This starts:
 
 ### 3. Configure environment
 
-The app loads `.env.common` first, then `.env`. `.env.common` holds non-secret defaults only; put secrets (e.g. `DATABASE_PASSWORD`) in `.env`. Neither file is copied into the Docker image: in production, env comes from the ECS task definition / Secrets Manager.
+The app reads `.env` and `.env.common`; a variable set in `.env` wins over `.env.common`. `.env.common` holds non-secret defaults only; put secrets (e.g. `DATABASE_PASSWORD`) in `.env`. Neither file is copied into the Docker image: in production, env comes from the ECS task definition / Secrets Manager.
 
 Key variables to verify:
 
@@ -95,49 +95,50 @@ All variables are validated at startup with `class-validator`. Missing required 
 
 Defaults are the code defaults (`.env.common` sets local values for some). Production values come from the ECS task definition; see `docs/configuration-management.md` for the full mapping.
 
-| Variable                          | Default             | Description                                       |
-| --------------------------------- | ------------------- | ------------------------------------------------- |
-| `NODE_ENV`                        | `development`       | `development` \| `production` \| `test`           |
-| `APP_PORT`                        | `3000`              | HTTP listen port                                  |
-| `APP_HOST`                        | `0.0.0.0`           | HTTP listen host                                  |
-| `SHUTDOWN_DRAIN_MS`               | `10000`             | Readiness returns 503 before the server closes    |
-| `SHUTDOWN_INFLIGHT_TIMEOUT_MS`    | `20000`             | Max wait for in-flight requests on shutdown       |
-| `APP_NAME`                        | `package.json` name | Used in logs and Swagger title                    |
-| `API_PREFIX`                      | `api`               | Global route prefix                               |
-| `API_ALLOWED_ORIGINS`             | `[]`                | JSON array of allowed CORS origins                |
-| `API_ALLOWED_NON_BROWSER_ORIGINS` | `true`              | Allow requests with no `Origin` header            |
-| `LOG_LEVEL`                       | `info`              | `trace` \| `info` \| `warn` \| `error`            |
-| `LOG_PRETTY`                      | `true`              | Enable pino-pretty colored output                 |
-| `SWAGGER_ENABLED`                 | `true`              | Toggle Swagger UI (disabled in production)        |
-| `SWAGGER_ENDPOINT`                | `docs`              | Swagger UI path                                   |
-| `DATABASE_HOST`                   | —                   | PostgreSQL host                                   |
-| `DATABASE_PORT`                   | —                   | PostgreSQL port                                   |
-| `DATABASE_USER`                   | —                   | PostgreSQL username                               |
-| `DATABASE_PASSWORD`               | —                   | PostgreSQL password                               |
-| `DATABASE_NAME`                   | —                   | PostgreSQL database name                          |
-| `DATABASE_SSL`                    | `false`             | `sslmode=verify-full` (`require` for migrate)     |
-| `DATABASE_LOG_LEVELS`             | `[]`                | Prisma log levels                                 |
-| `DATABASE_FAIL_FAST`              | `true`              | Exit on DB connection failure at startup          |
-| `DATABASE_POOL_MAX`               | `10`                | Max connections in the Prisma pg pool             |
-| `DATABASE_CONNECT_TIMEOUT_MS`     | `5000`              | Pool connection timeout                           |
-| `DATABASE_STATEMENT_TIMEOUT_MS`   | `5000`              | Postgres `statement_timeout` per query            |
-| `REDIS_ENABLED`                   | `true`              | Enable Redis (cache + throttler)                  |
-| `REDIS_HOST`                      | `localhost`         | Redis host                                        |
-| `REDIS_PORT`                      | `6379`              | Redis port                                        |
-| `REDIS_TLS`                       | `false`             | `true`/`false` only; TLS with Node's default CAs  |
-| `REDIS_PASSWORD`                  | —                   | Optional AUTH token (warns if TLS on in prod)     |
-| `THROTTLE_TTL`                    | `60000`             | Rate-limit window in milliseconds                 |
-| `THROTTLE_LIMIT`                  | `60`                | Max requests per window (per user, else per IP)   |
-| `THROTTLE_ENABLED`                | `true`              | Set `false` to disable rate limiting              |
-| `TRUST_PROXY`                     | `0`                 | Express trust-proxy hops; `1` behind ALB          |
-| `JWT_SECRET`                      | required, 32+ chars | HS256 signing key for access tokens               |
-| `JWT_TTL`                         | `3600`              | Access token lifetime in seconds                  |
-| `SENTRY_ENABLED`                  | `false`             | Sentry on only with `SENTRY_DSN` and `true`       |
-| `SENTRY_DSN`                      | `""`                | Sentry DSN (needed when enabled)                  |
-| `SENTRY_IGNORED_ERRORS`           | `[]`                | JSON array of error names not sent to Sentry      |
-| `LOG_EXCLUDE_ENDPOINTS`           | `[]`                | JSON array of routes not logged                   |
-| `OTEL_EXPORTER_OTLP_ENDPOINT`     | —                   | OTLP/HTTP trace endpoint; tracing off when unset  |
-| `HEALTH_CHECK_TRIGGER_MS`         | `15000`             | Min interval between DB pings on /metrics scrapes |
+| Variable                          | Default                | Description                                       |
+| --------------------------------- | ---------------------- | ------------------------------------------------- |
+| `NODE_ENV`                        | `development`          | `development` \| `production` \| `test`           |
+| `APP_PORT`                        | `3000`                 | HTTP listen port                                  |
+| `APP_HOST`                        | `0.0.0.0`              | HTTP listen host                                  |
+| `SHUTDOWN_DRAIN_MS`               | `10000`                | Readiness returns 503 before the server closes    |
+| `SHUTDOWN_INFLIGHT_TIMEOUT_MS`    | `20000`                | Max wait for in-flight requests on shutdown       |
+| `APP_NAME`                        | `package.json` name    | Used in logs and Swagger title                    |
+| `APP_VERSION`                     | `package.json` version | Returned by `GET /api/version`                    |
+| `API_PREFIX`                      | `api`                  | Global route prefix                               |
+| `API_ALLOWED_ORIGINS`             | `[]`                   | JSON array of allowed CORS origins                |
+| `API_ALLOWED_NON_BROWSER_ORIGINS` | `true`                 | Allow requests with no `Origin` header            |
+| `LOG_LEVEL`                       | `info`                 | `trace` \| `info` \| `warn` \| `error`            |
+| `LOG_PRETTY`                      | `true`                 | Enable pino-pretty colored output                 |
+| `SWAGGER_ENABLED`                 | `true`                 | Toggle Swagger UI (disabled in production)        |
+| `SWAGGER_ENDPOINT`                | `docs`                 | Swagger UI path                                   |
+| `DATABASE_HOST`                   | —                      | PostgreSQL host                                   |
+| `DATABASE_PORT`                   | —                      | PostgreSQL port                                   |
+| `DATABASE_USER`                   | —                      | PostgreSQL username                               |
+| `DATABASE_PASSWORD`               | —                      | PostgreSQL password                               |
+| `DATABASE_NAME`                   | —                      | PostgreSQL database name                          |
+| `DATABASE_SSL`                    | `false`                | `sslmode=verify-full` (`require` for migrate)     |
+| `DATABASE_LOG_LEVELS`             | `[]`                   | Prisma log levels                                 |
+| `DATABASE_FAIL_FAST`              | `true`                 | Exit on DB connection failure at startup          |
+| `DATABASE_POOL_MAX`               | `10`                   | Max connections in the Prisma pg pool             |
+| `DATABASE_CONNECT_TIMEOUT_MS`     | `5000`                 | Pool connection timeout                           |
+| `DATABASE_STATEMENT_TIMEOUT_MS`   | `5000`                 | Postgres `statement_timeout` per query            |
+| `REDIS_ENABLED`                   | `true`                 | Enable Redis (cache + throttler)                  |
+| `REDIS_HOST`                      | `localhost`            | Redis host                                        |
+| `REDIS_PORT`                      | `6379`                 | Redis port                                        |
+| `REDIS_TLS`                       | `false`                | `true`/`false` only; TLS with Node's default CAs  |
+| `REDIS_PASSWORD`                  | —                      | Optional AUTH token (warns if TLS on in prod)     |
+| `THROTTLE_TTL`                    | `60000`                | Rate-limit window in milliseconds                 |
+| `THROTTLE_LIMIT`                  | `60`                   | Max requests per window (per user, else per IP)   |
+| `THROTTLE_ENABLED`                | `true`                 | Set `false` to disable rate limiting              |
+| `TRUST_PROXY`                     | `0`                    | Express trust-proxy hops; `1` behind ALB          |
+| `JWT_SECRET`                      | required, 32+ chars    | HS256 signing key for access tokens               |
+| `JWT_TTL`                         | `3600`                 | Access token lifetime in seconds                  |
+| `SENTRY_ENABLED`                  | `false`                | Sentry on only with `SENTRY_DSN` and `true`       |
+| `SENTRY_DSN`                      | `""`                   | Sentry DSN (needed when enabled)                  |
+| `SENTRY_IGNORED_ERRORS`           | `[]`                   | JSON array of error names not sent to Sentry      |
+| `LOG_EXCLUDE_ENDPOINTS`           | `[]`                   | JSON array of routes not logged                   |
+| `OTEL_EXPORTER_OTLP_ENDPOINT`     | —                      | OTLP/HTTP trace endpoint; tracing off when unset  |
+| `HEALTH_CHECK_TRIGGER_MS`         | `15000`                | Min interval between DB pings on /metrics scrapes |
 
 ---
 
@@ -156,6 +157,7 @@ npm run start:prod         # Run compiled output
 npm run db:generate        # Regenerate Prisma client
 npm run db:init            # Deploy migrations + generate
 npm run db:migrate -- name # Create a new migration
+npm run db:migration:apply # Wait for the DB, then deploy migrations
 npm run db:seed            # Run seed script
 
 # Code quality
@@ -164,6 +166,7 @@ npm run lint:ts            # tsc --noEmit only
 npm run lint:code          # ESLint only
 npm run format             # Prettier + ESLint auto-fix
 npm run knip               # Dead code / unused exports check
+npm run doctor             # nestjs-doctor architecture checks
 npm run openapi:export     # Regenerate docs/openapi.json (run after any HTTP contract change)
 npm run openapi:check      # Fail if docs/openapi.json is out of date
 
@@ -173,6 +176,10 @@ npm run test:cov           # Unit tests with coverage
 npm run test:watch         # Unit tests in watch mode
 npm run test:e2e           # E2E tests (Testcontainers)
 npm run test:e2e:cov       # E2E with coverage
+npm run test:load          # k6 smoke test (load/k6-smoke.js; needs k6)
+
+# Tokens
+npm run token:issue -- <userId>   # Sign a JWT for a user id
 ```
 
 ---
@@ -268,11 +275,11 @@ export class FeatureEntity {
 `src/features/<feature>/mappers/<feature>.mapper.ts`:
 
 ```ts
-export class FeatureMapper {
-  static toEntity(row: PrismaFeature): FeatureEntity {
+export const FeatureMapper = {
+  toEntity(row: PrismaFeature): FeatureEntity {
     return new FeatureEntity({ ... });
-  }
-}
+  },
+};
 ```
 
 ### 4. Repository
@@ -288,11 +295,13 @@ export class FeatureMapper {
 `src/features/<feature>/cache-queries/<feature>.cache-queries.ts`:
 
 ```ts
-export class FeatureCacheKeys {
-  static item(id: string): string {
-    return `feature:${id}`;
-  }
-}
+const CACHE_VERSION = 'v1'; // bump when the cached shape changes
+
+export const FeatureCacheKeys = {
+  item(id: string): string {
+    return `${CACHE_VERSION}:feature:${id}`;
+  },
+};
 ```
 
 ### 7. Controller
@@ -340,12 +349,17 @@ Never edit files in `database-manager/generated/` manually.
 
 ## Code Quality Gates
 
-The following run automatically via husky/lint-staged on every commit:
+Husky hooks run these automatically.
 
-- `prettier` — format check
-- `eslint` — lint (includes import-order, perfectionist, sonarjs, unicorn, check-file rules)
-- `tsc --noEmit` — type check
-- `commitlint` — enforces Conventional Commits format
+On every commit (`pre-commit`, via lint-staged):
+
+- `prettier --write` on staged `*.md`, `*.ts` and `*.json`
+- `eslint --fix` on staged `*.ts` and `*.json` (includes import-order, perfectionist, sonarjs, unicorn, check-file rules)
+- `tsc --noEmit` when a `*.ts` file is staged
+
+On the commit message (`commit-msg`): `commitlint` enforces Conventional Commits, and AI attribution trailers are rejected.
+
+On push (`pre-push`): `npm run knip && npm run doctor && npm test`.
 
 To run all checks manually:
 
@@ -399,12 +413,12 @@ Every log entry includes:
 
 - `timestamp` — ISO 8601
 - `level` — trace/debug/info/warn/error
-- `traceId` — from the request context (UUID set per request)
+- `traceId` — from the request context (active trace id, else the incoming `X-Trace-Id`, else a UUID)
 - `ctx` — the class name that produced the log
 - `msg` — log message
 - `appName`, `env`, `pid` — process metadata
 
-Sensitive fields automatically redacted: `authorization`, `cookie`, `password`, `token`.
+Sensitive fields automatically redacted (`src/logger/log-redact.ts`): `req.headers.authorization`, `req.headers.cookie`, `req.body.password`, `req.body.email`, `req.body.token`, top-level `password` and `token`.
 
 ---
 

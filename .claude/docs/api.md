@@ -15,7 +15,8 @@ All routes are prefixed with `/api` (configurable via `API_PREFIX`) and versione
 - `GET /health/deps`
 - `GET /metrics`
 - `GET /metrics/database`
-- `GET /version`
+
+`GET /api/version` is the only unversioned route under the prefix (no `/v1`).
 
 ---
 
@@ -35,9 +36,9 @@ POST /api/v1/auth/login
 -> 200 { "data": { "accessToken": "<jwt>", "expiresIn": 3600 } }
 ```
 
-An unknown email returns 401 `UserIsNotAuthorizedError`. The endpoint is a development stub and checks no password. `AuthGuard` verifies the signature and expiry through `AuthService.verifyToken` and sets `req.userId` from `sub`; any failure returns 401. Tokens are signed with `JWT_SECRET` and live for `JWT_TTL` seconds. For a token without calling the API run `npm run token:issue -- <userId>`.
+`email` must be a valid address of at most 254 chars (otherwise `DTO_VALIDATION_ERROR` 422). An unknown email returns 401 `USER_IS_NOT_AUTHORIZED`. The endpoint is a development stub and checks no password. `AuthGuard` verifies the signature and expiry through `AuthService.verifyToken` and sets `req.userId` from `sub`; a missing header, a non-Bearer prefix, a bad signature or an expired token all return 401 `USER_IS_NOT_AUTHORIZED`. Tokens are signed with `JWT_SECRET` and live for `JWT_TTL` seconds. For a token without calling the API run `npm run token:issue -- <userId>`.
 
-Routes marked `@Public()` (health, metrics, version) do not require this header.
+Routes marked `@Public()` (login, client logs, health, metrics, version) do not require this header. Unprotected routes never inspect it.
 
 ---
 
@@ -64,6 +65,12 @@ Paginated responses include metadata:
 
 Empty results return `204 No Content` with no body.
 
+Excluded from the envelope: `/metrics`, `/metrics/database`, `/health`, `/health/live`, `/health/deps`.
+
+### Trace id
+
+Every response carries an `X-Trace-Id` header (the active OpenTelemetry trace id, else an incoming `X-Trace-Id`, else a new UUID). CORS exposes it to browser scripts (`exposedHeaders: ['X-Trace-Id']`), so clients can read it from error responses to correlate with server logs.
+
 ---
 
 ## Error Response Shape
@@ -84,32 +91,32 @@ Empty results return `204 No Content` with no body.
 | `status`  | HTTP status code (mirrors response status)     |
 | `details` | Optional structured context (varies per error) |
 
+The trace id is not part of the body; read it from the `X-Trace-Id` header. For `DTO_VALIDATION_ERROR`, `details` maps a field name to its messages (validation stops at the first failure per field). Health routes are the exception: a failing check returns the Terminus body with status 503 instead of this shape.
+
 ### Error Codes
 
-| Code                     | HTTP | Description                        |
-| ------------------------ | ---- | ---------------------------------- |
-| `TODO_NOT_FOUND`         | 404  | Requested todo does not exist      |
-| `USER_NOT_FOUND`         | 404  | Requested user does not exist      |
-| `USER_IS_NOT_AUTHORIZED` | 401  | Missing or invalid Bearer token    |
-| `DTO_VALIDATION_ERROR`   | 422  | Request body/query validation fail |
-| `DATABASE_ERROR`         | 500  | Prisma / PostgreSQL error          |
-| `REDIS_ERROR`            | 500  | Redis operation failed             |
-| `INTERNAL_ERROR`         | 500  | Unclassified server error          |
-| `INFRA_FAILURE`          | 500  | Infrastructure-level failure       |
-| `BAD_REQUEST`            | 400  | Malformed request (e.g. bad JSON)  |
-| `NOT_FOUND`              | 404  | Unknown route                      |
-| `PAYLOAD_TOO_LARGE`      | 413  | Request body too large             |
-| `TOO_MANY_REQUESTS`      | 429  | Throttled (keeps Retry-After)      |
-| `HTTP_EXCEPTION`         | 4xx  | Other framework 4xx HttpException  |
-| `FORBIDDEN`              | 403  | Access denied                      |
+| Code                     | HTTP          | Description                                                                |
+| ------------------------ | ------------- | -------------------------------------------------------------------------- |
+| `TODO_NOT_FOUND`         | 404           | Todo does not exist or belongs to another user                             |
+| `USER_IS_NOT_AUTHORIZED` | 401           | Missing or invalid Bearer token; unknown email on login                    |
+| `DTO_VALIDATION_ERROR`   | 422           | Body, query or path validation failed (also a malformed value in Prisma)   |
+| `DATABASE_ERROR`         | 400, 404, 409 | Mapped Prisma error: 400 invalid value, 404 record not found, 409 conflict |
+| `INTERNAL_ERROR`         | 500           | Unclassified server error, including unmapped Prisma errors                |
+| `BAD_REQUEST`            | 400           | Malformed request (e.g. bad JSON)                                          |
+| `NOT_FOUND`              | 404           | Unknown route                                                              |
+| `PAYLOAD_TOO_LARGE`      | 413           | Request body too large                                                     |
+| `TOO_MANY_REQUESTS`      | 429           | Throttled (keeps `Retry-After`)                                            |
+| `HTTP_EXCEPTION`         | other 4xx     | Any other framework 4xx `HttpException`                                    |
+
+Defined in `ErrorCodes` but not returned by any route today: `USER_NOT_FOUND`, `FORBIDDEN`, `REDIS_ERROR` (only logged when Redis fails to close on shutdown) and `INFRA_FAILURE` (internal `safeExec` errors). A framework 5xx `HttpException` is hidden behind `INTERNAL_ERROR`.
 
 ---
 
 ## Rate Limiting
 
-Global throttle guard (ThrottlerGuard) applied to all routes.
+Global `UserThrottlerGuard` applied to all routes except the health, metrics and version routes (`@SkipThrottle()`). The bucket key is the user id from a valid Bearer token, else the client IP (`req.ip`, see `TRUST_PROXY`). State lives in Redis. Rate limiting is off when `THROTTLE_ENABLED=false`.
 
-Defaults: `THROTTLE_LIMIT=10` requests per `THROTTLE_TTL=20000` ms window, tracked in Redis.
+Code defaults: `THROTTLE_LIMIT=60` requests per `THROTTLE_TTL=60000` ms. `.env.common` overrides them locally with `10` per `20000` ms. Per-route overrides: login 5 per minute, client logs 20 per minute. A throttled request returns 429 `TOO_MANY_REQUESTS`.
 
 ---
 
@@ -153,6 +160,8 @@ Defaults: `THROTTLE_LIMIT=10` requests per `THROTTLE_TTL=20000` ms window, track
   }
 }
 ```
+
+Unknown properties are rejected with `DTO_VALIDATION_ERROR` 422 (`whitelist` + `forbidNonWhitelisted`). The status is `200`, not `201`.
 
 **Errors:** `DTO_VALIDATION_ERROR` 422 · `USER_IS_NOT_AUTHORIZED` 401 · `INTERNAL_ERROR` 500
 
@@ -247,11 +256,11 @@ Defaults: `THROTTLE_LIMIT=10` requests per `THROTTLE_TTL=20000` ms window, track
 }
 ```
 
-| Field         | Type      | Required |
-| ------------- | --------- | -------- |
-| `title`       | `string`  | no       |
-| `description` | `string`  | no       |
-| `completed`   | `boolean` | no       |
+| Field         | Type      | Required | Description                    |
+| ------------- | --------- | -------- | ------------------------------ |
+| `title`       | `string`  | no       | Todo title (≤ 200 chars)       |
+| `description` | `string`  | no       | Optional detail (≤ 2000 chars) |
+| `completed`   | `boolean` | no       | Completion status              |
 
 **Response `200`**
 
@@ -296,7 +305,7 @@ Defaults: `THROTTLE_LIMIT=10` requests per `THROTTLE_TTL=20000` ms window, track
 
 > Base path: `/api/v1/client-logs` · No auth required (`@Public()`) · Throttled to 20 requests per minute · Fire-and-forget (always `204`)
 >
-> Entries are logged at `warn` with `ctx: 'client-logs'`. Free-text fields have `MaxLength` limits (action `message` 2000, optional `stack` 10000, `ctx`/`env`/`platform` 50-100, `actions` at most 100 items); longer values fail validation.
+> Entries are logged at `warn` with `ctx: 'client-logs'`. Free-text fields have `MaxLength` limits (action `message` 2000, optional `stack` 10000, `ctx`/`env`/`platform` 50-100, `actions` at most 100 items); longer values fail validation. `url` and `fullUrl` are logged without query string and hash.
 
 ---
 
@@ -360,7 +369,7 @@ Defaults: `THROTTLE_LIMIT=10` requests per `THROTTLE_TTL=20000` ms window, track
 
 ### Health
 
-> No global prefix · No auth · No response envelope
+> No global prefix · No auth · No response envelope · Not throttled
 
 ---
 
@@ -379,7 +388,7 @@ Checks: PostgreSQL ping + shutdown drain state.
 }
 ```
 
-Returns `503` when any check fails (used by load balancer readiness probe).
+Returns `503` when any check fails (used by the ALB target group health check). During shutdown the `shutdown` check reports down from the moment shutdown starts, and the server stays up for `SHUTDOWN_DRAIN_MS` so the ALB stops routing before it closes.
 
 ---
 
@@ -412,11 +421,13 @@ Returns default prom-client metrics plus:
 - `http_request_duration_seconds{method, route, status}` (histogram)
 - `http_requests_in_flight` (gauge)
 - `prisma_query_duration_seconds` (histogram), `prisma_queries_total`, `prisma_queries_per_request` (histogram)
+- `service_health_status{service}` (gauge, 1 up / 0 down, refreshed at most every `HEALTH_CHECK_TRIGGER_MS`)
+- `cache_operations_total{operation, result}`
 - `db_slow_query_mean_ms{queryid}` (gauge, top 10, refreshed on scrape)
 
 `route` is the route template, never the raw URL.
 
-Content-Type: `text/plain; version=0.0.4`
+Content-Type: `text/plain; version=0.0.4` (the prom-client default; not wrapped in the envelope).
 
 ---
 
@@ -430,19 +441,23 @@ Response: `[{ queryId, query, calls, meanMs, maxMs, totalMs }]`. Prometheus read
 
 ### Version
 
-#### `GET /version` — App Version
+#### `GET /api/version` — App Version
+
+> Under the global prefix, unversioned, no auth, not throttled. Wrapped in the response envelope.
 
 **Response `200`**
 
 ```json
-{ "version": "0.2.0" }
+{ "data": { "version": "0.2.0" } }
 ```
+
+The value is `APP_VERSION`, which defaults to the `version` in `package.json`.
 
 ---
 
 ## Swagger UI
 
-Available in non-production environments at the path configured by `SWAGGER_ENDPOINT` (default `/docs`).
+Available when `NODE_ENV` is not `production` and `SWAGGER_ENABLED=true`, at the path configured by `SWAGGER_ENDPOINT` (code default `docs`; `.env.common` sets `/docs`).
 Powered by Scalar (`@scalar/nestjs-api-reference`). Includes Bearer auth input for testing protected routes.
 
 The contract is committed as `docs/openapi.json`. After any change to routes, DTOs or Swagger decorators run

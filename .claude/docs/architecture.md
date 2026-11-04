@@ -16,7 +16,9 @@ HTTP Request
      │
      ▼
 [Middlewares]
-  traceId → logging → sentryContext → requestTracking
+  metricsGate → httpContext → traceId → sentryContext (if Sentry on)
+  → body parsers + request logging → helmet (production) → compression → CORS
+  → requestTracking (module middleware)
      │
      ▼
 [Guards]
@@ -55,14 +57,16 @@ HTTP Request
 ```
 src/
   api/               Controllers + DTOs (transport layer only)
+    auth/
     todos/
     client-logs/
     health/
     metrics/
     version/
   features/          Business logic layer
-    todos/           Service, repository, entity, mapper, cache-queries, types
+    todos/           Service, repository, entity, mapper, cache-queries, constants, interfaces, types
     client-logs/     Service only (fire-and-forget log ingestion)
+    users/           Repository + service (email lookup, token issue for login)
   modules/           Infrastructure modules
     prisma/          PrismaService + connection management
     redis-manager/   Two Redis clients (cache, throttler) + health
@@ -72,10 +76,11 @@ src/
     sentry/          Sentry status log + request context middleware (SDK init lives in src/instrument.ts)
     shutdown/        Graceful shutdown with in-flight tracking
     in-flight-requests/ Middleware that tracks active requests
-    version/         Reads app version from package.json
+    auth/            AuthService: JWT issue and verify (HS256)
+    version/         Reads app version (APP_VERSION, defaults to package.json)
   common/            Reusable cross-cutting code
     decorators/      @User, @Public, custom Swagger decorators
-    guards/          AuthGuard
+    guards/          AuthGuard, UserThrottlerGuard
     interceptors/    UnifiedResponseInterceptor
     utils/           validate-config, objects, strings
   config/            NestJS config factories (one per concern)
@@ -86,7 +91,7 @@ src/
     parsers/         Validation error parser
     constants/       ErrorCodes, ErrorCategory enums
   logger/            pino-based structured logger
-    middlewares/     logging.middleware, trace-id.middleware
+    middlewares/     logging.middleware, request-logging.setup, trace-id.middleware
     context/         AsyncLocalStorage request context
     headers/         Trace-ID header constant
   shared/            DTOs and entities reused across features
@@ -113,11 +118,11 @@ Creates two separate Redis connections:
 - **CacheClient** — used by `CacheStorage` for application-level caching
 - **ThrottlerClient** — used by `ThrottlerStorage` for rate-limiting state
 
-Both clients inherit from `BaseRedisService` (exponential retry, no offline queue, 1 s connect timeout). In test environments, retries are disabled.
+Both clients inherit from `BaseRedisService` (reconnect delay grows by 200 ms per attempt up to 5 s, no offline queue, 1 s connect timeout). In test environments, retries are disabled.
 
 ### Health
 
-Three endpoints, all excluded from the global prefix:
+Three endpoints, all excluded from the global prefix and from throttling:
 
 - `GET /health/live` — liveness, no checks (Docker `HEALTHCHECK`, ECS container `healthCheck`)
 - `GET /health` — critical checks: DB ping + shutdown state
@@ -128,28 +133,30 @@ Three endpoints, all excluded from the global prefix:
 Prometheus metrics exposed at `/metrics` (default prom-client metrics + custom counters):
 
 - `http_requests_total` — labeled by method, route, status
-- `http_errors_total` — labeled by method, route, status
+- `http_errors_total` — labeled by method, route, status (route is `unmatched` when no route matched)
 - `http_request_duration_seconds` — histogram
 - `http_requests_in_flight` — gauge
 - `prisma_query_duration_seconds`, `prisma_queries_total`, `prisma_queries_per_request` — fed by Prisma query events (`PrismaService`) and the per-request counter in `RequestContext`
-- `db_slow_query_mean_ms{queryid}` — gauge refreshed on each scrape from `pg_stat_statements`
+- `db_slow_query_mean_ms{queryid}` — gauge refreshed on each scrape from `pg_stat_statements` (top 10)
+- `service_health_status{service}` — gauge from the critical health checks
+- `cache_operations_total{operation, result}` — cache `get`/`set`/`del` outcomes (`ok`, `hit`, `miss`, `error`)
 - `HealthUpdateMiddleware` refreshes dependency health on `/metrics` at most once per `HEALTH_CHECK_TRIGGER_MS`
 - `/metrics` and `/metrics/database` sit outside the API prefix (`GLOBAL_PREFIX_EXCLUDE` in `src/constants/url.constants.ts`); `metricsGateMiddleware` returns 404 for them when `X-Forwarded-For` is present (request came through the ALB)
 
 ### Shutdown
 
-`ShutdownModule` listens for `SIGTERM`/`SIGINT`. `RequestTrackingService` counts in-flight requests; it is a singleton provided by `RequestTrackingModule` (imported by `AppModule` for the middleware and by `ShutdownModule`), never redeclared elsewhere. On signal, the app enters a draining state: health/ready returns unhealthy, new requests continue but the process waits for in-flight count to drop to zero before exiting.
+`ShutdownModule` listens for `SIGTERM`/`SIGINT`. `RequestTrackingService` counts in-flight requests; it is a singleton provided by `RequestTrackingModule` (imported by `AppModule` for the middleware and by `ShutdownModule`), never redeclared elsewhere. On signal, the app enters a draining state: `/health` returns 503 and new requests continue to be served for `SHUTDOWN_DRAIN_MS` (10 s). Then the process waits up to `SHUTDOWN_INFLIGHT_TIMEOUT_MS` (20 s) for the in-flight count to reach zero, and finally disconnects Prisma, Redis and tracing.
 
 ### Error handling
 
 `GlobalExceptionFilter` (`@Catch()`) handles all unhandled exceptions:
 
 1. **Domain error** (`BaseError` subclass) — pass through with its HTTP status and code
-2. **Prisma error** — mapped to a structured `DatabaseError` via `mapPrismaError`
+2. **Prisma error** — mapped via `mapPrismaError` to `DATABASE_ERROR` (400/404/409) or `DTO_VALIDATION_ERROR` (malformed value); unmapped Prisma errors become `INTERNAL_ERROR`
 3. **NestJS `HttpException`** — 4xx keeps its status with a generic code and message (`NOT_FOUND`, `TOO_MANY_REQUESTS`, ...); 5xx becomes `InternalServerError` (details hidden), except on health routes (`isHealthPassthrough`: lowercased `req.path` is `/health` or `/health/...`), where the Terminus body and status (503 during drain) are passed through and the HTTP metrics label the same status
 4. **Unknown** — `InternalServerError`
 
-Every error is logged via `LoggerService`, counted in Prometheus, and sent to Sentry from the filter only when it is an incident (5xx or unknown error). Sentry is initialized in `src/instrument.ts`, the first import of `main.ts`.
+Every error is logged via `LoggerService`, counted in `http_errors_total` (status 400 and above), and sent to Sentry from the filter only when it is an incident (5xx or unknown error). Sentry is initialized in `src/instrument.ts`, the first import of `main.ts`.
 
 ### Authentication
 
@@ -157,7 +164,7 @@ Every error is logged via `LoggerService`, counted in Prometheus, and sent to Se
 
 ### Response envelope
 
-`UnifiedResponseInterceptor` wraps all responses (except `/metrics` and `/health` endpoints):
+`UnifiedResponseInterceptor` wraps all responses except `/metrics`, `/metrics/database`, `/health`, `/health/live` and `/health/deps` (`GET /api/version` is wrapped):
 
 - Empty result → `204 No Content`
 - Result with `meta` → `{ data: ..., meta: ... }`
@@ -167,7 +174,7 @@ Every error is logged via `LoggerService`, counted in Prometheus, and sent to Se
 
 ## Request Lifecycle (example: `GET /api/v1/todos`)
 
-1. `traceIdMiddleware` — attaches UUID trace ID to request and `AsyncLocalStorage` context
+1. `traceIdMiddleware` — resolves the trace ID (active span, incoming `X-Trace-Id`, else a new UUID), sets the `X-Trace-Id` response header and the `AsyncLocalStorage` context
 2. `loggingMiddleware` — logs incoming request with trace ID
 3. `UserThrottlerGuard` — checks the rate-limit bucket in Redis (per user, else per IP)
 4. `AuthGuard` — verifies the signed Bearer JWT, sets `req.userId`
@@ -205,8 +212,10 @@ Tracing: `src/tracing.ts` (`startTracing`, called from `src/instrument.ts`) star
 
 ## Environment Modes
 
-| `NODE_ENV`    | Behavior                                                      |
-| ------------- | ------------------------------------------------------------- |
-| `development` | CORS enabled, Swagger available, pino-pretty output           |
-| `production`  | Swagger disabled, Helmet HSTS enforced, no CORS wildcard      |
-| `test`        | Redis retry disabled, throttle limits relaxed via `.env.test` |
+| `NODE_ENV`    | Behavior                                                          |
+| ------------- | ----------------------------------------------------------------- |
+| `development` | Swagger available (`SWAGGER_ENABLED`), pino-pretty (`LOG_PRETTY`) |
+| `production`  | Swagger disabled, Helmet with HSTS enabled                        |
+| `test`        | Redis retry disabled, throttle limits relaxed via `.env.test`     |
+
+CORS is on in every mode: only origins in `API_ALLOWED_ORIGINS` are accepted, plus requests without an `Origin` header when `API_ALLOWED_NON_BROWSER_ORIGINS=true`. `X-Trace-Id` is exposed to browsers.

@@ -1,21 +1,17 @@
-- Code Refactoring
-  - Configs refactoring
-  - Services refactoring
-- Architecture Decisions
-  - Cost Analyze
+# Roadmap
+
+Open work only. Everything else is shipped; see the [prod-forge organization](https://github.com/prod-forge) for the full set of repositories.
+
+- Deployment
+  - Kubernetes (EKS)
+  - Blue/green deployment
 - Development Workflow
-  - Feature Flags
-- Performance
-  - More Performance Optimizations
-- Logging & Observability
-  - More metrics
-  - Global Dashboard
-  - Alertmanager routing of Prometheus alerts to SNS (phase 2b)
-  - SLO burn-rate alerts
+  - Feature flags
+  - Pin GitHub Actions to commit SHAs
 - Testing
-  - A/B Testing
-- Done
-  - Load Testing (k6 smoke, see docs/testing.md)
-  - Terminus
-  - Graceful shutdown
-  - Database Metrics
+  - A/B testing
+- Architecture Decisions
+  - Cost analysis
+- Logging & Observability
+  - Alertmanager routing of Prometheus alerts to SNS
+  - SLO burn-rate alerts

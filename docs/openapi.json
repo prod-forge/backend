@@ -917,7 +917,7 @@
   "info": {
     "title": "Prod Forge Todo API",
     "description": "REST API of the Prod Forge todo list",
-    "version": "0.2.0",
+    "version": "1.0.0",
     "contact": {}
   },
   "tags": [],

@@ -448,7 +448,7 @@ Response: `[{ queryId, query, calls, meanMs, maxMs, totalMs }]`. Prometheus read
 **Response `200`**
 
 ```json
-{ "data": { "version": "0.2.0" } }
+{ "data": { "version": "1.0.0" } }
 ```
 
 The value is `APP_VERSION`, which defaults to the `version` in `package.json`.

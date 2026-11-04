@@ -1,59 +1,55 @@
 # Changelog
 
-# [0.2.0](https://github.com/prod-forge/backend/compare/v0.1.6...v0.2.0) (2026-03-12)
+## 1.0.0 (2026-11-04)
+
+First published version of the Prod Forge backend: a NestJS REST API for todos with the production practices the guide
+describes. Earlier tags (`v0.1.0` to `v0.2.0`, March 2026) were local scaffolding iterations that were never pushed;
+their content is folded into this release.
+
+### Breaking changes since the 0.2.0 scaffold
+
+- Access tokens are signed HS256 JWTs verified on every protected route; `JWT_SECRET` (32+ characters) is required at
+  startup. A login-by-email stub endpoint issues tokens; an identity provider is out of scope.
+- Todos are scoped to their owner for read, update and delete; a foreign id answers `404`.
+- Todo pagination uses a real 0-based `offset`; page size is capped at 100.
+- Title and description have length limits, ids are validated as UUIDs; both are part of the pinned OpenAPI contract.
+- Framework `4xx` exceptions keep their status and code; failed health checks return the Terminus `503`.
+- `/metrics` is served at the root only and rejected when the request came through the ALB; `/metrics/database`
+  returns JSON.
+- Cache keys are versioned, old entries are ignored; entries without an owner count as a miss.
+- `SENTRY_DSN` is optional, Sentry is enabled only when a DSN is set and `SENTRY_ENABLED` is `true`.
 
 ### Features
 
-- update readme, update exception filter, ci ([7bc29bf](https://github.com/prod-forge/backend/commit/7bc29bf971433f079a03cc4a36fb792d73dc03a4))
+- Per-user rate limiting behind a trusted proxy; health and metrics endpoints are exempt.
+- Graceful shutdown drains readiness first and waits for in-flight requests before the server closes.
+- Redis cache with scan-based pattern deletion, hit and miss metrics, optional TLS and AUTH token.
+- PostgreSQL through Prisma with pool and statement timeouts and `verify-full` TLS using the RDS CA bundle.
+- Liveness and readiness endpoints, version endpoint, client-logs endpoint for the web client.
+- The trace id header is exposed to the web client; request logging is GDPR-safe and skips probes.
+- OpenAPI contract exported to `docs/openapi.json` and checked in CI.
 
-## [0.1.6](https://github.com/prod-forge/backend/compare/v0.1.5...v0.1.6) (2026-03-11)
+### Observability
 
-### Bug Fixes
+- OpenTelemetry tracing with Tempo, span-aware trace id, W3C `traceparent` accepted alongside Sentry.
+- Prometheus metrics recorded once per request, Prisma and slow-query metrics, cache metrics.
+- Docker Compose stack with Prometheus, Grafana dashboards, Loki, Promtail and Tempo; alert rules and SLOs that
+  exclude probe and scrape routes.
+- k6 smoke load test.
 
-- fix release cycle ([b721bae](https://github.com/prod-forge/backend/commit/b721bae24f86fe3219fdb50f27f922f70c3dddbb))
+### Security
 
-## [0.1.5](https://github.com/prod-forge/backend/compare/v0.2.0...v0.1.5) (2026-03-10)
+- No secrets in the Docker image, container healthcheck, minimal build context, local compose ports bound to localhost.
+- CI runs `npm audit`, CodeQL, Trivy and publishes an SBOM with provenance attestations.
 
-### Bug Fixes
+### CI/CD
 
-- release cycle error ([6c1ee37](https://github.com/prod-forge/backend/commit/6c1ee3770fe059c0e6663155996ff74e39e8391b))
+- CI on pull requests and pushes to `main`: lint, knip, unit and e2e tests with coverage, OpenAPI check.
+- CD on `v*` tags: image to ECR, ECS service update, migration task rendered with `jq`; role, cluster and service
+  names aligned with terraform outputs; Node.js 24.21.0.
+- The `commit-msg` hook rejects AI attribution trailers.
 
-## [0.1.4](https://github.com/prod-forge/backend/compare/v0.2.0...v0.1.4) (2026-03-10)
+### Documentation
 
-### Bug Fixes
-
-- release cycle error ([6c1ee37](https://github.com/prod-forge/backend/commit/6c1ee3770fe059c0e6663155996ff74e39e8391b))
-
-## [0.1.3](https://github.com/prod-forge/backend/compare/v0.2.0...v0.1.3) (2026-03-10)
-
-### Bug Fixes
-
-- release cycle error ([6c1ee37](https://github.com/prod-forge/backend/commit/6c1ee3770fe059c0e6663155996ff74e39e8391b))
-
-## [0.1.2](https://github.com/prod-forge/backend/compare/v0.2.0...v0.1.2) (2026-03-10)
-
-### Bug Fixes
-
-- release cycle error ([6c1ee37](https://github.com/prod-forge/backend/commit/6c1ee3770fe059c0e6663155996ff74e39e8391b))
-
-## [0.1.1](https://github.com/prod-forge/backend/compare/v0.2.0...v0.1.1) (2026-03-10)
-
-### Bug Fixes
-
-- release cycle error ([6c1ee37](https://github.com/prod-forge/backend/commit/6c1ee3770fe059c0e6663155996ff74e39e8391b))
-
-# [0.2.0](https://github.com/prod-forge/backend/compare/v0.1.0...v0.2.0) (2026-03-10)
-
-### Features
-
-- add ci cd ([aeab543](https://github.com/prod-forge/backend/commit/aeab543f232ffcba5f457fca3a4c50e7f2a1f783))
-- update deployment process ([355e581](https://github.com/prod-forge/backend/commit/355e5813384a14ad155b48df2b422413c790f7cb))
-
-# 0.1.0 (2026-03-06)
-
-### Features
-
-- add application code ([c65f1a9](https://github.com/prod-forge/backend/commit/c65f1a9c01ddf15aaf7c24027731b8ef61f7019d))
-- add git workflow section to the readme ([eca8d2a](https://github.com/prod-forge/backend/commit/eca8d2a7654513eed9926e66fd8b879ef9156a51))
-- add quality gate tools ([51532a8](https://github.com/prod-forge/backend/commit/51532a8ff76fe774a401822793f4017971564fb2))
-- release script ([cb49b39](https://github.com/prod-forge/backend/commit/cb49b392161d47bba9518aae417630565a7ae5ef))
+- Backend guide from repository strategy to release management, aligned with the code.
+- Agent docs in `.claude/docs`, cspell dictionary, roadmap, contributing guide, MIT license.

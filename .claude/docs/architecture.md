@@ -20,7 +20,7 @@ HTTP Request
      │
      ▼
 [Guards]
-  ThrottlerGuard (global) → AuthGuard (per-route)
+  UserThrottlerGuard (global) → AuthGuard (per-route)
      │
      ▼
 [Pipes]
@@ -165,7 +165,7 @@ Every error is logged via `LoggerService`, counted in Prometheus, and optionally
 
 1. `traceIdMiddleware` — attaches UUID trace ID to request and `AsyncLocalStorage` context
 2. `loggingMiddleware` — logs incoming request with trace ID
-3. `ThrottlerGuard` — checks rate-limit bucket in Redis
+3. `UserThrottlerGuard` — checks the rate-limit bucket in Redis (per user, else per IP)
 4. `AuthGuard` — verifies the signed Bearer JWT, sets `req.userId`
 5. `ValidationPipe` — transforms and validates query params
 6. `TodosController.findAll` — delegates to `TodosService`

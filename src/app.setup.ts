@@ -23,7 +23,7 @@ import { DtoValidationErrors } from './error-handler/errors/dto-validation.error
 import { GlobalExceptionFilter } from './error-handler/filters/global-exception.filter';
 import { parseValidationErrors } from './error-handler/parsers/validation-error.parser';
 import { LoggerService } from './logger/logger.service';
-import { loggingMiddleware } from './logger/middlewares/logging.middleware';
+import { useRequestLogging } from './logger/middlewares/request-logging.setup';
 import { traceIdMiddleware } from './logger/middlewares/trace-id.middleware';
 import { EnvironmentService } from './modules/environment/environment.service';
 import { HttpMetricsInterceptor } from './modules/metrics/interceptors/http-metrics.interceptor';
@@ -54,7 +54,7 @@ export const appSetup = (app: INestApplication): void => {
     app.use(sentryContextMiddleware());
   }
 
-  app.use(loggingMiddleware(configLog, logger));
+  useRequestLogging(app, configLog, logger);
 
   // Security & transport middlewares
   if (environmentService.isProduction()) {

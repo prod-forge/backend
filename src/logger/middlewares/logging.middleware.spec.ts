@@ -36,6 +36,16 @@ describe('loggingMiddleware', () => {
       expect(logger.log).not.toHaveBeenCalled();
     });
 
+    it.each(['/health/live', '/health/deps', '/metrics/database'])('skips logging for the %s sub-route', (url) => {
+      const logger = makeLogger();
+      const middleware = loggingMiddleware(makeConfig(), logger as unknown as LoggerService);
+
+      middleware(makeReq(url), {} as Response, jest.fn());
+
+      expect(logger.log).not.toHaveBeenCalled();
+      expect(logger.debug).not.toHaveBeenCalled();
+    });
+
     it('skips logging for custom excluded endpoints', () => {
       const logger = makeLogger();
       const next = jest.fn() as NextFunction;

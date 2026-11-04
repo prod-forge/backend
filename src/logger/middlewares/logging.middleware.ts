@@ -8,7 +8,11 @@ import { HEALTH_ENDPOINT, METRICS_ENDPOINT } from '../../constants/url.constants
 export const loggingMiddleware =
   (config: LogConfigInterface, loggerService: LoggerService) =>
   (req: Request, res: Response, next: NextFunction): void => {
-    if ([`/${HEALTH_ENDPOINT}`, `/${METRICS_ENDPOINT}`, ...config.logExcludeEndpoints].includes(req.url)) {
+    const isProbe = [HEALTH_ENDPOINT, METRICS_ENDPOINT].some(
+      (endpoint) => req.path === `/${endpoint}` || req.path.startsWith(`/${endpoint}/`),
+    );
+
+    if (isProbe || config.logExcludeEndpoints.includes(req.url)) {
       next();
 
       return;

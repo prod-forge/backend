@@ -25,10 +25,12 @@ const webLog = {
 describe('Client logs API (e2e)', () => {
   describe('POST /api/v1/client-logs/web', () => {
     describe('negative cases', () => {
-      it('rejects an oversize stack with 400', async () => {
+      it('rejects an oversize stack with 422', async () => {
         const body = { ...webLog, actions: [{ ...webLog.actions[0], stack: 'x'.repeat(10001) }] };
 
-        await request(server).post('/api/v1/client-logs/web').send(body).expect(400);
+        const res = await request(server).post('/api/v1/client-logs/web').send(body).expect(422);
+
+        expect((res.body as { code: string }).code).toBe('DTO_VALIDATION_ERROR');
       });
     });
 

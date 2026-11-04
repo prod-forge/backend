@@ -99,13 +99,14 @@ Sentry.setUser({ userId });
 Using only a userId allows engineers to identify the affected user in the database without exposing personal data.
 
 The request logging middleware follows the same rule. The `info` entry carries `method`, `path` (without the query
-string) and the trace ID, and never the request body. The body is emitted only at `debug` level, under `req.body`, and
+string) and the trace ID, and never the request body. Body parsers run before the logging middleware (`useRequestLogging`), so the body is available to it. The body is emitted only at `debug` level, under `req.body`, and
 the pino `redact` configuration (`src/logger/log-redact.ts`) replaces `req.body.password`, `req.body.email` and
 `req.body.token` with `[REDACTED]`. Keep `LOG_LEVEL` at `info` or above in production anyway.
 
 Client-submitted logs (`POST /api/v1/client-logs/web` and `/mobile`) are written at `warn` with `ctx: 'client-logs'`.
 Free-text fields have `MaxLength` limits, and the endpoints are public (signed-out pages such as login send logs) but
-throttled to 20 requests per minute per client.
+throttled to 20 requests per minute per client. `metadata.fullUrl` and `metadata.url` are logged without their query
+string and hash. `actions[].payload` is logged as sent, so clients must not put personal data in it (frontend contract).
 
 ## Trace ID
 

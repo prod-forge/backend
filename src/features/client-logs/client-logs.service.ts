@@ -6,6 +6,9 @@ import { LoggerService } from '../../logger/logger.service';
 
 const CLIENT_LOGS_CTX = 'client-logs';
 
+// Query strings and hashes can carry tokens or personal data, so only origin and path are logged
+const stripQueryAndHash = (value: string): string => value.split(/[?#]/)[0];
+
 @Injectable()
 export class ClientLogsService {
   constructor(private readonly loggerService: LoggerService) {}
@@ -25,7 +28,10 @@ export class ClientLogsService {
         actions: dto.actions,
         clientTraceId: dto.traceId,
         env: dto.env,
-        metadata: dto.metadata,
+        metadata: Object.assign({}, dto.metadata, {
+          fullUrl: stripQueryAndHash(dto.metadata.fullUrl),
+          url: stripQueryAndHash(dto.metadata.url),
+        }),
         source: 'web',
         timestamp: dto.timestamp,
       },

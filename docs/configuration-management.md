@@ -91,7 +91,8 @@ Sensitive secrets such as:
 - JWT secrets
 - third-party credentials
 
-are never stored in environment files inside the repository.
+are never stored in `.env.common` or baked into the Docker image. `.env.common` holds non-secret defaults only; for local
+development put secrets in `.env`. The image contains neither `.env` nor `.env.common`.
 
 Instead, secrets are injected directly into the container at runtime using Terraform.
 

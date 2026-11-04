@@ -33,7 +33,7 @@ This starts:
 
 ### 3. Configure environment
 
-The app loads `.env.common` first, then `.env`. Both files are committed with safe defaults for local dev.
+The app loads `.env.common` first, then `.env`. `.env.common` holds non-secret defaults only; put secrets (e.g. `DATABASE_PASSWORD`) in `.env`. Neither file is copied into the Docker image: in production, env comes from the ECS task definition / Secrets Manager.
 
 Key variables to verify:
 

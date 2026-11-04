@@ -1,2 +1,13 @@
-prisma/generated
 node_modules
+.git
+dist
+coverage*
+docs
+test
+memory
+.idea
+*.md
+.github
+.env
+.env.test
+prisma/generated

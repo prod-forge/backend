@@ -132,3 +132,16 @@ If additional operations are required - for example running database seeds - the
 ECS tasks.
 
 Each operational task remains isolated and predictable.
+
+## Slow Query Metrics (pg_stat_statements)
+
+The `db_slow_query_mean_ms{queryid}` gauge reads from the `pg_stat_statements` view. Two things are required:
+
+- the server loads the library (`shared_preload_libraries=pg_stat_statements`, already set in `docker-compose.yml`);
+- the extension exists in the application database, created by a migration:
+
+```sql
+CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+```
+
+Add it as `database-manager/migrations/<timestamp>_pg_stat_statements/migration.sql`. Without it the application logs one warning and skips the slow-query metric.

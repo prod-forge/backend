@@ -5,7 +5,9 @@ import { PrismaPg } from '@prisma/adapter-pg';
 
 import { PrismaClient } from '../../../database-manager/generated/client';
 import { databaseConfig } from '../../config/database.config';
+import { RequestContext } from '../../logger/context/request-context';
 import { LoggerService } from '../../logger/logger.service';
+import { prismaQueriesTotal, prismaQueryDuration } from './prisma.metrics';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
@@ -22,10 +24,19 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
 
     super({
       adapter,
-      log: config.databaseLogLevels.map((level) => ({
-        emit: 'event',
-        level,
-      })),
+      log: [
+        { emit: 'event', level: 'query' },
+        ...config.databaseLogLevels
+          .filter((level) => level !== 'query')
+          .map((level) => ({ emit: 'event' as const, level })),
+      ],
+    });
+
+    // The class extends PrismaClient without log generics, so $on is typed with never; narrow it to query events
+    (this as unknown as PrismaClient<'query'>).$on('query', (e) => {
+      prismaQueryDuration.observe(e.duration / 1000);
+      prismaQueriesTotal.inc();
+      RequestContext.incrementQueryCount();
     });
   }
 

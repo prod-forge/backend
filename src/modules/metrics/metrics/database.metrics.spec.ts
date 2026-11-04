@@ -25,6 +25,7 @@ describe('DatabaseMetrics', () => {
           ['max_ms']: 200.5,
           ['mean_ms']: 100.5,
           query: 'SELECT * FROM users',
+          queryid: '123456',
           ['total_ms']: 1005.0,
         },
       ]);
@@ -37,6 +38,7 @@ describe('DatabaseMetrics', () => {
       expect(result[0].maxMs).toBe(200.5);
       expect(result[0].totalMs).toBe(1005.0);
       expect(result[0].query).toBe('SELECT * FROM users');
+      expect(result[0].queryId).toBe('123456');
     });
 
     it('returns empty array when no slow queries', async () => {
@@ -47,12 +49,14 @@ describe('DatabaseMetrics', () => {
       expect(result).toHaveLength(0);
     });
 
-    it('calls prisma with correct SQL and limit', async () => {
+    it('calls prisma with correct SQL, queryid and limit', async () => {
       prisma.$queryRawUnsafe.mockResolvedValue([]);
 
       await service.getTopSlowQueries(5);
 
       expect(prisma.$queryRawUnsafe).toHaveBeenCalledWith(expect.stringContaining('pg_stat_statements'));
+      expect(prisma.$queryRawUnsafe).toHaveBeenCalledWith(expect.stringContaining('queryid'));
+      expect(prisma.$queryRawUnsafe).toHaveBeenCalledWith(expect.stringContaining('LIMIT 5'));
     });
 
     it('uses default limit of 10', async () => {

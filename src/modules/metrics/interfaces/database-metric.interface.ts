@@ -3,5 +3,6 @@ export type DatabaseMetricInterface = {
   maxMs: number;
   meanMs: number;
   query: string;
+  queryId: string;
   totalMs: number;
 };

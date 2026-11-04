@@ -14,10 +14,12 @@ export class DatabaseMetrics {
         max_ms: string;
         mean_ms: string;
         query: string;
+        queryid: string;
         total_ms: string;
       }[]
     >(`
       SELECT
+        queryid::text AS queryid,
         query,
         calls,
         round(mean_exec_time::numeric, 2) as mean_ms,
@@ -46,6 +48,7 @@ export class DatabaseMetrics {
       calls: Number(row.calls), // BigInt -> number
       maxMs: Number(row.max_ms), // string -> number
       meanMs: Number(row.mean_ms), // string -> number
+      queryId: row.queryid,
       totalMs: Number(row.total_ms), // string -> number
     }));
   }

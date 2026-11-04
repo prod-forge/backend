@@ -9,7 +9,7 @@ import { MetricsConfigInterface } from './interfaces/metrics-config.interface';
 class MetricsConfig {
   @IsNumber()
   @Transform(({ value }) => Number(value))
-  HEALTH_CHECK_TRIGGER_MS = 20000;
+  HEALTH_CHECK_TRIGGER_MS = 15000;
 }
 
 export const metricsConfig = registerAs<MetricsConfig, ConfigFactory<MetricsConfigInterface>>(

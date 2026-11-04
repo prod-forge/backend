@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { catchError, finalize } from 'rxjs/operators';
 
 import { BaseError } from '../../../error-handler/errors/_base.error';
+import { RequestContext } from '../../../logger/context/request-context';
 
 @Injectable()
 export class HttpMetricsInterceptor implements NestInterceptor {
@@ -26,35 +27,44 @@ export class HttpMetricsInterceptor implements NestInterceptor {
     name: 'http_requests_total',
   });
 
+  private readonly queriesPerRequest = new Histogram({
+    buckets: [0, 1, 2, 3, 5, 10, 20, 50],
+    help: 'Number of database queries executed per HTTP request',
+    name: 'prisma_queries_per_request',
+  });
+
   intercept<T>(context: ExecutionContext, next: CallHandler<T>): Observable<T> {
     const httpContext = context.switchToHttp();
     const req = httpContext.getRequest<Request>();
     const res = httpContext.getResponse<Response>();
 
     const method = req.method;
-
-    const r = req.route as { path: string };
-    const route = r.path || req.baseUrl || 'unknown';
+    const route = (req.route as undefined | { path?: string })?.path || req.baseUrl || 'unknown';
 
     const start = process.hrtime();
+    let recorded = false;
+    const record = (status: number): void => {
+      if (recorded) return;
+      recorded = true;
+      this.recordMetrics(method, route, status, start);
+    };
+
     this.httpInFlight.inc();
 
     return next.handle().pipe(
       catchError((err: unknown) => {
-        const status = (err as null | Partial<BaseError<unknown>> | undefined)?.status ?? 500;
-        this.recordMetrics(method, route, status, start);
+        record((err as null | Partial<BaseError<unknown>> | undefined)?.status ?? 500);
         throw err;
       }),
       finalize(() => {
-        const status = res.statusCode;
-        this.recordMetrics(method, route, status, start);
+        record(res.statusCode);
+        this.httpInFlight.dec();
+        this.queriesPerRequest.observe(RequestContext.getQueryCount());
       }),
     );
   }
 
   private recordMetrics(method: string, route: string, status: number, start: [number, number]): void {
-    this.httpInFlight.dec();
-
     const diff = process.hrtime(start);
     const duration = diff[0] + diff[1] / 1e9;
 

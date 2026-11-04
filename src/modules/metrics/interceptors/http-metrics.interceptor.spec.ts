@@ -2,25 +2,32 @@ import type { CallHandler, ExecutionContext } from '@nestjs/common';
 
 import { lastValueFrom, of, throwError } from 'rxjs';
 
-jest.mock('prom-client', () => {
-  const incMock = jest.fn();
-  const labelsMock = jest.fn().mockReturnValue({ inc: incMock });
-  const observeMock = jest.fn();
-  const labelsHistMock = jest.fn().mockReturnValue({ observe: observeMock });
+const mockInFlight = { dec: jest.fn(), inc: jest.fn() };
+const mockCounterInc = jest.fn();
+const mockCounterLabels = jest.fn(() => ({ inc: mockCounterInc }));
+const mockDurationObserve = jest.fn();
+const mockDurationLabels = jest.fn(() => ({ observe: mockDurationObserve }));
+const mockQueriesObserve = jest.fn();
 
-  return {
-    Counter: jest.fn().mockImplementation(() => ({ labels: labelsMock })),
-    Gauge: jest.fn().mockImplementation(() => ({ dec: jest.fn(), inc: jest.fn() })),
-    Histogram: jest.fn().mockImplementation(() => ({ labels: labelsHistMock })),
-  };
-});
+jest.mock('prom-client', () => ({
+  Counter: jest.fn().mockImplementation(() => ({ labels: mockCounterLabels })),
+  Gauge: jest.fn().mockImplementation(() => mockInFlight),
+  Histogram: jest
+    .fn()
+    .mockImplementation(({ name }: { name: string }) =>
+      name === 'prisma_queries_per_request' ? { observe: mockQueriesObserve } : { labels: mockDurationLabels },
+    ),
+}));
 
+import { RequestContext } from '../../../logger/context/request-context';
 import { HttpMetricsInterceptor } from './http-metrics.interceptor';
 
-const makeContext = (method = 'GET', route = '/api', statusCode = 200): ExecutionContext =>
+const makeContext = (method = 'GET', route = '/api/v1/todos/:id', statusCode = 200): ExecutionContext =>
   ({
     switchToHttp: jest.fn().mockReturnValue({
-      getRequest: jest.fn().mockReturnValue({ baseUrl: route, method, route: { path: route } }),
+      getRequest: jest
+        .fn()
+        .mockReturnValue({ baseUrl: '', method, originalUrl: '/api/v1/todos/42', route: { path: route } }),
       getResponse: jest.fn().mockReturnValue({ statusCode }),
     }),
   }) as unknown as ExecutionContext;
@@ -29,40 +36,100 @@ describe('HttpMetricsInterceptor', () => {
   let interceptor: HttpMetricsInterceptor;
 
   beforeEach(() => {
+    jest.clearAllMocks();
     interceptor = new HttpMetricsInterceptor();
   });
 
-  describe('positive cases', () => {
-    it('intercept does not throw on success', async () => {
-      const handler: CallHandler = { handle: jest.fn().mockReturnValue(of({ id: 1 })) };
-
-      await expect(lastValueFrom(interceptor.intercept(makeContext(), handler))).resolves.toEqual({ id: 1 });
-    });
-
-    it('intercept records metrics on error with status', async () => {
+  describe('negative cases', () => {
+    it('records the error status once and rethrows when the handler throws', async () => {
       const error = Object.assign(new Error('test'), { status: 400 });
       const handler: CallHandler = { handle: jest.fn().mockReturnValue(throwError(() => error)) };
 
       await expect(lastValueFrom(interceptor.intercept(makeContext(), handler))).rejects.toBe(error);
+
+      expect(mockCounterLabels).toHaveBeenCalledTimes(1);
+      expect(mockCounterLabels).toHaveBeenCalledWith('GET', '/api/v1/todos/:id', '400');
+      expect(mockCounterInc).toHaveBeenCalledTimes(1);
+      expect(mockDurationObserve).toHaveBeenCalledTimes(1);
     });
 
-    it('uses 500 as fallback status when error has no status property', async () => {
+    it('returns in-flight to its previous value when the handler throws', async () => {
+      const handler: CallHandler = { handle: jest.fn().mockReturnValue(throwError(() => new Error('boom'))) };
+
+      await expect(lastValueFrom(interceptor.intercept(makeContext(), handler))).rejects.toThrow('boom');
+
+      expect(mockInFlight.inc).toHaveBeenCalledTimes(1);
+      expect(mockInFlight.dec).toHaveBeenCalledTimes(1);
+    });
+
+    it('uses 500 as fallback status when the error has no status', async () => {
       const handler: CallHandler = { handle: jest.fn().mockReturnValue(throwError(() => new Error('no status'))) };
 
       await expect(lastValueFrom(interceptor.intercept(makeContext(), handler))).rejects.toThrow('no status');
+
+      expect(mockCounterLabels).toHaveBeenCalledWith('GET', '/api/v1/todos/:id', '500');
     });
 
-    it('uses unknown route when route is undefined', async () => {
+    it('uses unknown route when the route path is empty and there is no base url', async () => {
       const ctx = {
         switchToHttp: jest.fn().mockReturnValue({
           getRequest: jest.fn().mockReturnValue({ baseUrl: '', method: 'GET', route: { path: '' } }),
           getResponse: jest.fn().mockReturnValue({ statusCode: 200 }),
         }),
       } as unknown as ExecutionContext;
-
       const handler: CallHandler = { handle: jest.fn().mockReturnValue(of({})) };
 
-      await expect(lastValueFrom(interceptor.intercept(ctx, handler))).resolves.toEqual({});
+      await lastValueFrom(interceptor.intercept(ctx, handler));
+
+      expect(mockCounterLabels).toHaveBeenCalledWith('GET', 'unknown', '200');
+    });
+  });
+
+  describe('positive cases', () => {
+    it('records the response status once on success', async () => {
+      const handler: CallHandler = { handle: jest.fn().mockReturnValue(of({ id: 1 })) };
+
+      await expect(
+        lastValueFrom(interceptor.intercept(makeContext('GET', '/api/v1/todos/:id', 201), handler)),
+      ).resolves.toEqual({
+        id: 1,
+      });
+
+      expect(mockCounterLabels).toHaveBeenCalledTimes(1);
+      expect(mockCounterLabels).toHaveBeenCalledWith('GET', '/api/v1/todos/:id', '201');
+      expect(mockCounterInc).toHaveBeenCalledTimes(1);
+      expect(mockDurationObserve).toHaveBeenCalledTimes(1);
+      expect(mockInFlight.inc).toHaveBeenCalledTimes(1);
+      expect(mockInFlight.dec).toHaveBeenCalledTimes(1);
+    });
+
+    it('labels with the route template, never the raw url', async () => {
+      const handler: CallHandler = { handle: jest.fn().mockReturnValue(of({})) };
+
+      await lastValueFrom(interceptor.intercept(makeContext(), handler));
+
+      expect(mockCounterLabels).not.toHaveBeenCalledWith(expect.anything(), '/api/v1/todos/42', expect.anything());
+    });
+
+    it('observes the number of queries made during the request', async () => {
+      const handler: CallHandler = {
+        handle: jest.fn().mockImplementation(() => {
+          RequestContext.incrementQueryCount();
+          RequestContext.incrementQueryCount();
+          RequestContext.incrementQueryCount();
+
+          return of({});
+        }),
+      };
+
+      await new Promise<void>((resolve, reject) => {
+        RequestContext.run('trace', () => {
+          lastValueFrom(interceptor.intercept(makeContext(), handler)).then(() => resolve(), reject);
+        });
+      });
+
+      expect(mockQueriesObserve).toHaveBeenCalledTimes(1);
+      expect(mockQueriesObserve).toHaveBeenCalledWith(3);
     });
   });
 });

@@ -401,6 +401,11 @@ Returns default prom-client metrics plus:
 - `http_requests_total{method, route, status}`
 - `http_errors_total{method, route, status}`
 - `http_request_duration_seconds{method, route, status}` (histogram)
+- `http_requests_in_flight` (gauge)
+- `prisma_query_duration_seconds` (histogram), `prisma_queries_total`, `prisma_queries_per_request` (histogram)
+- `db_slow_query_mean_ms{queryid}` (gauge, top 10, refreshed on scrape)
+
+`route` is the route template, never the raw URL.
 
 Content-Type: `text/plain; version=0.0.4`
 
@@ -408,7 +413,7 @@ Content-Type: `text/plain; version=0.0.4`
 
 #### `GET /metrics/database` — Database Metrics
 
-Returns Prisma/PostgreSQL-level metrics in Prometheus text format.
+Returns the `db_slow_query_mean_ms{queryid}` gauge in Prometheus text format (empty when `pg_stat_statements` is not installed).
 
 Content-Type: `text/plain; version=0.0.4`
 

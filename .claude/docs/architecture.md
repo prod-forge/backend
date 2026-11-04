@@ -130,7 +130,10 @@ Prometheus metrics exposed at `/metrics` (default prom-client metrics + custom c
 - `http_requests_total` — labeled by method, route, status
 - `http_errors_total` — labeled by method, route, status
 - `http_request_duration_seconds` — histogram
-- Database-level metrics pulled on each `/metrics` scrape via `HealthUpdateMiddleware`
+- `http_requests_in_flight` — gauge
+- `prisma_query_duration_seconds`, `prisma_queries_total`, `prisma_queries_per_request` — fed by Prisma query events (`PrismaService`) and the per-request counter in `RequestContext`
+- `db_slow_query_mean_ms{queryid}` — gauge refreshed on each scrape from `pg_stat_statements`
+- `HealthUpdateMiddleware` refreshes dependency health on `/metrics` at most once per `HEALTH_CHECK_TRIGGER_MS`
 
 ### Shutdown
 

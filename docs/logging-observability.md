@@ -174,20 +174,32 @@ In addition to logs, the application also exposes metrics using Prometheus.
 
 Prometheus periodically scrapes metrics from the application endpoint (usually /metrics).
 
-These metrics can include:
+Prometheus scrapes `/metrics` only. `/metrics/database` returns the slow-query gauge as plain text for humans and is not scraped.
 
-- request counts
-- request latency
-- error rates
-- database metrics
-- custom application metrics
+Custom metrics (default `prom-client` process metrics are exposed as well):
 
-NestJS integrates well with Prometheus through middleware that exposes metrics in the Prometheus format.
+| Metric                          | Type      | Labels                      | Description                                                                                 |
+| ------------------------------- | --------- | --------------------------- | ------------------------------------------------------------------------------------------- |
+| `http_requests_total`           | counter   | `method`, `route`, `status` | Completed requests, recorded once per request (errors use the error status)                 |
+| `http_request_duration_seconds` | histogram | `method`, `route`, `status` | Request duration                                                                            |
+| `http_requests_in_flight`       | gauge     | none                        | Requests being processed; decremented exactly once, also when a handler throws              |
+| `http_errors_total`             | counter   | `method`, `route`, `status` | Requests that ended in an exception (recorded by the exception filter)                      |
+| `prisma_query_duration_seconds` | histogram | none                        | Duration of each Prisma query, from Prisma query events                                     |
+| `prisma_queries_total`          | counter   | none                        | Prisma queries executed                                                                     |
+| `prisma_queries_per_request`    | histogram | none                        | Queries executed during one HTTP request (N+1 detector)                                     |
+| `db_slow_query_mean_ms`         | gauge     | `queryid`                   | Mean time of the 10 slowest statements from `pg_stat_statements`, refreshed on every scrape |
+| `service_health_status`         | gauge     | `service`                   | 1 when a dependency check is up, 0 otherwise                                                |
+
+The `route` label is the route template (for example `/api/v1/todos/:id`), never the raw URL, so cardinality stays bounded.
+
+`db_slow_query_mean_ms` needs the `pg_stat_statements` extension (see [Database Management](./database-management.md)). When it is missing, a warning is logged once and the gauge stays empty; `/metrics` keeps working.
+
+The database ping behind `service_health_status` runs at most once per `HEALTH_CHECK_TRIGGER_MS` (default 15000), so frequent scrapes do not hit the database each time.
 
 Example metric:
 
 ```shell
-http_requests_total{method="GET",route="/tasks",status="200"} 42
+http_requests_total{method="GET",route="/api/v1/todos/:id",status="200"} 42
 ```
 
 Grafana can then use Prometheus as a data source to build dashboards and alerts based on these metrics.

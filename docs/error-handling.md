@@ -109,11 +109,27 @@ If a user can fix the problem, the error message should clearly explain how.
 
 ## Error Monitoring (Sentry)
 
-The global exception filter should integrate with an error monitoring system such as Sentry.
+### Early initialization
 
-Sentry should receive as much contextual information as possible to help debug issues.
+Sentry is initialized in `src/instrument.ts`, which `main.ts` imports on its first line, before NestJS and any
+application module. The SDK (through OpenTelemetry) instruments `http` and `pg` by patching them when they are first
+required, so initializing later, for example in a Nest `onModuleInit`, would leave requests and queries untraced.
+Because it runs before `ConfigModule`, `instrument.ts` reads `SENTRY_DSN`, `SENTRY_ENABLED`, `SENTRY_IGNORED_ERRORS`,
+`NODE_ENV` and `APP_VERSION` from `.env` / `.env.common` itself. Without a DSN the SDK is not initialized and nothing
+is sent. `SentryService` only logs whether Sentry is enabled.
 
-Example:
+### One capture point
+
+The global exception filter is the only place that calls `Sentry.captureException`. There is no Sentry interceptor, so
+an error is never reported twice.
+
+### What is an incident
+
+- Reported: 5xx responses (`InternalServerError`, mapped database failures, any unknown error or `HttpException`).
+- Not reported: domain 4xx errors (`TodoNotFoundError`, validation errors, and so on). They are expected outcomes, are
+  already logged and counted in metrics, and would only add noise.
+
+The filter sends request context with the exception:
 
 ```shell
 Sentry.captureException(exception, {
@@ -129,6 +145,9 @@ Sentry.captureException(exception, {
 Providing request context helps reproduce and investigate errors.
 
 ### Trace ID
+
+The trace ID is read from `RequestContext.getTraceId()`, the same source the logger uses, so the value in Sentry
+matches the logs.
 
 The trace ID is particularly important.
 

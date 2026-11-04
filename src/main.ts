@@ -1,3 +1,5 @@
+import './instrument';
+
 import type { ConfigType } from '@nestjs/config';
 
 import { ConfigService } from '@nestjs/config';

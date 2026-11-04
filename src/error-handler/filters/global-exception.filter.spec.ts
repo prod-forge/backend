@@ -17,9 +17,14 @@ import * as Sentry from '@sentry/node';
 
 import type { LoggerService } from '../../logger/logger.service';
 
+import { RequestContext } from '../../logger/context/request-context';
 import { InternalServerError } from '../errors/common.errors';
 import { TodoNotFoundError } from '../errors/todo.errors';
 import { GlobalExceptionFilter } from './global-exception.filter';
+
+jest.mock('../../logger/context/request-context', () => ({
+  RequestContext: { getTraceId: jest.fn() },
+}));
 
 type MakeHostResult = {
   host: ArgumentsHost;
@@ -31,7 +36,6 @@ const makeHost = (
   opts: {
     method?: string;
     route?: { path: string };
-    traceId?: string;
     url?: string;
     userId?: string;
   } = {},
@@ -46,7 +50,6 @@ const makeHost = (
     params: {},
     query: {},
     route: opts.route,
-    traceId: opts.traceId || 'trace-1',
     url: opts.url || '/api/todos',
     userId: opts.userId,
   };
@@ -73,6 +76,7 @@ describe('GlobalExceptionFilter', () => {
     logger = { error: jest.fn() };
     filter = new GlobalExceptionFilter(logger as unknown as LoggerService, sentryConfigValue as never);
     jest.clearAllMocks();
+    jest.mocked(RequestContext.getTraceId).mockReturnValue('ctx-trace-1');
   });
 
   describe('negative cases', () => {
@@ -100,6 +104,15 @@ describe('GlobalExceptionFilter', () => {
       expect(res.status).toHaveBeenCalledWith(HttpStatus.OK);
       expect(jsonMock).toHaveBeenCalledWith({ status: 'ok' });
     });
+
+    it('does not capture domain 4xx errors in Sentry', () => {
+      filter = new GlobalExceptionFilter(logger as unknown as LoggerService, { sentryEnabled: true } as never);
+      const { host } = makeHost({ route: { path: '/api/todos' } });
+
+      filter.catch(new TodoNotFoundError('todo-1'), host);
+
+      expect(Sentry.captureException).not.toHaveBeenCalled();
+    });
   });
 
   describe('positive cases', () => {
@@ -118,6 +131,20 @@ describe('GlobalExceptionFilter', () => {
       filter.catch(new Error('test'), host);
 
       expect(logger.error).toHaveBeenCalled();
+    });
+
+    it('captures InternalServerError once with the request context trace id', () => {
+      filter = new GlobalExceptionFilter(logger as unknown as LoggerService, { sentryEnabled: true } as never);
+      const { host } = makeHost({ route: { path: '/api' } });
+      const error = new InternalServerError();
+
+      filter.catch(error, host);
+
+      expect(Sentry.captureException).toHaveBeenCalledTimes(1);
+      expect(Sentry.captureException).toHaveBeenCalledWith(
+        error,
+        expect.objectContaining({ extra: expect.objectContaining({ traceId: 'ctx-trace-1' }) as unknown }),
+      );
     });
 
     it('captures exception via Sentry when enabled', () => {

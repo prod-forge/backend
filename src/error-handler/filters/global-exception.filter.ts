@@ -6,6 +6,7 @@ import { Request, Response } from 'express';
 
 import { sentryConfig } from '../../config/sentry.config';
 import { HEALTH_ENDPOINT } from '../../constants/url.contants';
+import { RequestContext } from '../../logger/context/request-context';
 import { LoggerService } from '../../logger/logger.service';
 import { frontendMapper } from '../mappers/frontend.mapper';
 import { resolveError } from '../mappers/resolve-error';
@@ -21,9 +22,9 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
-    const req = ctx.getRequest<Request & { traceId: string; userId?: string }>();
+    const req = ctx.getRequest<Request & { userId?: string }>();
     const res = ctx.getResponse<Response>();
-    const traceId = req.traceId;
+    const traceId = RequestContext.getTraceId();
 
     const error = resolveError(exception);
 
@@ -39,7 +40,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       httpErrorsTotal.labels(req.method, route?.path || req.url, error.status.toString()).inc();
     }
 
-    if (this.configSentry.sentryEnabled) {
+    // Only incidents go to Sentry: 5xx and unexpected errors, never domain 4xx
+    if (this.configSentry.sentryEnabled && error.status >= HttpStatus.INTERNAL_SERVER_ERROR) {
       const userId = req.userId;
 
       if (typeof userId === 'string') {

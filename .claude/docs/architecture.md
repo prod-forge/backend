@@ -46,7 +46,6 @@ HTTP Request
   ClassSerializerInterceptor
   → UnifiedResponseInterceptor   { data, meta? }
   → HttpMetricsInterceptor       (Prometheus counters)
-  → SentryInterceptor            (exception capture)
 ```
 
 ---
@@ -70,7 +69,7 @@ src/
     health/          Health checks (DB + Redis + shutdown state)
     metrics/         Prometheus metrics (HTTP + database)
     environment/     NODE_ENV helpers (isProduction, isTest, etc.)
-    sentry/          Sentry SDK wiring
+    sentry/          Sentry status log + request context middleware (SDK init lives in src/instrument.ts)
     shutdown/        Graceful shutdown with in-flight tracking
     in-flight-requests/ Middleware that tracks active requests
     version/         Reads app version from package.json
@@ -148,7 +147,7 @@ Prometheus metrics exposed at `/metrics` (default prom-client metrics + custom c
 3. **NestJS `HttpException`** — returned as generic `InternalServerError` (details hidden)
 4. **Unknown** — `InternalServerError`
 
-Every error is logged via `LoggerService`, counted in Prometheus, and optionally sent to Sentry.
+Every error is logged via `LoggerService`, counted in Prometheus, and sent to Sentry from the filter only when it is an incident (5xx or unknown error). Sentry is initialized in `src/instrument.ts`, the first import of `main.ts`.
 
 ### Authentication
 

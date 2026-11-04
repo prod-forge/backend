@@ -8,6 +8,16 @@ Security is a broad topic that depends heavily on the specific system architectu
 
 However, several baseline practices should be implemented in any backend API.
 
+## Authentication and Authorization
+
+The API signs and verifies access tokens, but it does not run an identity provider. Verifying a token answers "who is calling"; deciding who a person is and how they prove it (passwords, MFA, social login, account recovery) is a separate, security-critical product that is better delegated to Cognito, Auth0 or Keycloak.
+
+- Tokens are JWTs signed with HS256 using `JWT_SECRET` (at least 32 characters, never committed). The `sub` claim is the user id and `exp` is `now + JWT_TTL` (default 3600 seconds).
+- `AuthGuard` verifies the signature and expiry on every protected route and rejects anything else with 401. A token without `sub` is rejected too.
+- `POST /api/v1/auth/login` is a stub. It accepts an email and returns a token if the user exists. It has no password on purpose: identity is not authorization, and a stub that pretends to check passwords would be worse than an honest one. It is throttled to 5 requests per minute. A real system delegates login to an identity provider and never exposes such an endpoint.
+- Plugging in a real IdP means changing one function, `AuthService.verifyToken`: verify RS256 tokens against the provider's JWKS instead of HS256 with a shared secret. The guard and the controllers stay untouched.
+- For local work, `npm run token:issue -- <userId>` prints a token for a given user id.
+
 ## Request Validation
 
 All incoming data should be validated using DTOs.

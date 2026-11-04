@@ -72,11 +72,13 @@ App starts on `http://localhost:3000` by default.
 http://localhost:3000/docs
 ```
 
-Use the Bearer auth input to authenticate. The value is `base64(<userId>)`, e.g.:
+Use the Bearer auth input to authenticate. Issue a token for a seeded user:
 
 ```bash
-echo -n "your-uuid-here" | base64
+npm run token:issue -- <userId>
 ```
+
+Or call `POST /api/v1/auth/login` with a seeded email (for example `user1@example.com`) and use the returned `accessToken`.
 
 ---
 
@@ -110,6 +112,8 @@ All variables are validated at startup with `class-validator`. Missing required 
 | `REDIS_PORT`                      | `6379`                            | Redis port                                        |
 | `THROTTLE_TTL`                    | `20000`                           | Rate-limit window in milliseconds                 |
 | `THROTTLE_LIMIT`                  | `10`                              | Max requests per window                           |
+| `JWT_SECRET`                      | required, 32+ chars               | HS256 signing key for access tokens               |
+| `JWT_TTL`                         | `3600`                            | Access token lifetime in seconds                  |
 | `SENTRY_ENABLED`                  | `false`                           | Enable Sentry error capture                       |
 | `SENTRY_DSN`                      | —                                 | Sentry DSN (required when enabled)                |
 | `HEALTH_CHECK_TRIGGER_MS`         | `15000`                           | Health metric refresh interval                    |

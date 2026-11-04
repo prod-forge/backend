@@ -297,6 +297,14 @@ with no recovery path.
 None of these things are difficult to set up. They are just easy to skip.
 This project exists as a reminder not to skip them.
 
+# Intentionally out of scope
+
+- Identity provider and password management: the API verifies signed tokens and ships a login stub, see [Authentication and Authorization](docs/security.md#authentication-and-authorization)
+- Cursor pagination
+- Feature flags
+- A/B testing
+- Kubernetes
+
 # Contributing
 
 We welcome any kind of contribution, please read the guidelines:

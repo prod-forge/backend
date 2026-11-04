@@ -3,13 +3,17 @@ import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 
 import { UserIsNotAuthorizedError } from '../../error-handler/errors/user.errors';
+import { AuthService } from '../../modules/auth/auth.service';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private readonly reflector: Reflector) {}
+  constructor(
+    private readonly reflector: Reflector,
+    private readonly authService: AuthService,
+  ) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
@@ -23,9 +27,10 @@ export class AuthGuard implements CanActivate {
     if (!auth) throw new UserIsNotAuthorizedError();
 
     const [prefix, token] = auth.split(' ');
-    if (prefix !== 'Bearer') throw new UserIsNotAuthorizedError();
+    if (prefix !== 'Bearer' || !token) throw new UserIsNotAuthorizedError();
 
-    req.userId = Buffer.from(token, 'base64').toString('ascii');
+    const { userId } = await this.authService.verifyToken(token);
+    req.userId = userId;
 
     return true;
   }

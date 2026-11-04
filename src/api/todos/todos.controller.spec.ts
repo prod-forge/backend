@@ -1,6 +1,7 @@
 import { Test } from '@nestjs/testing';
 
 import { TodosService } from '../../features/todos/todos.service';
+import { AuthService } from '../../modules/auth/auth.service';
 import { TodoResponseDto } from './dtos/responses/todo-response.dto';
 import { TodosController } from './todos.controller';
 
@@ -22,7 +23,10 @@ describe('TodosController', () => {
 
     const module = await Test.createTestingModule({
       controllers: [TodosController],
-      providers: [{ provide: TodosService, useValue: service }],
+      providers: [
+        { provide: TodosService, useValue: service },
+        { provide: AuthService, useValue: {} },
+      ],
     }).compile();
 
     controller = module.get(TodosController);

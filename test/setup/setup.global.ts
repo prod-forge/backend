@@ -12,6 +12,8 @@ config({
   path: [join(process.cwd(), '.env.test'), join(process.cwd(), '.env.common')],
 });
 
+process.env.JWT_SECRET ??= 'e2e-test-jwt-secret-0123456789ab';
+
 // eslint-disable-next-line @import-lite/no-default-export
 export default async function (): Promise<void> {
   const dbContainer = await new PostgreSqlContainer('postgres:latest')

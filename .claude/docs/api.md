@@ -20,13 +20,21 @@ All routes are prefixed with `/api` (configurable via `API_PREFIX`) and versione
 
 ## Authentication
 
-Protected routes require a `Authorization` header:
+Protected routes require a signed JWT access token (HS256, `sub` = user id):
 
 ```
-Authorization: Bearer <base64-encoded-userId>
+Authorization: Bearer <access-token>
 ```
 
-The `userId` is the Base64 encoding of the user's UUID string. This is a simplified placeholder — no JWT signature is verified.
+Obtain a token with `POST /api/v1/auth/login` (public, throttled to 5 requests per minute):
+
+```
+POST /api/v1/auth/login
+{ "email": "user1@example.com" }
+-> 200 { "data": { "accessToken": "<jwt>", "expiresIn": 3600 } }
+```
+
+An unknown email returns 401 `UserIsNotAuthorizedError`. The endpoint is a development stub and checks no password. `AuthGuard` verifies the signature and expiry through `AuthService.verifyToken` and sets `req.userId` from `sub`; any failure returns 401. Tokens are signed with `JWT_SECRET` and live for `JWT_TTL` seconds. For a token without calling the API run `npm run token:issue -- <userId>`.
 
 Routes marked `@Public()` (health, metrics, version) do not require this header.
 

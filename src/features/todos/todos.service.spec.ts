@@ -8,6 +8,7 @@ import { prismaMock } from '../../mocks/prisma.mock';
 import { PrismaService } from '../../modules/prisma/prisma.service';
 import { CacheStorage } from '../../modules/redis-manager/storages/cache.storage';
 import { PaginatedEntity } from '../../shared/entities/paginated.entity';
+import { TODOS_MAX_PAGE_SIZE } from './constants/todos.constants';
 import { SortOrder, TodoSearchField, TodoSortField } from './interfaces/queries.enum';
 import { TodosRepository } from './todos.repository';
 import { TodosService } from './todos.service';
@@ -339,10 +340,10 @@ describe('TodosService', () => {
         expect(result.offset).toBe(0);
       });
 
-      it('clamps limit above 100 to 100', () => {
+      it('clamps limit above the maximum page size', () => {
         const result = service.getPaginationQuery({ limit: 1000000 });
 
-        expect(result.limit).toBe(100);
+        expect(result.limit).toBe(TODOS_MAX_PAGE_SIZE);
       });
 
       it('clamps negative limit to 1', () => {

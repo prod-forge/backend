@@ -7,6 +7,7 @@ import { TodoNotFoundError } from '../../error-handler/errors/todo.errors';
 import { CacheStorage } from '../../modules/redis-manager/storages/cache.storage';
 import { PaginatedEntity } from '../../shared/entities/paginated.entity';
 import { TodosCacheKeys } from './cache-queries/todos.cache-queries';
+import { TODOS_MAX_PAGE_SIZE } from './constants/todos.constants';
 import { TodoEntity } from './entities/todo.entity';
 import { SortOrder, TodoSearchField, TodoSortField } from './interfaces/queries.enum';
 import { TodosRepository } from './todos.repository';
@@ -80,7 +81,7 @@ export class TodosService {
   getPaginationQuery({ limit, offset }: TodosQueryDto): TodoPagination {
     const defaultLimit = 10;
     const _offset = Math.max(Number(offset) || 0, 0);
-    const _limit = Math.min(Math.max(Number(limit) || defaultLimit, 1), 100);
+    const _limit = Math.min(Math.max(Number(limit) || defaultLimit, 1), TODOS_MAX_PAGE_SIZE);
 
     return { limit: _limit, offset: _offset };
   }

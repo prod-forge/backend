@@ -273,6 +273,9 @@ In addition to logs, the application also exposes metrics using Prometheus.
 Prometheus periodically scrapes metrics from the application endpoint (usually /metrics).
 
 Prometheus scrapes `/metrics` only. `/metrics/database` returns the slowest queries as JSON for humans and is not scraped.
+Both live at the root, outside the API prefix, and are reachable only from inside the VPC: `metricsGateMiddleware` returns
+404 for any metrics path (case-insensitive, with or without the API prefix) when the request carries `X-Forwarded-For`,
+which the ALB always appends. Prometheus and the compose stack scrape the task directly, without that header.
 
 Custom metrics (default `prom-client` process metrics are exposed as well):
 
@@ -305,7 +308,7 @@ Grafana can then use Prometheus as a data source to build dashboards and alerts 
 ## Alerting and SLOs
 
 Service level objectives for the API, measured over a rolling 30 days. Every SLI excludes probe and scrape traffic
-(`route!~"/(health|metrics).*"`, i.e. `/health`, `/health/deps`, `/metrics`): readiness 503s during a shutdown drain and
+(`route!~"/(health|metrics).*"`, i.e. `/health`, `/health/live`, `/health/deps`, `/metrics`, `/metrics/database`): readiness 503s during a shutdown drain and
 Prometheus scrapes are not user requests.
 
 | SLO          | Target               | Measured with                                                                        |

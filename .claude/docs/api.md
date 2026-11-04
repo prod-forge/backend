@@ -399,7 +399,7 @@ Checks: PostgreSQL ping + Redis ping.
 
 ### Metrics
 
-> No global prefix · No auth · No response envelope
+> No global prefix · No auth · No response envelope · Internal only: `metricsGateMiddleware` (first middleware in `appSetup`) returns `404` for `/metrics*` and `/api/metrics*` (case-insensitive) when `X-Forwarded-For` is present, i.e. the request came through the ALB
 
 ---
 

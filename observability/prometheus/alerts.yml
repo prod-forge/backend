@@ -2,7 +2,7 @@
 groups:
   - name: backend
     rules:
-      # SLIs exclude probe and scrape routes (/health, /health/deps, /metrics): drain 503s and scrapes are not user traffic.
+      # SLIs exclude probe and scrape routes (/health, /health/live, /health/deps, /metrics, /metrics/database): drain 503s and scrapes are not user traffic.
       - alert: HighErrorRate
         expr: sum(rate(http_requests_total{job="nestjs-app",route!~"/(health|metrics).*",status=~"5.."}[5m])) / sum(rate(http_requests_total{job="nestjs-app",route!~"/(health|metrics).*"}[5m])) > 0.05
         for: 5m

@@ -3,7 +3,7 @@ import type { ConfigType } from '@nestjs/config';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import type { ValidationError } from 'class-validator';
 
-import { ClassSerializerInterceptor, RequestMethod, ValidationPipe, VersioningType } from '@nestjs/common';
+import { ClassSerializerInterceptor, ValidationPipe, VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { useContainer } from 'class-validator';
@@ -18,7 +18,7 @@ import type { sentryConfig } from './config/sentry.config';
 
 import { AppModule } from './app.module';
 import { UnifiedResponseInterceptor } from './common/interceptors/unified-response.interceptor';
-import { HEALTH_ENDPOINT, METRICS_ENDPOINT } from './constants/url.constants';
+import { GLOBAL_PREFIX_EXCLUDE, HEALTH_ENDPOINT, METRICS_ENDPOINT } from './constants/url.constants';
 import { DtoValidationErrors } from './error-handler/errors/dto-validation.errors';
 import { GlobalExceptionFilter } from './error-handler/filters/global-exception.filter';
 import { parseValidationErrors } from './error-handler/parsers/validation-error.parser';
@@ -27,6 +27,7 @@ import { useRequestLogging } from './logger/middlewares/request-logging.setup';
 import { traceIdMiddleware } from './logger/middlewares/trace-id.middleware';
 import { EnvironmentService } from './modules/environment/environment.service';
 import { HttpMetricsInterceptor } from './modules/metrics/interceptors/http-metrics.interceptor';
+import { metricsGateMiddleware } from './modules/metrics/middlewares/metrics-gate.middleware';
 import { sentryContextMiddleware } from './modules/sentry/middlewares/sentry-context.middleware';
 
 export const appSetup = (app: INestApplication): void => {
@@ -44,6 +45,9 @@ export const appSetup = (app: INestApplication): void => {
 
   // Behind ALB the socket peer is the load balancer; trust X-Forwarded-For so req.ip is the client
   (app as NestExpressApplication).set('trust proxy', configApi.trustProxy);
+
+  // First middleware: reject metrics requests that came through the ALB before any other work is done
+  app.use(metricsGateMiddleware);
 
   // Context (express middleware)
   app.use(httpContext.middleware);
@@ -86,9 +90,7 @@ export const appSetup = (app: INestApplication): void => {
   });
 
   // Routing layer
-  app.setGlobalPrefix(configApi.apiPrefix, {
-    exclude: [HEALTH_ENDPOINT, METRICS_ENDPOINT, { method: RequestMethod.ALL, path: `${HEALTH_ENDPOINT}/*` }],
-  });
+  app.setGlobalPrefix(configApi.apiPrefix, { exclude: GLOBAL_PREFIX_EXCLUDE });
 
   app.enableVersioning({
     type: VersioningType.URI,

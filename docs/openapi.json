@@ -9,7 +9,7 @@
         "tags": ["PrometheusScrape"]
       }
     },
-    "/api/metrics/database": {
+    "/metrics/database": {
       "get": {
         "operationId": "MetricsController_metrics",
         "parameters": [],

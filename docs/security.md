@@ -142,6 +142,14 @@ Behind an Application Load Balancer the TCP peer of every request is the ALB, so
 
 `/health`, `/health/deps`, `/metrics`, `/metrics/database` and `/version` are marked `@SkipThrottle()`, so probes and scrapers are never blocked. The Prometheus `/metrics` endpoint is served by `PrometheusScrapeController`, a subclass of the library controller passed to `PrometheusModule.register({ controller })`.
 
+### Internal-only metrics
+
+`/metrics` and `/metrics/database` are public and unthrottled, and `/metrics/database` exposes normalized SQL, so they must
+not be reachable from the internet. `metricsGateMiddleware` is the first middleware in `appSetup` and returns 404 for any path
+matching `/^\/(?:api\/)?metrics(?:\/|$)/i` when the request carries `X-Forwarded-For`. The ALB always appends that header;
+Prometheus and the compose stack scrape the task IP directly without it. The match is case-insensitive because Express
+routing is (`/METRICS` reaches the scrape handler) while the ALB listener rule that blocks `/metrics*` is not.
+
 ### Disabling
 
 Set `THROTTLE_ENABLED=false` to turn rate limiting off (for example in local development). It is `true` by default.

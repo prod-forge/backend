@@ -27,4 +27,4 @@
 
 - **Rule:** `@types/node` stays on the major of the lowest supported Node (24 while `engines` is `>=24.15.0`); raise it only together with `engines`.
 - **Reason:** newer types let `tsc` accept APIs that Node 24 lacks, so code that type-checks could fail on a supported runtime.
-- **Where:** `package.json` (`@types/node` 24.x); `.github/dependabot.yml` ignores its major updates.
+- **Where:** `package.json` (`@types/node` 24.x); `npx npm-check-updates` lists its majors; do not take them.

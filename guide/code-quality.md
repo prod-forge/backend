@@ -99,7 +99,7 @@ The pipeline runs on every pull request and on every push to `main`. Supply-chai
 - CodeQL (`codeql.yml`) analyzes JavaScript/TypeScript on pull requests, on `main` and weekly
 - Trivy scans the built Docker image for fixed HIGH and CRITICAL vulnerabilities
 - the release image is pushed with an SBOM and provenance attestation
-- Dependabot opens weekly updates for npm (minor and patch grouped), GitHub Actions and Docker
+- dependency updates are taken by hand with `npx npm-check-updates` (see "For dependency updates" below); Dependabot is switched off, since every major here needs its changelog checked by hand
 
 This final check acts as a safeguard before any changes are merged into the main branch.
 

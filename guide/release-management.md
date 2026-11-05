@@ -192,7 +192,7 @@ Some teams also include additional checks such as:
 
 - static analysis (SonarQube); this project runs CodeQL on pull requests, on `main` and weekly
 - dependency vulnerability scanning; this project runs `npm audit --omit=dev --audit-level=high` in the lint job and
-  Dependabot (npm, GitHub Actions, Docker) weekly
+  dependency updates taken by hand with `npx npm-check-updates`, each major checked against its changelog (Dependabot is off)
 - code coverage thresholds; this project enforces 80% for branches, functions, lines and statements in the unit job
   of CI and CD and in the `pre-push` hook (see [Testing](testing.md#coverage-thresholds))
 

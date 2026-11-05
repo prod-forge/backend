@@ -93,7 +93,7 @@ Or call `POST /api/v1/auth/login` with a seeded email (for example `user1@exampl
 
 All variables are validated at startup with `class-validator`. Missing required vars crash the process with a clear error.
 
-Defaults are the code defaults (`.env.common` sets local values for some). Production values come from the ECS task definition; see `docs/configuration-management.md` for the full mapping.
+Defaults are the code defaults (`.env.common` sets local values for some). Production values come from the ECS task definition; see `guide/configuration-management.md` for the full mapping.
 
 | Variable                          | Default                | Description                                       |
 | --------------------------------- | ---------------------- | ------------------------------------------------- |

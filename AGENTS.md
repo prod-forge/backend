@@ -148,11 +148,13 @@ Never edit generated code manually.
 
 ## Documentation Rules
 
-After every change, update any affected documentation in `.claude/docs/`:
+After every change, update any affected agent documentation in `docs/`:
 
-- **`architecture.md`** — update when modules are added/removed, middleware/interceptor/filter wiring changes, or request lifecycle changes
-- **`api.md`** — update when endpoints are added/removed/modified, request/response shapes change, new error codes are introduced, or auth behavior changes
-- **`db-schema.md`** — update when the Prisma schema changes (new models, fields, indexes, or relations)
-- **`developers-guide.md`** — update when setup steps change, new env variables are added, scripts are modified, or new patterns for adding features are established
+- **`docs/architecture.md`** — update when modules are added/removed, middleware/interceptor/filter wiring changes, or request lifecycle changes
+- **`docs/api.md`** — update when endpoints are added/removed/modified, request/response shapes change, new error codes are introduced, or auth behavior changes
+- **`docs/data-schema.md`** — update when the Prisma schema changes (new models, fields, indexes, or relations)
+- **`docs/developers-guide.md`** — update when setup steps change, new env variables are added, scripts are modified, or new patterns for adding features are established
+
+The human guide in `guide/` is updated when the behaviour it describes changes.
 
 Do not update docs for internal refactors that have no observable effect on architecture, API contracts, schema, or developer workflow.

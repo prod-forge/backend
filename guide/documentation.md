@@ -43,6 +43,12 @@ The main entry point for developers. It should explain:
 - setup instructions
 - development workflow
 
+### AGENTS.md, CLAUDE.md, docs/ and guide/
+
+`AGENTS.md` holds the rules for any coding agent, and `CLAUDE.md` imports it with `@AGENTS.md`. `docs/` is the agent
+reference (architecture, API, data schema, developer guide, `openapi.json`), `guide/` is the human guide, and
+`.claude/settings.json` holds the Claude Code hooks.
+
 ### Swagger / OpenAPI
 
 Swagger serves as the primary API documentation for developers and QA engineers.

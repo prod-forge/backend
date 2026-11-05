@@ -102,7 +102,7 @@ CREATE INDEX "Todo_title_trgm_idx" ON "Todo" USING GIN ("title" gin_trgm_ops);
 CREATE INDEX "Todo_description_trgm_idx" ON "Todo" USING GIN ("description" gin_trgm_ops);
 ```
 
-See `docs/performance.md`.
+See `guide/performance.md`.
 
 ---
 

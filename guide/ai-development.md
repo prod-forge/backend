@@ -81,7 +81,7 @@ Without clear structure, AI often produces:
 - chaotic project structure
 
 This project demonstrates that approach in practice. The layer separation (`src/api/` for controllers, `src/features/`
-for business logic, `src/modules/` for infrastructure), naming conventions, and `CLAUDE.md` rules were all established
+for business logic, `src/modules/` for infrastructure), naming conventions, and `AGENTS.md` rules were all established
 before any AI-assisted feature generation. As a result, generated code naturally fits the existing architecture without
 manual correction.
 
@@ -153,17 +153,18 @@ by hand for files nobody should review:
 
 ### docs/
 
-Keep at least basic docs (`architecture.md`, `api.md`, `db-schema.md`, `developers-guide.md`) — they help both Claude
-and developers. Then tell Claude to keep them current via `CLAUDE.md`:
+Keep at least basic docs (`architecture.md`, `api.md`, `data-schema.md`, `developers-guide.md`) in `docs/` — they help
+both agents and developers. `AGENTS.md` holds the rules for any agent, `CLAUDE.md` only imports it (`@AGENTS.md`), and
+`guide/` is the human guide. Then tell the agent to keep the docs current via `AGENTS.md`:
 
 ```markdown
 ## Documentation Rules
 
-After every change, update any affected docs in `.claude/docs/`:
+After every change, update any affected docs in `docs/`:
 
 - architecture.md — modules added/removed, middleware/interceptor/filter wiring, request lifecycle
 - api.md — endpoints, request/response shapes, error codes, auth behavior
-- db-schema.md — schema changes (models, fields, indexes, relations)
+- data-schema.md — schema changes (models, fields, indexes, relations)
 - developers-guide.md — setup, env vars, scripts, feature patterns
 
 Skip docs for internal refactors with no observable effect on architecture, API, schema, or workflow.
@@ -183,7 +184,7 @@ entirely — useful for protecting files that should never be touched by AI.
 All hooks are defined in [`.claude/settings.json`](../.claude/settings.json). If Claude tries to perform a
 blocked action, the hook returns a `deny` decision with an explanatory message and the action never happens.
 
-This is the safest way to enforce boundaries — unlike `CLAUDE.md` instructions which Claude can accidentally
+This is the safest way to enforce boundaries — unlike `AGENTS.md` instructions which Claude can accidentally
 ignore, a hook is enforced at the tooling level regardless of what was asked.
 
 ### Protected files (`Edit|Write`)
@@ -272,7 +273,7 @@ To reduce cost and improve output quality:
 - run only affected tests
 - keep tasks small and isolated
 
-Example **CLAUDE.md** section:
+Example **AGENTS.md** section:
 
 ```text
 ## Cost Saving Rules

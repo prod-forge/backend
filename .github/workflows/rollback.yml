@@ -9,7 +9,7 @@ on:
 
 env:
   AWS_REGION: eu-central-1
-  # Terraform outputs stored as GitHub variables (docs/release-management.md).
+  # Terraform outputs stored as GitHub variables (guide/release-management.md).
   TASK_NAME: ${{ vars.ECS_TASK_FAMILY }}
   ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
   ECS_SERVICE: ${{ vars.ECS_SERVICE }}

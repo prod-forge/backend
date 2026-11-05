@@ -2,6 +2,7 @@ type LogDescriptor = Record<string, unknown>;
 type MessageFormat = (log: LogDescriptor, messageKey: string) => string;
 
 let capturedMessageFormat: MessageFormat | undefined;
+const prettyWrite = jest.fn();
 
 const messageFormat = (): MessageFormat => {
   if (!capturedMessageFormat) {
@@ -15,7 +16,7 @@ jest.mock('pino-pretty', () =>
   jest.fn().mockImplementation((config: { messageFormat?: MessageFormat }) => {
     capturedMessageFormat = config.messageFormat;
 
-    return { write: jest.fn() };
+    return { write: prettyWrite };
   }),
 );
 
@@ -27,7 +28,7 @@ import { logConfig } from '../config/log.config';
 import { EnvironmentService } from '../modules/environment/environment.service';
 import { LoggerService } from './logger.service';
 
-const makeModule = async (logPretty = false): Promise<LoggerService> => {
+const makeModule = async (logPretty = false, logLevel = 'silent'): Promise<LoggerService> => {
   const module = await Test.createTestingModule({
     providers: [
       LoggerService,
@@ -35,7 +36,7 @@ const makeModule = async (logPretty = false): Promise<LoggerService> => {
       { provide: environmentConfig.KEY, useValue: { env: EnvironmentType.test } },
       {
         provide: logConfig.KEY,
-        useValue: { logExcludeEndpoints: [], logLevel: 'silent', logPretty },
+        useValue: { logExcludeEndpoints: [], logLevel, logPretty },
       },
     ],
   }).compile();
@@ -48,6 +49,31 @@ describe('LoggerService', () => {
 
   beforeEach(async () => {
     service = await makeModule();
+  });
+
+  describe('negative cases', () => {
+    beforeEach(() => {
+      prettyWrite.mockClear();
+    });
+
+    it('does not write messages below the configured level', async () => {
+      const infoLogger = await makeModule(true, 'info');
+
+      infoLogger.debug({ ctx: 'test', msg: 'hidden' });
+
+      expect(prettyWrite).not.toHaveBeenCalled();
+    });
+
+    it('redacts the email and password of a logged request body', async () => {
+      const infoLogger = await makeModule(true, 'info');
+
+      infoLogger.log({ ctx: 'test', msg: 'login', req: { body: { email: 'user@example.com', password: 'secret' } } });
+
+      const written = prettyWrite.mock.calls.map(([line]) => String(line)).join('');
+      expect(written).toContain('[REDACTED]');
+      expect(written).not.toContain('user@example.com');
+      expect(written).not.toContain('secret');
+    });
   });
 
   describe('positive cases', () => {
@@ -114,34 +140,38 @@ describe('LoggerService', () => {
       await makeModule(true);
     });
 
-    it('includes ctx in brackets when ctx is provided', () => {
-      const result = messageFormat()({ ctx: 'TestCtx', levelLabel: 'info', msg: 'hello', traceId: 'abc' }, 'msg');
-      expect(result).toContain('[TestCtx]');
+    describe('negative cases', () => {
+      it('omits brackets when ctx is falsy', () => {
+        const result = messageFormat()({ levelLabel: 'info', msg: 'hello', traceId: 'abc' }, 'msg');
+        expect(result).not.toContain('[');
+      });
+
+      it('falls back to level number when levelLabel is absent', () => {
+        const result = messageFormat()({ level: 30, msg: 'hello', traceId: '' }, 'msg');
+        expect(result).toContain('30');
+      });
+
+      it('omits Trace-ID prefix when traceId is empty string', () => {
+        const result = messageFormat()({ levelLabel: 'info', msg: 'hello', traceId: '' }, 'msg');
+        expect(result).not.toContain('Trace-ID:');
+      });
     });
 
-    it('omits brackets when ctx is falsy', () => {
-      const result = messageFormat()({ levelLabel: 'info', msg: 'hello', traceId: 'abc' }, 'msg');
-      expect(result).not.toContain('[');
-    });
+    describe('positive cases', () => {
+      it('includes ctx in brackets when ctx is provided', () => {
+        const result = messageFormat()({ ctx: 'TestCtx', levelLabel: 'info', msg: 'hello', traceId: 'abc' }, 'msg');
+        expect(result).toContain('[TestCtx]');
+      });
 
-    it('uses levelLabel when provided', () => {
-      const result = messageFormat()({ levelLabel: 'info', msg: 'hello', traceId: '' }, 'msg');
-      expect(result).toContain('info');
-    });
+      it('uses levelLabel when provided', () => {
+        const result = messageFormat()({ levelLabel: 'info', msg: 'hello', traceId: '' }, 'msg');
+        expect(result).toContain('info');
+      });
 
-    it('falls back to level number when levelLabel is absent', () => {
-      const result = messageFormat()({ level: 30, msg: 'hello', traceId: '' }, 'msg');
-      expect(result).toContain('30');
-    });
-
-    it('includes Trace-ID prefix for non-empty traceId', () => {
-      const result = messageFormat()({ levelLabel: 'info', msg: 'hello', traceId: 'trace-abc' }, 'msg');
-      expect(result).toContain('Trace-ID: trace-abc');
-    });
-
-    it('omits Trace-ID prefix when traceId is empty string', () => {
-      const result = messageFormat()({ levelLabel: 'info', msg: 'hello', traceId: '' }, 'msg');
-      expect(result).not.toContain('Trace-ID:');
+      it('includes Trace-ID prefix for non-empty traceId', () => {
+        const result = messageFormat()({ levelLabel: 'info', msg: 'hello', traceId: 'trace-abc' }, 'msg');
+        expect(result).toContain('Trace-ID: trace-abc');
+      });
     });
   });
 });

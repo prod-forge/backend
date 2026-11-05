@@ -1,9 +1,12 @@
-import type { HealthCheckService, PrismaHealthIndicator } from '@nestjs/terminus';
+import type { HealthCheckService } from '@nestjs/terminus';
 
-import type { PrismaService } from '../prisma/prisma.service';
-import type { RedisHealthService } from '../redis-manager/redis-health.service';
-import type { ShutdownHealthService } from '../shutdown/shutdown-health.service';
+import { ServiceUnavailableException } from '@nestjs/common';
+import { PrismaHealthIndicator, TerminusModule } from '@nestjs/terminus';
+import { Test } from '@nestjs/testing';
 
+import { PrismaService } from '../prisma/prisma.service';
+import { RedisHealthService } from '../redis-manager/redis-health.service';
+import { ShutdownHealthService } from '../shutdown/shutdown-health.service';
 import { HealthChecks } from './health.checks';
 
 describe('HealthChecks', () => {
@@ -37,6 +40,73 @@ describe('HealthChecks', () => {
       redisHealth as unknown as RedisHealthService,
       shutdownHealth as unknown as ShutdownHealthService,
     );
+  });
+
+  describe('negative cases', () => {
+    // The real Terminus HealthCheckService turns a "down" indicator into a 503 with the failing check in the body
+    const withTerminus = async (): Promise<HealthChecks> => {
+      const module = await Test.createTestingModule({
+        imports: [TerminusModule.forRoot({ logger: false })],
+        providers: [
+          HealthChecks,
+          { provide: PrismaHealthIndicator, useValue: dbIndicator },
+          { provide: PrismaService, useValue: {} },
+          { provide: RedisHealthService, useValue: redisHealth },
+          { provide: ShutdownHealthService, useValue: shutdownHealth },
+        ],
+      }).compile();
+
+      return module.get(HealthChecks);
+    };
+
+    const responseOf = async (promise: Promise<unknown>): Promise<unknown> => {
+      const error = await promise.catch((e: unknown) => e);
+      expect(error).toBeInstanceOf(ServiceUnavailableException);
+
+      return (error as ServiceUnavailableException).getResponse();
+    };
+
+    it('runAll fails with 503 when the database ping is down', async () => {
+      dbIndicator.pingCheck.mockResolvedValue({ database: { message: 'timeout', status: 'down' } });
+      const checks = await withTerminus();
+
+      await expect(responseOf(checks.runAll())).resolves.toMatchObject({
+        error: { database: { status: 'down' } },
+        info: { redis: { status: 'up' } },
+        status: 'error',
+      });
+    });
+
+    it('runAll fails with 503 when the redis ping is down', async () => {
+      redisHealth.pingCheck.mockResolvedValue({ redis: { status: 'down' } });
+      const checks = await withTerminus();
+
+      await expect(responseOf(checks.runAll())).resolves.toMatchObject({
+        error: { redis: { status: 'down' } },
+        info: { database: { status: 'up' } },
+        status: 'error',
+      });
+    });
+
+    it('runCritical fails with 503 when the database ping is down', async () => {
+      dbIndicator.pingCheck.mockResolvedValue({ database: { status: 'down' } });
+      const checks = await withTerminus();
+
+      await expect(responseOf(checks.runCritical())).resolves.toMatchObject({
+        error: { database: { status: 'down' } },
+        status: 'error',
+      });
+    });
+
+    it('runCritical fails with 503 while the app is shutting down', async () => {
+      shutdownHealth.check.mockReturnValue({ shutdown: { status: 'down' } });
+      const checks = await withTerminus();
+
+      await expect(responseOf(checks.runCritical())).resolves.toMatchObject({
+        error: { shutdown: { status: 'down' } },
+        status: 'error',
+      });
+    });
   });
 
   describe('positive cases', () => {

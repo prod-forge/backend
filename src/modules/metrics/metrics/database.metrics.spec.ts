@@ -17,6 +17,23 @@ describe('DatabaseMetrics', () => {
     service = module.get(DatabaseMetrics);
   });
 
+  describe('negative cases', () => {
+    it('passes a query error through, for example when pg_stat_statements is missing', async () => {
+      const error = new Error('relation "pg_stat_statements" does not exist');
+      prisma.$queryRawUnsafe.mockRejectedValue(error);
+
+      await expect(service.getTopSlowQueries()).rejects.toBe(error);
+    });
+
+    it('returns empty array when no slow queries', async () => {
+      prisma.$queryRawUnsafe.mockResolvedValue([]);
+
+      const result = await service.getTopSlowQueries(10);
+
+      expect(result).toHaveLength(0);
+    });
+  });
+
   describe('positive cases', () => {
     it('returns mapped metrics with numeric values', async () => {
       prisma.$queryRawUnsafe.mockResolvedValue([
@@ -39,14 +56,6 @@ describe('DatabaseMetrics', () => {
       expect(result[0].totalMs).toBe(1005.0);
       expect(result[0].query).toBe('SELECT * FROM users');
       expect(result[0].queryId).toBe('123456');
-    });
-
-    it('returns empty array when no slow queries', async () => {
-      prisma.$queryRawUnsafe.mockResolvedValue([]);
-
-      const result = await service.getTopSlowQueries(10);
-
-      expect(result).toHaveLength(0);
     });
 
     it('calls prisma with correct SQL, queryid and limit', async () => {

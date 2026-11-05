@@ -5,6 +5,24 @@ import { TodoMapper } from './todo.mapper';
 
 describe('TodoMapper', () => {
   describe('toEntity', () => {
+    describe('negative cases', () => {
+      it('does not copy fields that are not part of the entity', () => {
+        const todo = {
+          completed: false,
+          createdAt: new Date(),
+          description: null,
+          id: 'todo-1',
+          title: 'Test',
+          userId: 'u1',
+        } as unknown as Todo;
+
+        const result = TodoMapper.toEntity(todo);
+
+        expect(result.userId).toBe('u1');
+        expect(result).not.toHaveProperty('createdAt');
+      });
+    });
+
     describe('positive cases', () => {
       it('maps all fields from a todo record to TodoEntity', () => {
         const todo = { completed: true, description: 'Oat milk', id: 'todo-1', title: 'Buy milk' } as unknown as Todo;
@@ -32,22 +50,6 @@ describe('TodoMapper', () => {
         const result = TodoMapper.toEntity(todo);
 
         expect(result.completed).toBe(false);
-      });
-
-      it('maps userId and ignores other extra fields', () => {
-        const todo = {
-          completed: false,
-          createdAt: new Date(),
-          description: null,
-          id: 'todo-1',
-          title: 'Test',
-          userId: 'u1',
-        } as unknown as Todo;
-
-        const result = TodoMapper.toEntity(todo);
-
-        expect(result.userId).toBe('u1');
-        expect(result).not.toHaveProperty('createdAt');
       });
     });
   });

@@ -25,6 +25,26 @@ describe('RequestTrackingMiddleware', () => {
     middleware = new RequestTrackingMiddleware(tracker);
   });
 
+  describe('negative cases', () => {
+    it('keeps the request counted until the response ends', () => {
+      const res = makeResMock();
+
+      middleware.use({} as Request, res as unknown as Response, jest.fn() as NextFunction);
+
+      expect(tracker.getActiveRequests()).toBe(1);
+    });
+
+    it('decrements only once when both finish and close fire', () => {
+      const res = makeResMock();
+
+      middleware.use({} as Request, res as unknown as Response, jest.fn() as NextFunction);
+      res.handlers.finish();
+      res.handlers.close();
+
+      expect(tracker.getActiveRequests()).toBe(0);
+    });
+  });
+
   describe('positive cases', () => {
     it('increments counter and calls next', () => {
       const res = makeResMock();
@@ -51,16 +71,6 @@ describe('RequestTrackingMiddleware', () => {
       const next = jest.fn() as NextFunction;
 
       middleware.use({} as Request, res as unknown as Response, next);
-      res.handlers.close();
-
-      expect(tracker.getActiveRequests()).toBe(0);
-    });
-
-    it('decrements only once when both finish and close fire', () => {
-      const res = makeResMock();
-
-      middleware.use({} as Request, res as unknown as Response, jest.fn() as NextFunction);
-      res.handlers.finish();
       res.handlers.close();
 
       expect(tracker.getActiveRequests()).toBe(0);

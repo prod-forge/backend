@@ -4,6 +4,12 @@ import { server } from './setup/bootstrap.app';
 
 describe('Version API (e2e)', () => {
   describe('GET /api/version', () => {
+    describe('negative cases', () => {
+      it('is not served without the API prefix', async () => {
+        await request(server).get('/version').expect(404);
+      });
+    });
+
     describe('positive cases', () => {
       it('returns 200 with a version field', async () => {
         const res = await request(server).get('/api/version').expect(200);

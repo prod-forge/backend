@@ -20,6 +20,17 @@ describe('VersionController', () => {
     controller = module.get(VersionController);
   });
 
+  describe('negative cases', () => {
+    it('passes an error of the version service through', () => {
+      const error = new Error('no version');
+      versionService.getVersion.mockImplementation(() => {
+        throw error;
+      });
+
+      expect(() => controller.check()).toThrow(error);
+    });
+  });
+
   describe('positive cases', () => {
     it('check returns version object', () => {
       const result = controller.check();

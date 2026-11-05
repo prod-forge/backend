@@ -5,6 +5,14 @@ import { TodosCacheKeys } from './todos.cache-queries';
 
 describe('TodosCacheKeys', () => {
   describe('todo', () => {
+    describe('negative cases', () => {
+      it('is never matched by a list invalidation pattern', () => {
+        const pattern = TodosCacheKeys.todosByUser('abc-123');
+
+        expect(TodosCacheKeys.todo('abc-123').startsWith(pattern.slice(0, -1))).toBe(false);
+      });
+    });
+
     describe('positive cases', () => {
       it('returns a versioned key prefixed with "v2:todo:"', () => {
         expect(TodosCacheKeys.todo('abc-123')).toBe('v2:todo:abc-123');
@@ -17,6 +25,14 @@ describe('TodosCacheKeys', () => {
   });
 
   describe('todos', () => {
+    describe('negative cases', () => {
+      it('is not matched by the pattern of a user whose id is a prefix of it', () => {
+        const pattern = TodosCacheKeys.todosByUser('user-1');
+
+        expect(TodosCacheKeys.todos('user-10', {}).startsWith(pattern.slice(0, -1))).toBe(false);
+      });
+    });
+
     describe('positive cases', () => {
       it('returns a versioned key prefixed with "v2:todos:<userId>:"', () => {
         const key = TodosCacheKeys.todos('user-1', {});
@@ -63,6 +79,14 @@ describe('TodosCacheKeys', () => {
   });
 
   describe('todosByUser', () => {
+    describe('negative cases', () => {
+      it('does not cover the keys of another user', () => {
+        const pattern = TodosCacheKeys.todosByUser('user-2');
+
+        expect(TodosCacheKeys.todos('user-1', {}).startsWith(pattern.slice(0, -1))).toBe(false);
+      });
+    });
+
     describe('positive cases', () => {
       it('returns a wildcard pattern for the user', () => {
         expect(TodosCacheKeys.todosByUser('user-1')).toBe('v2:todos:user-1:*');

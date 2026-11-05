@@ -1,3 +1,4 @@
+import { ServiceUnavailableException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 
 import { HealthChecks } from '../../modules/health/health.checks';
@@ -21,7 +22,7 @@ describe('HealthController', () => {
     controller = module.get(HealthController);
   });
 
-  describe('positive cases', () => {
+  describe('negative cases', () => {
     it('live returns ok without running any dependency check, even when they would throw', () => {
       healthChecks.runAll.mockRejectedValue(new Error('prisma down'));
       healthChecks.runCritical.mockRejectedValue(new Error('prisma down'));
@@ -31,6 +32,22 @@ describe('HealthController', () => {
       expect(healthChecks.runCritical).not.toHaveBeenCalled();
     });
 
+    it('deps passes the 503 of a failed check through', async () => {
+      const unavailable = new ServiceUnavailableException({ status: 'error' });
+      healthChecks.runAll.mockRejectedValue(unavailable);
+
+      await expect(controller.deps()).rejects.toBe(unavailable);
+    });
+
+    it('ready passes the 503 of a failed check through', async () => {
+      const unavailable = new ServiceUnavailableException({ status: 'error' });
+      healthChecks.runCritical.mockRejectedValue(unavailable);
+
+      await expect(controller.ready()).rejects.toBe(unavailable);
+    });
+  });
+
+  describe('positive cases', () => {
     it('deps calls healthChecks.runAll', async () => {
       const result = await controller.deps();
 

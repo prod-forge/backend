@@ -8,7 +8,7 @@ import { HttpMetricsInterceptor } from './interceptors/http-metrics.interceptor'
 import { MetricsService } from './metrics.service';
 
 describe('custom metrics registration', () => {
-  describe('positive cases', () => {
+  describe('negative cases', () => {
     it('can build the interceptor, filter and service twice without "already registered" errors', () => {
       const build = (): void => {
         new HttpMetricsInterceptor();
@@ -25,7 +25,9 @@ describe('custom metrics registration', () => {
         build();
       }).not.toThrow();
     });
+  });
 
+  describe('positive cases', () => {
     it('registers each custom metric once', () => {
       const names = [
         'http_requests_total',

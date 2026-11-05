@@ -58,7 +58,8 @@
       "!**/*.dto.ts",
       "!**/*.entity.ts",
       "!**/*di.types.ts",
-      "!**/*.constants.ts"
+      "!**/*.constants.ts",
+      "!**/instrument.ts"
     ],
     "coverageDirectory": "../coverage",
     "coverageThreshold": {

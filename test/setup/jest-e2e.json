@@ -12,6 +12,7 @@
   "collectCoverageFrom": [
     "src/**/*.ts",
     "!src/main.ts",
+    "!src/instrument.ts",
     "!src/**/*.module.ts",
     "!src/**/*.spec.ts",
     "!src/app.setup.ts",

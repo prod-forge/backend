@@ -160,7 +160,7 @@
     "lint-staged": "17.6.0",
     "nestjs-doctor": "0.9.10",
     "prettier": "3.9.10",
-    "release-it": "20.0.1",
+    "release-it": "21.1.2",
     "supertest": "7.3.1",
     "ts-jest": "29.4.15",
     "ts-node": "10.9.2",

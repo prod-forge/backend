@@ -7,7 +7,6 @@ export const buildCorsOptions = (configApi: ConfigType<typeof apiConfig>): CorsO
   credentials: true,
   // Browsers hide non-simple response headers from cross-origin scripts unless listed here.
   exposedHeaders: ['X-Trace-Id'],
-  // Browsers hide non-simple response headers from cross-origin scripts unless listed here.
   origin: (origin: string | undefined, cb: (a: null, b: boolean) => void): void => {
     if (!origin) {
       cb(null, configApi.apiAllowNonBrowserOrigins);

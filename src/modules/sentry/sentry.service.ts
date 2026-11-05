@@ -18,12 +18,12 @@ export class SentryService implements OnModuleInit {
     if (configSentry.sentryEnabled) {
       this.logger.log({
         ctx: SentryService.name,
-        msg: '✅ Sentry initialized for production',
+        msg: '✅ Sentry is enabled',
       });
     } else {
       this.logger.warn({
         ctx: SentryService.name,
-        msg: '⚠️ Sentry is disabled in development mode',
+        msg: '⚠️ Sentry is disabled: SENTRY_ENABLED is not true or SENTRY_DSN is empty',
       });
     }
   }

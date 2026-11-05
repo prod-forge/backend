@@ -4,15 +4,25 @@ import { Injectable } from '@nestjs/common';
 
 import { ThrottlerRedisStorage, type ThrottlerStorageRecord } from './throttler-redis.storage';
 
+type MemoryRecord = {
+  blockExpiresAt: number;
+  expiresAt: number;
+  isBlocked: boolean;
+  totalHits: number;
+};
+
+const secondsUntil = (timestamp: number, now: number): number => Math.max(0, Math.ceil((timestamp - now) / 1000));
+
 /**
  * Hybrid Storage: Redis + Memory Fallback
  * */
 @Injectable()
 export class ThrottlerStorage implements ThrottlerStorageContract {
-  private readonly memory = new Map<string, ThrottlerStorageRecord>();
+  private readonly memory = new Map<string, MemoryRecord>();
 
   constructor(private readonly redisStorage: ThrottlerRedisStorage) {}
 
+  // Same semantics as the Redis script: times in milliseconds in, remaining seconds out
   fallback(
     key: string,
     ttl: number,
@@ -21,29 +31,19 @@ export class ThrottlerStorage implements ThrottlerStorageContract {
     throttlerName: string,
   ): ThrottlerStorageRecord {
     const now = Date.now();
-    const record = this.memory.get(key);
+    const memoryKey = `${key}:${throttlerName}`;
+    let record = this.memory.get(memoryKey);
 
-    // If record was expired
-    if (!record || record.timeToExpire <= now) {
-      const newRecord = {
-        isBlocked: false,
-        throttlerName,
-        timeToBlockExpire: 0,
-        timeToExpire: now + ttl,
-        totalHits: 1,
-      };
-
-      this.memory.set(key, newRecord);
-
-      return newRecord;
+    // No record or its window has passed: start a new window
+    if (!record || record.expiresAt <= now) {
+      record = { blockExpiresAt: 0, expiresAt: now + ttl, isBlocked: false, totalHits: 0 };
+      this.memory.set(memoryKey, record);
     }
 
-    // If record was blocked
-    if (record.isBlocked) {
-      if (record.timeToBlockExpire > now) {
-        return record;
-      }
-      // block expired → reset
+    // The block has run out: start over
+    if (record.isBlocked && record.blockExpiresAt <= now) {
+      record.blockExpiresAt = 0;
+      record.expiresAt = now + ttl;
       record.isBlocked = false;
       record.totalHits = 0;
     }
@@ -51,12 +51,17 @@ export class ThrottlerStorage implements ThrottlerStorageContract {
     record.totalHits++;
 
     // If the limit is exceeded, need to block it
-    if (record.totalHits > limit) {
+    if (!record.isBlocked && record.totalHits > limit) {
       record.isBlocked = true;
-      record.timeToBlockExpire = now + blockDuration;
+      record.blockExpiresAt = now + blockDuration;
     }
 
-    return record;
+    return {
+      isBlocked: record.isBlocked,
+      timeToBlockExpire: record.isBlocked ? secondsUntil(record.blockExpiresAt, now) : 0,
+      timeToExpire: secondsUntil(record.expiresAt, now),
+      totalHits: record.totalHits,
+    };
   }
 
   async increment(

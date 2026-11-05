@@ -49,76 +49,78 @@ describe('ThrottlerStorage', () => {
   });
 
   describe('fallback', () => {
+    beforeEach(() => {
+      jest.useFakeTimers({ now: new Date('2026-01-01T00:00:00Z') });
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
     describe('negative cases', () => {
-      it('returns blocked record when already blocked and not expired', () => {
-        const blockedRecord = makeRecord({
-          isBlocked: true,
-          timeToBlockExpire: Date.now() + 10000,
-          totalHits: 11,
-        });
-        // seed the memory map
-        redisStorage.increment.mockRejectedValue(new Error('down'));
-        storage.increment('key', 60000, 10, 30000, 'default').catch(() => null);
+      it('blocks the hit that exceeds the limit and reports the block in seconds', () => {
+        for (let i = 0; i < 2; i++) {
+          storage.fallback('ip', 60000, 2, 30000, 'default');
+        }
 
-        const result = storage.fallback('key', 60000, 10, 30000, 'default');
-        // first call creates record
-        result.isBlocked = blockedRecord.isBlocked;
-        result.timeToBlockExpire = blockedRecord.timeToBlockExpire;
-        result.totalHits = blockedRecord.totalHits;
+        const result = storage.fallback('ip', 60000, 2, 30000, 'default');
 
-        const result2 = storage.fallback('key', 60000, 10, 30000, 'default');
-        expect(result2).toBeDefined();
+        expect(result).toEqual({ isBlocked: true, timeToBlockExpire: 30, timeToExpire: 60, totalHits: 3 });
       });
 
-      it('resets block when block has expired', () => {
-        const key = 'expired-block-key';
-        // Create a blocked record that has expired
-        const firstResult = storage.fallback(key, 60000, 0, 100, 'default');
-        // Manually expire the block
-        firstResult.isBlocked = true;
-        firstResult.timeToBlockExpire = Date.now() - 1;
-        firstResult.totalHits = 5;
+      it('stays blocked while the block lasts', () => {
+        for (let i = 0; i < 3; i++) {
+          storage.fallback('ip', 60000, 2, 30000, 'default');
+        }
+        jest.advanceTimersByTime(10000);
 
-        const result = storage.fallback(key, 60000, 10, 30000, 'default');
+        const result = storage.fallback('ip', 60000, 2, 30000, 'default');
 
-        expect(result.isBlocked).toBe(false);
+        expect(result.isBlocked).toBe(true);
+        expect(result.timeToBlockExpire).toBe(20);
       });
     });
 
     describe('positive cases', () => {
-      it('creates new record on first call', () => {
+      it('creates a record on the first call with the window in seconds', () => {
         const result = storage.fallback('new-key', 60000, 10, 30000, 'default');
 
-        expect(result.totalHits).toBe(1);
-        expect(result.isBlocked).toBe(false);
+        expect(result).toEqual({ isBlocked: false, timeToBlockExpire: 0, timeToExpire: 60, totalHits: 1 });
       });
 
       it('increments totalHits on subsequent calls', () => {
-        const key = 'multi-key';
-        storage.fallback(key, 60000, 10, 30000, 'default');
-        storage.fallback(key, 60000, 10, 30000, 'default');
-        const result = storage.fallback(key, 60000, 10, 30000, 'default');
+        storage.fallback('multi-key', 60000, 10, 30000, 'default');
+        storage.fallback('multi-key', 60000, 10, 30000, 'default');
+
+        const result = storage.fallback('multi-key', 60000, 10, 30000, 'default');
 
         expect(result.totalHits).toBe(3);
       });
 
-      it('blocks when totalHits exceeds limit', () => {
-        const key = 'block-key';
-        for (let i = 0; i <= 10; i++) {
-          storage.fallback(key, 60000, 10, 30000, 'default');
-        }
+      it('starts a new window when the previous one has expired', () => {
+        storage.fallback('expired-key', 1000, 10, 30000, 'default');
+        jest.advanceTimersByTime(1001);
 
-        const result = storage.fallback(key, 60000, 10, 30000, 'default');
+        const result = storage.fallback('expired-key', 60000, 10, 30000, 'default');
 
-        expect(result.isBlocked).toBe(true);
+        expect(result.totalHits).toBe(1);
       });
 
-      it('creates fresh record when previous has expired', () => {
-        const key = 'expired-key';
-        const first = storage.fallback(key, 1, 10, 30000, 'default');
-        first.timeToExpire = Date.now() - 1;
+      it('starts over once the block has run out', () => {
+        for (let i = 0; i < 3; i++) {
+          storage.fallback('ip', 60000, 2, 30000, 'default');
+        }
+        jest.advanceTimersByTime(30001);
 
-        const result = storage.fallback(key, 60000, 10, 30000, 'default');
+        const result = storage.fallback('ip', 60000, 2, 30000, 'default');
+
+        expect(result).toEqual({ isBlocked: false, timeToBlockExpire: 0, timeToExpire: 60, totalHits: 1 });
+      });
+
+      it('counts different throttlers separately', () => {
+        storage.fallback('ip', 60000, 10, 30000, 'default');
+
+        const result = storage.fallback('ip', 60000, 10, 30000, 'login');
 
         expect(result.totalHits).toBe(1);
       });

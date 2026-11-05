@@ -129,7 +129,7 @@
     "@nestjs/schematics": "12.0.12",
     "@nestjs/testing": "12.3.3",
     "@release-it/conventional-changelog": "11.0.0",
-    "@testcontainers/postgresql": "11.14.0",
+    "@testcontainers/postgresql": "12.2.1",
     "@testcontainers/redis": "11.14.0",
     "@types/compression": "1.8.1",
     "@types/express": "5.0.6",

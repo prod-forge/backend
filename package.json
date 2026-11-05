@@ -152,7 +152,7 @@
     "eslint-plugin-prettier": "5.5.7",
     "eslint-plugin-regexp": "3.3.3",
     "eslint-plugin-sonarjs": "4.2.2",
-    "eslint-plugin-unicorn": "76.0.0",
+    "eslint-plugin-unicorn": "79.0.0",
     "globals": "17.14.0",
     "husky": "9.1.7",
     "jest": "30.5.2",

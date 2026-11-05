@@ -1,5 +1,7 @@
 # Commands
 
+<!-- cspell:ignore commitlintrc lintstagedrc -->
+
 Commands for working with the project. How to add code is in [architecture/patterns.md](architecture/patterns.md).
 
 ## Prerequisites

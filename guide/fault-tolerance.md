@@ -93,7 +93,10 @@ Rate limiting is more important for system stability, so a fallback is implement
 
 The Redis storage is one Lua script that counts the hit, starts the window and sets the block in a single atomic call
 (`src/modules/redis-manager/storages/throttler-redis.storage.ts`). If Redis is unavailable, the application switches
-to an in-memory fallback using a simple Map structure with the same rules and the same `Retry-After` values.
+to an in-memory fallback (`throttler.storage.ts` in the same folder) that repeats the script step by step: the hit
+window and the block expire independently, so a block always lasts its full duration and the `Retry-After` values are
+the same. Records whose window and block have both expired are dropped by a sweep that runs at most once a minute, so
+the Map does not grow during a long outage.
 
 This allows the throttling mechanism to continue working, although with some limitations:
 

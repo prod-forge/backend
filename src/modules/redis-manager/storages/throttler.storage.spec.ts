@@ -79,6 +79,30 @@ describe('ThrottlerStorage', () => {
         expect(result.isBlocked).toBe(true);
         expect(result.timeToBlockExpire).toBe(20);
       });
+
+      it('keeps the block for its full duration after the hit window has expired', () => {
+        storage.fallback('ip', 60000, 2, 60000, 'default');
+        jest.advanceTimersByTime(1000);
+        storage.fallback('ip', 60000, 2, 60000, 'default');
+        jest.advanceTimersByTime(49000);
+        storage.fallback('ip', 60000, 2, 60000, 'default');
+        jest.advanceTimersByTime(11000);
+
+        const result = storage.fallback('ip', 60000, 2, 60000, 'default');
+
+        expect(result).toEqual({ isBlocked: true, timeToBlockExpire: 49, timeToExpire: 60, totalHits: 1 });
+      });
+
+      it('blocks again when the block ends while the window is still over the limit', () => {
+        for (let i = 0; i < 3; i++) {
+          storage.fallback('ip', 60000, 2, 30000, 'default');
+        }
+        jest.advanceTimersByTime(30001);
+
+        const result = storage.fallback('ip', 60000, 2, 30000, 'default');
+
+        expect(result).toEqual({ isBlocked: true, timeToBlockExpire: 30, timeToExpire: 30, totalHits: 4 });
+      });
     });
 
     describe('positive cases', () => {
@@ -106,15 +130,45 @@ describe('ThrottlerStorage', () => {
         expect(result.totalHits).toBe(1);
       });
 
-      it('starts over once the block has run out', () => {
+      it('lets the client through once both the block and the window have run out', () => {
         for (let i = 0; i < 3; i++) {
-          storage.fallback('ip', 60000, 2, 30000, 'default');
+          storage.fallback('ip', 30000, 2, 60000, 'default');
         }
-        jest.advanceTimersByTime(30001);
+        jest.advanceTimersByTime(60001);
 
-        const result = storage.fallback('ip', 60000, 2, 30000, 'default');
+        const result = storage.fallback('ip', 30000, 2, 60000, 'default');
+
+        expect(result).toEqual({ isBlocked: false, timeToBlockExpire: 0, timeToExpire: 30, totalHits: 1 });
+      });
+
+      it('starts over at once when the block duration is zero', () => {
+        for (let i = 0; i < 2; i++) {
+          storage.fallback('ip', 60000, 2, 0, 'default');
+        }
+
+        const result = storage.fallback('ip', 60000, 2, 0, 'default');
 
         expect(result).toEqual({ isBlocked: false, timeToBlockExpire: 0, timeToExpire: 60, totalHits: 1 });
+      });
+
+      it('drops records whose window and block have expired on the next sweep', () => {
+        storage.fallback('short', 1000, 10, 1000, 'default');
+        storage.fallback('blocked', 1000, 0, 120000, 'default');
+        jest.advanceTimersByTime(60000);
+
+        storage.fallback('fresh', 60000, 10, 30000, 'default');
+
+        expect(storage.size).toBe(2);
+      });
+
+      it('does not sweep more often than once a minute', () => {
+        storage.fallback('first', 60000, 10, 30000, 'default');
+        storage.fallback('short', 1000, 10, 1000, 'default');
+        jest.advanceTimersByTime(59000);
+
+        storage.fallback('second', 60000, 10, 30000, 'default');
+
+        expect(storage.size).toBe(3);
       });
 
       it('counts different throttlers separately', () => {

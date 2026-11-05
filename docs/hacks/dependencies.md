@@ -12,7 +12,7 @@
 - **What:** `ThrottlerRedisStorage` implements the `ThrottlerStorage` contract of `@nestjs/throttler` with one Lua script, instead of using `@nest-lab/throttler-storage-redis`.
 - **Where:** `src/modules/redis-manager/storages/throttler-redis.storage.ts`; the in-memory fallback is `throttler.storage.ts` in the same folder.
 - **Why:** the package still declares NestJS 11 peers and blocked the NestJS 12 upgrade. The script is the package's own (MIT, credited in the file), so the Redis keys and behaviour did not change.
-- **If cleaned up:** going back to the package needs a release that accepts NestJS 12 peers. The fallback must keep the same contract as the script: times in milliseconds in, remaining seconds out, or `Retry-After` breaks when Redis is down.
+- **If cleaned up:** going back to the package needs a release that accepts NestJS 12 peers. The fallback must keep the same contract as the script: times in milliseconds in, remaining seconds out, or `Retry-After` breaks when Redis is down. It also mirrors the script's steps (independent hit window and block), so a change to the script must be repeated in `fallback()` and its spec.
 
 ## Two tracing modes for Sentry 11
 

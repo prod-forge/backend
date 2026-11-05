@@ -4,12 +4,15 @@ import { Injectable } from '@nestjs/common';
 
 import { ThrottlerRedisStorage, type ThrottlerStorageRecord } from './throttler-redis.storage';
 
+// The hit window and the block expire independently, like the two keys of the Redis script
 type MemoryRecord = {
   blockExpiresAt: number;
-  expiresAt: number;
-  isBlocked: boolean;
+  hitsExpireAt: number;
   totalHits: number;
 };
+
+// How often the fallback drops records whose window and block have both expired
+const SWEEP_INTERVAL_MS = 60_000;
 
 const secondsUntil = (timestamp: number, now: number): number => Math.max(0, Math.ceil((timestamp - now) / 1000));
 
@@ -18,11 +21,17 @@ const secondsUntil = (timestamp: number, now: number): number => Math.max(0, Mat
  * */
 @Injectable()
 export class ThrottlerStorage implements ThrottlerStorageContract {
+  // Number of keys the fallback currently holds
+  get size(): number {
+    return this.memory.size;
+  }
   private readonly memory = new Map<string, MemoryRecord>();
+
+  private nextSweepAt = 0;
 
   constructor(private readonly redisStorage: ThrottlerRedisStorage) {}
 
-  // Same semantics as the Redis script: times in milliseconds in, remaining seconds out
+  // Mirrors INCREMENT_SCRIPT step by step: times in milliseconds in, remaining seconds out
   fallback(
     key: string,
     ttl: number,
@@ -31,35 +40,42 @@ export class ThrottlerStorage implements ThrottlerStorageContract {
     throttlerName: string,
   ): ThrottlerStorageRecord {
     const now = Date.now();
+    this.sweep(now);
+
     const memoryKey = `${key}:${throttlerName}`;
-    let record = this.memory.get(memoryKey);
+    const record = this.memory.get(memoryKey) ?? { blockExpiresAt: 0, hitsExpireAt: 0, totalHits: 0 };
+    this.memory.set(memoryKey, record);
 
-    // No record or its window has passed: start a new window
-    if (!record || record.expiresAt <= now) {
-      record = { blockExpiresAt: 0, expiresAt: now + ttl, isBlocked: false, totalHits: 0 };
-      this.memory.set(memoryKey, record);
-    }
-
-    // The block has run out: start over
-    if (record.isBlocked && record.blockExpiresAt <= now) {
-      record.blockExpiresAt = 0;
-      record.expiresAt = now + ttl;
-      record.isBlocked = false;
+    // INCR + PEXPIRE: an expired window counts as a missing key and starts a new one
+    if (record.hitsExpireAt <= now) {
+      record.hitsExpireAt = now + ttl;
       record.totalHits = 0;
     }
-
     record.totalHits++;
 
-    // If the limit is exceeded, need to block it
-    if (!record.isBlocked && record.totalHits > limit) {
-      record.isBlocked = true;
+    // GET blockKey: an existing block keeps its own expiry, whatever happens to the window
+    let isBlocked = record.blockExpiresAt > now;
+    let timeToBlockExpire = 0;
+
+    if (isBlocked) {
+      timeToBlockExpire = record.blockExpiresAt - now;
+    } else if (record.totalHits > limit) {
       record.blockExpiresAt = now + blockDuration;
+      isBlocked = true;
+      timeToBlockExpire = blockDuration;
+    }
+
+    if (isBlocked && timeToBlockExpire <= 0) {
+      record.blockExpiresAt = 0;
+      record.hitsExpireAt = now + ttl;
+      record.totalHits = 1;
+      isBlocked = false;
     }
 
     return {
-      isBlocked: record.isBlocked,
-      timeToBlockExpire: record.isBlocked ? secondsUntil(record.blockExpiresAt, now) : 0,
-      timeToExpire: secondsUntil(record.expiresAt, now),
+      isBlocked,
+      timeToBlockExpire: isBlocked ? secondsUntil(record.blockExpiresAt, now) : 0,
+      timeToExpire: secondsUntil(record.hitsExpireAt, now),
       totalHits: record.totalHits,
     };
   }
@@ -77,5 +93,20 @@ export class ThrottlerStorage implements ThrottlerStorageContract {
 
     // In-memory fallback
     return this.fallback(key, ttl, limit, blockDuration, throttlerName);
+  }
+
+  // Redis expires keys on its own; the fallback has to drop dead records itself or the map grows for the whole outage
+  private sweep(now: number): void {
+    if (now < this.nextSweepAt) {
+      return;
+    }
+
+    this.nextSweepAt = now + SWEEP_INTERVAL_MS;
+
+    for (const [memoryKey, record] of this.memory) {
+      if (record.hitsExpireAt <= now && record.blockExpiresAt <= now) {
+        this.memory.delete(memoryKey);
+      }
+    }
   }
 }

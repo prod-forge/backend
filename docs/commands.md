@@ -230,7 +230,7 @@ npm run test:load          # k6 run load/k6-smoke.js; needs k6 and a migrated, s
 
 The following are excluded from coverage (see `jest.collectCoverageFrom` in `package.json`):
 
-- `main.ts`, `app.setup.ts`, `app.swagger.ts`
+- `main.ts`, `instrument.ts` (entry files that only call tested helpers), `app.setup.ts`, `app.swagger.ts`
 - `*.module.ts`, `*.spec.ts`
 - `*.config.ts`, `*.interface.ts`, `*.enum.ts`, `*.dto.ts`, `*.entity.ts`
 - DI type files, constants files

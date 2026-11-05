@@ -18,6 +18,7 @@ Deferred known problems, so they are not rediscovered (or silently "fixed") in e
 
 - [main-branch-protection.md](main-branch-protection.md) — `main` has no branch protection, so failing CI checks do not block a merge.
 - [dev-cd-workflows.md](dev-cd-workflows.md) — CD deploys prod only; the dev environment of the terraform repository has no deploy workflow.
+- [moderate-audit-advisories.md](moderate-audit-advisories.md) — 5 moderate `glob`/`minimatch` advisories through `gcp-metadata` → `gaxios` → `rimraf`; below the `high` audit gate.
 
 ## Format
 

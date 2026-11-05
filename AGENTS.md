@@ -146,15 +146,30 @@ Never edit generated code manually.
 
 ---
 
-## Documentation Rules
+## Documentation
 
-Agent reference docs live in `docs/`; the human guide lives in `guide/`. After every change, update any affected agent documentation in `docs/`:
+Agent reference docs live in `docs/`; the human guide lives in `guide/`:
 
-- **`docs/architecture.md`** — update when modules are added/removed, middleware/interceptor/filter wiring changes, or request lifecycle changes
-- **`docs/api.md`** — update when endpoints are added/removed/modified, request/response shapes change, new error codes are introduced, or auth behavior changes
-- **`docs/data-schema.md`** — update when the Prisma schema changes (new models, fields, indexes, or relations)
-- **`docs/developers-guide.md`** — update when setup steps change, new env variables are added, scripts are modified, or new patterns for adding features are established
+- `docs/goal.md` — what the project is and what it must achieve
+- `docs/architecture/` — layers, modules, request lifecycle, observability (`overview.md`), endpoints, envelope and error codes (`api.md`), Prisma models, indexes and migrations (`data-schema.md`), how to add a feature, endpoint or migration (`patterns.md`)
+- `docs/commands.md` — setup, environment variables, running, testing, linting, Docker, release, commit convention
+- `docs/openapi.json` — the committed HTTP contract, regenerated with `npm run openapi:export`, never edited by hand
+- `docs/restrictions/` — constraints of this project, with the reason and where each is enforced
+- `docs/plans/` — what is being implemented now
+- `docs/ideas/` — raw high-level ideas
+- `docs/roadmap/` — ideas scheduled into versions; the public list of open work is `roadmap.md`
+- `docs/open-issues/` — deferred known problems
+- `docs/postmortem/` — attempts that did not work, and why
+- `docs/hacks/` — non-obvious decisions and shortcuts
+
+When making changes that affect any of the above, update the relevant doc in the same task. Do not defer doc updates to a follow-up. Do not update docs for internal refactors that have no observable effect on architecture, API contracts, schema, or developer workflow.
 
 The human guide in `guide/` is updated when the behaviour it describes changes.
 
-Do not update docs for internal refactors that have no observable effect on architecture, API contracts, schema, or developer workflow.
+## Planning
+
+- Before writing a new plan, read `docs/goal.md`, `docs/architecture/` and `docs/restrictions/`
+- Plans follow `docs/plans/README.md`: a global plan (`NNN-<name>/` with `readme.md` and `00-design.md`), plans inside it, one file per step; every level carries status, version, date and modules
+- The design ends with open questions, the user's decisions and your own calls to check; implement only approved plans
+- A plan is done when its conclusions are written and the user has looked at its result
+- Shortcuts go to `docs/hacks/`, deferred problems to `docs/open-issues/`, failed attempts to `docs/postmortem/`

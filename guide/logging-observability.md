@@ -39,7 +39,7 @@ Example log structure:
   "timestamp": "2026-03-12T16:05:49.626Z",
   "env": "development",
   "appName": "Todo_inst1",
-  "traceId": "4209c5e7-bf00-45d1-87c9-ef9db57f8da5",
+  "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
   "levelName": "info",
   "pid": 61190,
   "ctx": "loggingMiddleware",
@@ -147,8 +147,9 @@ Express 5 routes through the `router` package that the express instrumentation a
 response `finish` listener per middleware layer, which triggers `MaxListenersExceededWarning` on every request.
 
 When an OpenTelemetry span is active, `traceIdMiddleware` uses its trace id for `x-trace-id`, the response header and
-the log `traceId`. Without a span (tracing disabled) it falls back to an incoming `x-trace-id` header, then a random
-UUID. A log line therefore links straight to its trace: Grafana's Loki datasource has a `traceId` derived field that
+the log `traceId`. There is a span whenever tracing runs: the OpenTelemetry one with `OTEL_EXPORTER_OTLP_ENDPOINT`, or
+Sentry's own when only Sentry is on. Without a span (neither is on) it falls back to an incoming `x-trace-id` header, if
+it is at most 64 letters, digits, `_` or `-` (anything else could forge log lines), then to a random UUID. A log line therefore links straight to its trace: Grafana's Loki datasource has a `traceId` derived field that
 opens the matching trace in Tempo.
 
 ### Coexistence with Sentry

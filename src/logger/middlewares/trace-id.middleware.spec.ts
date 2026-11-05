@@ -32,6 +32,28 @@ describe('traceIdMiddleware', () => {
       expect(req.headers['x-trace-id']).not.toBe(otelTraceId);
       expect(req.headers['x-trace-id']).toMatch(/^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/);
     });
+
+    it.each([
+      ['too long', 'a'.repeat(65)],
+      ['with a line break', 'id\nforged log line'],
+      ['with spaces', 'not a trace id'],
+    ])('ignores an incoming trace id that is %s and generates a UUID', (_case, incoming) => {
+      const req = makeReq(incoming);
+      const res = makeRes();
+
+      traceIdMiddleware(req, res as unknown as Response, jest.fn() as NextFunction);
+
+      expect(req.headers['x-trace-id']).not.toBe(incoming);
+      expect(res.setHeader).not.toHaveBeenCalledWith('X-Trace-Id', incoming);
+    });
+
+    it('ignores a repeated trace id header', () => {
+      const req = { headers: { 'x-trace-id': ['a', 'b'] } } as unknown as Request;
+
+      traceIdMiddleware(req, makeRes() as unknown as Response, jest.fn() as NextFunction);
+
+      expect(req.headers['x-trace-id']).toMatch(/^[\da-f-]{36}$/);
+    });
   });
 
   describe('positive cases', () => {

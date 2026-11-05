@@ -174,7 +174,7 @@ Every error is logged via `LoggerService`, counted in `http_errors_total` (statu
 
 ## Request Lifecycle (example: `GET /api/v1/todos`)
 
-1. `traceIdMiddleware` — resolves the trace ID (active span, incoming `X-Trace-Id`, else a new UUID), sets the `X-Trace-Id` response header and the `AsyncLocalStorage` context
+1. `traceIdMiddleware` — resolves the trace ID (active span, incoming `X-Trace-Id` of at most 64 word characters or `-`, else a new UUID), sets the `X-Trace-Id` response header and the `AsyncLocalStorage` context
 2. `loggingMiddleware` — logs incoming request with trace ID
 3. `UserThrottlerGuard` — checks the rate-limit bucket in Redis (per user, else per IP)
 4. `AuthGuard` — verifies the signed Bearer JWT, sets `req.userId`

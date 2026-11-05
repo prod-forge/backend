@@ -69,7 +69,7 @@ Excluded from the envelope: `/metrics`, `/metrics/database`, `/health`, `/health
 
 ### Trace id
 
-Every response carries an `X-Trace-Id` header (the active OpenTelemetry trace id, else an incoming `X-Trace-Id`, else a new UUID). CORS exposes it to browser scripts (`exposedHeaders: ['X-Trace-Id']`), so clients can read it from error responses to correlate with server logs.
+Every response carries an `X-Trace-Id` header (the active OpenTelemetry trace id, else an incoming `X-Trace-Id` of at most 64 letters, digits, `_` or `-`, else a new UUID). CORS exposes it to browser scripts (`exposedHeaders: ['X-Trace-Id']`), so clients can read it from error responses to correlate with server logs.
 
 ---
 

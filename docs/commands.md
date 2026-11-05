@@ -200,7 +200,7 @@ Located co-located with source files as `*.spec.ts`. Run with Jest + ts-jest.
 ```bash
 npm test
 # Run a single file:
-npx jest src/features/todos/todos.service.spec.ts
+npm test -- src/features/todos/todos.service.spec.ts
 ```
 
 Test mocks are shared from `src/mocks/`:
@@ -327,5 +327,5 @@ The pushed `v*` tag starts `.github/workflows/cd.yml`, which deploys to AWS (`gu
 
 ## Rules
 
-- For an isolated change, run only the affected spec file (`npx jest <path>`); do not run the full suite for a single file change.
+- For an isolated change, run only the affected spec file (`npm test -- <path>`; plain `npx jest` lacks `--experimental-vm-modules` and fails on specs that import `@nestjs/*`); do not run the full suite for a single file change.
 - Never run `npm run release` or push a `v*` tag without an explicit request.

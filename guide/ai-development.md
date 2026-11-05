@@ -199,7 +199,7 @@ npm run openapi:check  # fails when docs/openapi.json no longer matches the code
 
 ## Rules
 
-- For an isolated change, run only the affected spec file: `npx jest src/features/todos/todos.service.spec.ts`.
+- For an isolated change, run only the affected spec file: `npm test -- src/features/todos/todos.service.spec.ts` (plain `npx jest` lacks the `--experimental-vm-modules` flag the script sets and fails on specs that import `@nestjs/*`).
 - Never run `npm run release` without an explicit request.
 ````
 

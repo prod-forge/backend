@@ -11,8 +11,8 @@ Commands for working with the project. How to add code is in [architecture/patte
 | Node.js    | ≥ 24.15.0 | Enforced in `package.json` (`engines`) |
 | npm        | ≥ 11.0.0  | Enforced in `package.json` (`engines`) |
 | Docker     | any       | For local infra                        |
-| PostgreSQL | 18        | Or via docker-compose                  |
-| Redis      | 8         | Or via docker-compose                  |
+| PostgreSQL | 18        | Or via Docker Compose                  |
+| Redis      | 8         | Or via Docker Compose                  |
 
 CI and the Docker image use Node.js 26.13.0, the current LTS (`NODE_VERSION` in the workflows, `node:26.13.0-alpine` in the `Dockerfile`). Local development on Node 24.15 or newer still works.
 
@@ -32,7 +32,7 @@ npm run db:generate
 ### 2. Start infrastructure
 
 ```bash
-docker-compose up -d database cache
+docker compose up -d database cache
 ```
 
 This starts:
@@ -264,7 +264,7 @@ npm run lint && npm run format
 ### Build and run locally
 
 ```bash
-docker-compose up --build production
+docker compose up --build production
 ```
 
 The image build is described in [architecture/overview.md](architecture/overview.md#docker-image).

@@ -114,7 +114,7 @@ Defined in `ErrorCodes` but not returned by any route today: `USER_NOT_FOUND`, `
 
 ## Rate Limiting
 
-Global `UserThrottlerGuard` applied to all routes except the health, metrics and version routes (`@SkipThrottle()`). The bucket key is the user id from a valid Bearer token, else the client IP (`req.ip`, see `TRUST_PROXY`). State lives in Redis. Rate limiting is off when `THROTTLE_ENABLED=false`.
+Global `UserThrottlerGuard` applied to all routes except the health, metrics and version routes (`@SkipThrottle()`). The bucket key is the user id from a valid Bearer token, else the client IP (`req.ip`, see `TRUST_PROXY`). State lives in Redis, with a per-instance in-memory fallback while Redis is unreachable (`ThrottlerStorage`, same rules as the Redis script). Rate limiting is off when `THROTTLE_ENABLED=false`.
 
 Code defaults: `THROTTLE_LIMIT=60` requests per `THROTTLE_TTL=60000` ms. `.env.common` overrides them locally with `10` per `20000` ms. Per-route overrides: login 5 per minute, client logs 20 per minute. A throttled request returns 429 `TOO_MANY_REQUESTS`.
 

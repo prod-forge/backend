@@ -134,7 +134,7 @@ This helps protect the API from:
 - brute-force attacks
 - accidental traffic spikes
 
-Defaults: 60 requests per 60 seconds per client (`THROTTLE_LIMIT`, `THROTTLE_TTL`). `POST /api/v1/auth/login` has its own stricter limit of 5 per minute.
+Defaults: 60 requests per 60 seconds per client (`THROTTLE_LIMIT`, `THROTTLE_TTL`); locally `.env.common` lowers them to 10 per 20 seconds. `POST /api/v1/auth/login` has its own stricter limit of 5 per minute.
 
 ### Behind ALB: `trust proxy`
 

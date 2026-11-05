@@ -149,7 +149,7 @@ Shutdown happens in three phases, driven by NestJS lifecycle hooks (`enableShutd
    on how long it waits for active requests.
 2. HTTP server close: `forceCloseConnections: true` (set in `NestFactory.create`) destroys any connection still open,
    so requests that exceeded the in-flight timeout are forcefully terminated.
-3. `onApplicationShutdown`: disconnects Prisma and Redis.
+3. `onApplicationShutdown`: disconnects Prisma and Redis and flushes buffered trace spans (`shutdownTracing()`).
 
 The sum of both values must stay below the ECS `stopTimeout` (60s, set in terraform), otherwise ECS sends `SIGKILL`
 before shutdown finishes.

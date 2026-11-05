@@ -170,7 +170,7 @@ list, create, toggle (`PATCH` with `completed`) and delete. Thresholds: `http_re
 Login is throttled to 5 requests per minute per IP, so the script logs in the five seeded users once in `setup()` and
 the virtual users share those tokens. Run it again no sooner than a minute after the previous run.
 
-The global rate limit (`THROTTLE_LIMIT`, default 60 per `THROTTLE_TTL` per user or IP) would reject most of the load
+The global rate limit (`THROTTLE_LIMIT` per `THROTTLE_TTL` per user or IP: 60 per 60 s in code, 10 per 20 s locally through `.env.common`) would reject most of the load
 traffic, so the local run raises it through a compose override that is used for load runs only:
 
 ```shell

@@ -1,7 +1,7 @@
 # Database Management
 
 <p align="center">
-  <img alt="Database Management" src="assets/database-management.png" width="510px" height="467px">
+  <img alt="Database Management" src="assets/database-management.jpg" width="510px" height="467px">
 </p>
 
 Database management is treated as a separate operational layer inside the application.

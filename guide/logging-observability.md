@@ -1,7 +1,7 @@
 # Logging & Observability
 
 <p align="center">
-  <img alt="Logging & Observability" src="assets/logging-observability.png" width="767px" height="338px">
+  <img alt="Logging & Observability" src="assets/logging-observability.jpg" width="767px" height="338px">
 </p>
 
 Logging is one of the most important parts of building production systems.

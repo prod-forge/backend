@@ -1,7 +1,7 @@
 # Documentation
 
 <p align="center">
-  <img alt="Documentation" src="assets/documentation.png" width="767px" height="340px">
+  <img alt="Documentation" src="assets/documentation.jpg" width="767px" height="340px">
 </p>
 
 The documentation process is an ongoing process throughout development. Each feature should be accompanied by at least

@@ -1,7 +1,7 @@
 # Error Handling
 
 <p align="center">
-  <img alt="Error Handling" src="assets/error-handling.png" width="768px" height="338px">
+  <img alt="Error Handling" src="assets/error-handling.jpg" width="768px" height="338px">
 </p>
 
 Errors in backend applications usually fall into several categories.

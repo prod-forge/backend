@@ -1,7 +1,7 @@
 # Development Workflow
 
 <p align="center">
-  <img alt="Development Workflow" src="assets/development-workflow.png" width="512px" height="386px">
+  <img alt="Development Workflow" src="assets/development-workflow.jpg" width="512px" height="386px">
 </p>
 
 To support a reliable release pipeline, the development workflow should follow several conventions.

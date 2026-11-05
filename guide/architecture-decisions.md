@@ -1,7 +1,7 @@
 # Architecture Decisions
 
 <p align="center">
-  <img alt="Architecture Decisions" src="assets/arch-decision.png" width="512px" height="541px">
+  <img alt="Architecture Decisions" src="assets/arch-decision.jpg" width="512px" height="541px">
 </p>
 
 Choosing the right architecture is rarely a purely technical decision.

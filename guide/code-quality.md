@@ -1,7 +1,7 @@
 # Code Quality
 
 <p align="center">
-  <img alt="Code Quality" src="assets/code-quality.png" width="512px" height="432px">
+  <img alt="Code Quality" src="assets/code-quality.jpg" width="512px" height="432px">
 </p>
 
 Maintaining consistent code quality is essential for long-term project sustainability.

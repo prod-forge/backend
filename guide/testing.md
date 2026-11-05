@@ -1,7 +1,7 @@
 # Testing
 
 <p align="center">
-  <img alt="Testing" src="assets/testing.png" width="733px" height="254px">
+  <img alt="Testing" src="assets/testing.jpg" width="733px" height="254px">
 </p>
 
 ## Unit Tests

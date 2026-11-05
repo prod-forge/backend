@@ -1,7 +1,7 @@
 # Repository Strategy
 
 <p align="center">
-  <img alt="Repository Strategy" src="assets/repo-strategy.png" width="512px" height="488px">
+  <img alt="Repository Strategy" src="assets/repo-strategy.jpg" width="512px" height="488px">
 </p>
 
 One of the first architectural decisions when starting a project is choosing the repository structure.

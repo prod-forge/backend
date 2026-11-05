@@ -22,3 +22,9 @@
 
 - **Rule:** CI and the image run Node.js 26.13.0 (LTS); `engines` keeps `>=24.15.0` (npm `>=11.0.0`), so local machines on Node 24 LTS still install and run the project. Bump the image and both workflows together.
 - **Where:** `package.json` (`engines`); `NODE_VERSION: 26.13.0` in `.github/workflows/ci.yml` and `.github/workflows/cd.yml`; `node:26.13.0-alpine` in the `Dockerfile`.
+
+## `@types/node` follows the `engines` minimum
+
+- **Rule:** `@types/node` stays on the major of the lowest supported Node (24 while `engines` is `>=24.15.0`); raise it only together with `engines`.
+- **Reason:** newer types let `tsc` accept APIs that Node 24 lacks, so code that type-checks could fail on a supported runtime.
+- **Where:** `package.json` (`@types/node` 24.x); `.github/dependabot.yml` ignores its major updates.

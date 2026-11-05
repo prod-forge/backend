@@ -1,5 +1,6 @@
+import type { ConfigFactory } from '@nestjs/config';
+
 import { registerAs } from '@nestjs/config';
-import { ConfigFactory } from '@nestjs/config/dist/interfaces';
 import { Transform, Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsIn, IsNumber, IsString } from 'class-validator';
 

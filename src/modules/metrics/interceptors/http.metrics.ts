@@ -1,4 +1,4 @@
-import { Counter, Gauge, Histogram } from 'prom-client';
+import { Counter, Gauge, Histogram } from '@prometheus-io/client';
 
 export const httpInFlight = new Gauge({
   help: 'Number of HTTP requests currently being processed',

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { Gauge } from '@prometheus-io/client';
 import { InjectMetric } from '@willsoto/nestjs-prometheus';
-import { Gauge } from 'prom-client';
 
 import { HealthChecks } from './health.checks';
 
@@ -9,7 +9,7 @@ export class HealthMetricsService {
   constructor(
     private readonly healthChecks: HealthChecks,
     @InjectMetric('service_health_status')
-    private readonly gauge: Gauge,
+    private readonly gauge: Gauge<'service'>,
   ) {}
 
   async updateMetrics(): Promise<void> {

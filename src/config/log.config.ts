@@ -1,7 +1,7 @@
+import type { ConfigFactory } from '@nestjs/config';
 import type { Level } from 'pino';
 
 import { registerAs } from '@nestjs/config';
-import { ConfigFactory } from '@nestjs/config/dist/interfaces';
 import { Transform } from 'class-transformer';
 import { IsArray, IsBoolean, IsEnum, IsString } from 'class-validator';
 

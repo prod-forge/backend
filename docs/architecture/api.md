@@ -414,7 +414,7 @@ Checks: PostgreSQL ping + Redis ping.
 
 #### `GET /metrics` — Prometheus Metrics
 
-Returns default prom-client metrics plus:
+Returns default `@prometheus-io/client` metrics plus:
 
 - `http_requests_total{method, route, status}`
 - `http_errors_total{method, route, status}` (`route` is the route template, or `unmatched` when no route matched)
@@ -427,7 +427,7 @@ Returns default prom-client metrics plus:
 
 `route` is the route template, never the raw URL.
 
-Content-Type: `text/plain; version=0.0.4` (the prom-client default; not wrapped in the envelope).
+Content-Type: `text/plain; version=0.0.4` (the `@prometheus-io/client` default; not wrapped in the envelope).
 
 ---
 

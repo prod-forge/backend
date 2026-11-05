@@ -17,14 +17,14 @@ export class HealthChecks {
 
   runAll(): Promise<HealthCheckResult> {
     return this.health.check([
-      (): Promise<HealthIndicatorResult<'database'>> => this.db.pingCheck('database', this.prismaService),
+      (): PromiseLike<HealthIndicatorResult<'database'>> => this.db.pingCheck('database', this.prismaService),
       (): Promise<HealthIndicatorResult<'redis'>> => this.redisHealth.pingCheck('redis'),
     ]);
   }
 
   runCritical(): Promise<HealthCheckResult> {
     return this.health.check([
-      (): Promise<HealthIndicatorResult<'database'>> => this.db.pingCheck('database', this.prismaService),
+      (): PromiseLike<HealthIndicatorResult<'database'>> => this.db.pingCheck('database', this.prismaService),
       (): HealthIndicatorResult<'shutdown'> => this.shutdownHealthService.check('shutdown'),
     ]);
   }

@@ -1,6 +1,6 @@
 import { Test } from '@nestjs/testing';
+import { register } from '@prometheus-io/client';
 import { Readable } from 'node:stream';
-import { register } from 'prom-client';
 
 import { LoggerService } from '../../../logger/logger.service';
 import { RedisManagerService } from '../redis-manager.service';

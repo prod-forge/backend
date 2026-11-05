@@ -12,7 +12,7 @@ const makeIndicatorService = (): jest.Mocked<HealthIndicatorService> => {
 
   return {
     check: jest.fn().mockReturnValue(indicator),
-  };
+  } as unknown as jest.Mocked<HealthIndicatorService>;
 };
 
 describe('ShutdownHealthService', () => {

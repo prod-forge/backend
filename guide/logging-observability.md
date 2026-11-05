@@ -280,7 +280,7 @@ Both live at the root, outside the API prefix, and are reachable only from insid
 404 for any metrics path (case-insensitive, with or without the API prefix) when the request carries `X-Forwarded-For`,
 which the ALB always appends. Prometheus and the compose stack scrape the task directly, without that header.
 
-Custom metrics (default `prom-client` process metrics are exposed as well):
+Custom metrics (default `@prometheus-io/client` process metrics, formerly `prom-client`, are exposed as well):
 
 | Metric                          | Type      | Labels                      | Description                                                                                 |
 | ------------------------------- | --------- | --------------------------- | ------------------------------------------------------------------------------------------- |

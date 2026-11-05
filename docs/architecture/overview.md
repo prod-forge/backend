@@ -5,7 +5,7 @@
 `prod-forge-todolist-backend` is a production-grade NestJS REST API demonstrating real-world backend patterns:
 layered architecture, caching, structured logging, observability, error handling, and graceful shutdown.
 
-**Stack:** Node.js 24 · NestJS 11 · TypeScript 6 · PostgreSQL 18 · Redis 8 · Prisma 7 · prom-client · pino · Sentry
+**Stack:** Node.js 24 · NestJS 12 · TypeScript 6 · PostgreSQL 18 · Redis 8 · Prisma 7 · @prometheus-io/client · pino · Sentry
 
 ---
 
@@ -116,7 +116,7 @@ Wraps `PrismaService` which extends the generated Prisma client. Connects on `on
 Creates two separate Redis connections:
 
 - **CacheClient** — used by `CacheStorage` for application-level caching
-- **ThrottlerClient** — used by `ThrottlerStorage` for rate-limiting state
+- **ThrottlerClient** — used by `ThrottlerRedisStorage` (one atomic Lua script per hit) behind `ThrottlerStorage`, which falls back to memory when Redis is down
 
 Both clients inherit from `BaseRedisService` (reconnect delay grows by 200 ms per attempt up to 5 s, no offline queue, 1 s connect timeout). In test environments, retries are disabled.
 
@@ -130,7 +130,7 @@ Three endpoints, all excluded from the global prefix and from throttling:
 
 ### Metrics
 
-Prometheus metrics exposed at `/metrics` (default prom-client metrics + custom counters):
+Prometheus metrics exposed at `/metrics` (default `@prometheus-io/client` metrics + custom counters):
 
 - `http_requests_total` — labeled by method, route, status
 - `http_errors_total` — labeled by method, route, status (route is `unmatched` when no route matched)

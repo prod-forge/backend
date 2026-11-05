@@ -91,7 +91,9 @@ Metrics: `cache_operations_total{operation="get|set|del", result="hit|miss|ok|er
 
 Rate limiting is more important for system stability, so a fallback is implemented.
 
-If Redis is unavailable, the application switches to an in-memory fallback using a simple Map structure.
+The Redis storage is one Lua script that counts the hit, starts the window and sets the block in a single atomic call
+(`src/modules/redis-manager/storages/throttler-redis.storage.ts`). If Redis is unavailable, the application switches
+to an in-memory fallback using a simple Map structure with the same rules and the same `Retry-After` values.
 
 This allows the throttling mechanism to continue working, although with some limitations:
 

@@ -1,5 +1,6 @@
+import type { ConfigFactory } from '@nestjs/config';
+
 import { registerAs } from '@nestjs/config';
-import { ConfigFactory } from '@nestjs/config/dist/interfaces';
 import { IsEnum } from 'class-validator';
 
 import { validateConfig } from '../common/utils/validate-config.util';

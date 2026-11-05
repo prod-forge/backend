@@ -10,7 +10,7 @@ const mockDurationObserve = jest.fn();
 const mockDurationLabels = jest.fn(() => ({ observe: mockDurationObserve }));
 const mockQueriesObserve = jest.fn();
 
-jest.mock('prom-client', () => ({
+jest.mock('@prometheus-io/client', () => ({
   Counter: jest.fn().mockImplementation(() => ({ labels: mockCounterLabels })),
   Gauge: jest.fn().mockImplementation(() => mockInFlight),
   Histogram: jest

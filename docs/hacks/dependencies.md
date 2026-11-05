@@ -1,11 +1,18 @@
 # Dependency hacks
 
-## multer override until NestJS 12
+## Unit tests run Jest with `--experimental-vm-modules`
 
-- **What:** `overrides` pins `multer` 2.5.0 under `@nestjs/platform-express`.
-- **Where:** `package.json` (`overrides`); `guide/code-quality.md` (the paragraph after "For dependency updates"); `roadmap.md` ("NestJS 12").
-- **Why:** `npm audit` flagged the `multer` version that `@nestjs/platform-express` 11 depends on; the override pins the patched version for that one parent. NestJS 12 is blocked because `@nest-lab/throttler-storage-redis` still declares NestJS 11 peers (`roadmap.md`).
-- **If cleaned up:** removing the override before the NestJS 12 upgrade brings the flagged version back, and the CI `npm audit --omit=dev --audit-level=high` step can fail. After the upgrade, the override should be removed in the same change.
+- **What:** `test`, `test:cov` and `test:watch` set `NODE_OPTIONS="$NODE_OPTIONS --experimental-vm-modules"`, and `test:debug` passes the flag to `node`, like the e2e scripts already did.
+- **Where:** `package.json` (`scripts`).
+- **Why:** NestJS 12 ships as ES modules only (`"type": "module"`) while the app compiles to CommonJS. Node 24 loads them with `require()` at runtime, but Jest's module loader does that only with the VM modules flag; without it every suite that imports `@nestjs/*` fails with "Must use import to load ES Module".
+- **If cleaned up:** removing the flag breaks almost every unit suite. Moving the app to ESM output would make it unnecessary.
+
+## Own Redis storage for the throttler
+
+- **What:** `ThrottlerRedisStorage` implements the `ThrottlerStorage` contract of `@nestjs/throttler` with one Lua script, instead of using `@nest-lab/throttler-storage-redis`.
+- **Where:** `src/modules/redis-manager/storages/throttler-redis.storage.ts`; the in-memory fallback is `throttler.storage.ts` in the same folder.
+- **Why:** the package still declares NestJS 11 peers and blocked the NestJS 12 upgrade. The script is the package's own (MIT, credited in the file), so the Redis keys and behaviour did not change.
+- **If cleaned up:** going back to the package needs a release that accepts NestJS 12 peers. The fallback must keep the same contract as the script: times in milliseconds in, remaining seconds out, or `Retry-After` breaks when Redis is down.
 
 ## OpenTelemetry pinned to the line Sentry 10 accepts
 

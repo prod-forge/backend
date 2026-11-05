@@ -1,4 +1,4 @@
-import type { RouteInfo } from '@nestjs/common/interfaces';
+import type { RouteInfo } from '@nestjs/common/interfaces/middleware/index.js';
 
 import { RequestMethod } from '@nestjs/common';
 

@@ -1,4 +1,4 @@
-import { Counter } from 'prom-client';
+import { Counter } from '@prometheus-io/client';
 
 export const cacheOperationsTotal = new Counter({
   help: 'Cache operations by operation type and result',

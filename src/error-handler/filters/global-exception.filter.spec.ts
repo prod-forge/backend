@@ -3,7 +3,7 @@ import type { ArgumentsHost } from '@nestjs/common';
 import { HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
 import { ThrottlerException } from '@nestjs/throttler';
 
-jest.mock('prom-client', () => ({
+jest.mock('@prometheus-io/client', () => ({
   Counter: jest.fn().mockImplementation(() => ({
     labels: jest.fn().mockReturnValue({ inc: jest.fn() }),
   })),
@@ -14,8 +14,8 @@ jest.mock('@sentry/node', () => ({
   setUser: jest.fn(),
 }));
 
+import { Counter } from '@prometheus-io/client';
 import * as Sentry from '@sentry/node';
-import { Counter } from 'prom-client';
 
 import type { LoggerService } from '../../logger/logger.service';
 
@@ -76,11 +76,11 @@ describe('GlobalExceptionFilter', () => {
   let filter: GlobalExceptionFilter;
   let logger: { error: jest.Mock };
 
-  const sentryConfigValue = { sentryEnabled: false, sentryIgnoredErrors: [] };
+  const sentryConfigValue = { sentryDsn: '', sentryEnabled: false, sentryIgnoredErrors: [] };
 
   beforeEach(() => {
     logger = { error: jest.fn() };
-    filter = new GlobalExceptionFilter(logger as unknown as LoggerService, sentryConfigValue as never);
+    filter = new GlobalExceptionFilter(logger as unknown as LoggerService, sentryConfigValue);
     jest.clearAllMocks();
     jest.mocked(RequestContext.getTraceId).mockReturnValue('ctx-trace-1');
   });
@@ -130,7 +130,11 @@ describe('GlobalExceptionFilter', () => {
     });
 
     it('never sends the request body to Sentry', () => {
-      filter = new GlobalExceptionFilter(logger as unknown as LoggerService, { sentryEnabled: true } as never);
+      filter = new GlobalExceptionFilter(logger as unknown as LoggerService, {
+        sentryDsn: '',
+        sentryEnabled: true,
+        sentryIgnoredErrors: [],
+      });
       const { host } = makeHost({ route: { path: '/api/v1/auth/login' }, url: '/api/v1/auth/login' });
 
       filter.catch(new InternalServerError(), host);
@@ -145,7 +149,11 @@ describe('GlobalExceptionFilter', () => {
       ['ThrottlerException', new ThrottlerException(), HttpStatus.TOO_MANY_REQUESTS],
       ['malformed body', new HttpException('Bad', HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST],
     ])('keeps the status and skips Sentry for %s', (_name, exception, status) => {
-      filter = new GlobalExceptionFilter(logger as unknown as LoggerService, { sentryEnabled: true } as never);
+      filter = new GlobalExceptionFilter(logger as unknown as LoggerService, {
+        sentryDsn: '',
+        sentryEnabled: true,
+        sentryIgnoredErrors: [],
+      });
       const { host, res } = makeHost({ route: { path: '/api' } });
 
       filter.catch(exception, host);
@@ -155,7 +163,11 @@ describe('GlobalExceptionFilter', () => {
     });
 
     it('does not capture domain 4xx errors in Sentry', () => {
-      filter = new GlobalExceptionFilter(logger as unknown as LoggerService, { sentryEnabled: true } as never);
+      filter = new GlobalExceptionFilter(logger as unknown as LoggerService, {
+        sentryDsn: '',
+        sentryEnabled: true,
+        sentryIgnoredErrors: [],
+      });
       const { host } = makeHost({ route: { path: '/api/todos' } });
 
       filter.catch(new TodoNotFoundError('todo-1'), host);
@@ -183,7 +195,11 @@ describe('GlobalExceptionFilter', () => {
     });
 
     it('captures InternalServerError once with the request context trace id', () => {
-      filter = new GlobalExceptionFilter(logger as unknown as LoggerService, { sentryEnabled: true } as never);
+      filter = new GlobalExceptionFilter(logger as unknown as LoggerService, {
+        sentryDsn: '',
+        sentryEnabled: true,
+        sentryIgnoredErrors: [],
+      });
       const { host } = makeHost({ route: { path: '/api' } });
       const error = new InternalServerError();
 
@@ -208,7 +224,11 @@ describe('GlobalExceptionFilter', () => {
     );
 
     it('captures exception via Sentry when enabled', () => {
-      filter = new GlobalExceptionFilter(logger as unknown as LoggerService, { sentryEnabled: true } as never);
+      filter = new GlobalExceptionFilter(logger as unknown as LoggerService, {
+        sentryDsn: '',
+        sentryEnabled: true,
+        sentryIgnoredErrors: [],
+      });
       const { host } = makeHost({ route: { path: '/api' }, userId: 'user-1' });
 
       filter.catch(new Error('test'), host);
@@ -217,7 +237,11 @@ describe('GlobalExceptionFilter', () => {
     });
 
     it('sets Sentry user when userId present', () => {
-      filter = new GlobalExceptionFilter(logger as unknown as LoggerService, { sentryEnabled: true } as never);
+      filter = new GlobalExceptionFilter(logger as unknown as LoggerService, {
+        sentryDsn: '',
+        sentryEnabled: true,
+        sentryIgnoredErrors: [],
+      });
       const { host } = makeHost({ route: { path: '/api' }, userId: 'user-42' });
 
       filter.catch(new Error('test'), host);
@@ -226,7 +250,11 @@ describe('GlobalExceptionFilter', () => {
     });
 
     it('does not call Sentry.setUser when userId is absent', () => {
-      filter = new GlobalExceptionFilter(logger as unknown as LoggerService, { sentryEnabled: true } as never);
+      filter = new GlobalExceptionFilter(logger as unknown as LoggerService, {
+        sentryDsn: '',
+        sentryEnabled: true,
+        sentryIgnoredErrors: [],
+      });
       const { host } = makeHost({ route: { path: '/api' } });
 
       filter.catch(new Error('test'), host);

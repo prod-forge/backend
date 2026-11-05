@@ -1,5 +1,6 @@
 jest.mock('@sentry/node', () => ({
   httpIntegration: jest.fn((options: object) => ({ name: 'Http', options })),
+  openTelemetryIntegration: jest.fn(() => ({ name: 'OpenTelemetry' })),
 }));
 
 jest.mock('@sentry/profiling-node', () => ({
@@ -31,7 +32,7 @@ describe('buildSentryOptions', () => {
     it('never attaches incoming request bodies', () => {
       const integrations = buildSentryOptions(env, '1.0.0', false).integrations as { name: string; options?: object }[];
 
-      expect(integrations).toContainEqual({ name: 'Http', options: { maxIncomingRequestBodySize: 'none' } });
+      expect(integrations).toContainEqual({ name: 'Http', options: { maxRequestBodySize: 'none' } });
     });
 
     it('drops ignored and validation errors', () => {
@@ -45,13 +46,28 @@ describe('buildSentryOptions', () => {
   });
 
   describe('positive cases', () => {
-    it('maps the environment, release and OpenTelemetry ownership', () => {
-      expect(buildSentryOptions(env, '1.2.3', true)).toMatchObject({
+    it('maps the environment and release', () => {
+      expect(buildSentryOptions(env, '1.2.3', false)).toMatchObject({
         dsn: env.SENTRY_DSN,
         environment: 'production',
         release: '1.2.3',
-        skipOpenTelemetrySetup: true,
       });
+    });
+
+    it('traces on its own when OpenTelemetry does not own tracing', () => {
+      const options = buildSentryOptions(env, '1.0.0', false);
+
+      expect(options.tracesSampleRate).toBe(0.2);
+      expect(options.enableOpenTelemetrySetup).toBe(true);
+      expect(options.integrations).not.toContainEqual({ name: 'OpenTelemetry' });
+    });
+
+    it('records no spans and links errors to OpenTelemetry spans when OpenTelemetry owns tracing', () => {
+      const options = buildSentryOptions(env, '1.0.0', true);
+
+      expect(options.tracesSampleRate).toBeUndefined();
+      expect(options.enableOpenTelemetrySetup).toBe(false);
+      expect(options.integrations).toContainEqual({ name: 'OpenTelemetry' });
     });
 
     it('keeps other errors', () => {

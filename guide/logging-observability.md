@@ -153,34 +153,35 @@ opens the matching trace in Tempo.
 
 ### Coexistence with Sentry
 
-`@sentry/node` v10 is built on OpenTelemetry and would otherwise register its own global `TracerProvider`; a second
-provider is silently ignored, so one of the two would lose spans. When `OTEL_EXPORTER_OTLP_ENDPOINT` is set,
-`instrument.ts` initialises Sentry with `skipOpenTelemetrySetup: true` and `tracing.ts` builds the one provider with
-Sentry's `SentrySpanProcessor`, `SentrySampler`, `SentryPropagator` and `SentryContextManager` next to the OTLP exporter.
-Sentry keeps instrumenting `http`, `express`, `pg` and `ioredis` itself, so those four are disabled in the auto
-instrumentations to avoid duplicate spans. Without the endpoint Sentry owns its own setup as before.
-`@sentry/opentelemetry` is pinned to the same version as `@sentry/node`, and the OpenTelemetry packages are pinned to the
-`core` 2.x line that Sentry 10 accepts (`sdk-node` 0.223.0; the 0.300 line moves to `core` 3), because mixing
-OpenTelemetry SDK majors breaks the shared context.
+Sentry 11 no longer plugs into someone else's TracerProvider, so the project runs in one of two modes, chosen by
+`OTEL_EXPORTER_OTLP_ENDPOINT` (`src/instrument.ts`, `src/modules/sentry/sentry-options.ts`):
+
+| Mode                           | Who records spans                                                    | Where spans go                                             | How errors find their trace                                      |
+| ------------------------------ | -------------------------------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------- |
+| Endpoint set (local stack)     | the OpenTelemetry `NodeSDK` in `tracing.ts`, started before Sentry   | Tempo and Sentry's OTLP endpoint (`getOtlpTracesEndpoint`) | `openTelemetryIntegration()` links each event to the active span |
+| No endpoint (production today) | Sentry, with `enableOpenTelemetrySetup: true` and `tracesSampleRate` | Sentry only                                                | Sentry's own span                                                |
+
+In the first mode Sentry is initialised without a traces sample rate, so its own instrumentation records nothing and
+there are no duplicate spans; the OpenTelemetry `http`, `express`, `pg` and `ioredis` instrumentations do that work. In
+the second mode Sentry registers its tracer provider as the global OpenTelemetry one, so `trace.getActiveSpan()` in
+`traceIdMiddleware` sees Sentry's span and `X-Trace-Id` matches the trace id of the Sentry event. Both were checked
+locally against a capturing server: events carry the same `trace_id` as the response header and the exported spans.
 
 ### Context propagation
 
 Services pass the trace on with the W3C `traceparent` header (`00-<trace-id>-<parent-span-id>-<flags>`). The SDK reads it
-on incoming requests and writes it on outgoing ones, so a trace started in the browser continues in the API. When Sentry
-is active the propagator is a composite of the W3C propagator and Sentry's, and Sentry runs with
-`propagateTraceparent: true`, so both `traceparent` and `sentry-trace`/`baggage` are accepted and emitted. A client
-can send either `traceparent` or `sentry-trace`/`baggage`. The web client sends neither today (only `x-trace-id`, and
-`browserTracingIntegration` adds `sentry-trace` only to same-origin and localhost requests by default), so every API
-request from it starts a new trace. Whether the Sentry sampler respects a sampling decision
-extracted from a W3C parent cannot be checked in the local stack (it runs with `SENTRY_ENABLED=false`); verify it in an
-environment with a Sentry DSN.
+on incoming requests and writes it on outgoing ones, so a trace started elsewhere continues in the API. The propagator
+is W3C `traceparent` plus W3C `baggage`; Sentry 11 leaves propagation to it when OpenTelemetry owns tracing, and Sentry
+runs with `propagateTraceparent: true` in the other mode. The web client sends neither header today (only
+`x-trace-id`), so every API request from it starts a new trace.
 
 ### Sampling and cost
 
-With Sentry active the Sentry sampler decides, so only `tracesSampleRate` (0.2) of traces reach Tempo too. Without
-Sentry every trace is sampled. Spans are batched and flushed on shutdown (`ShutdownService`, after the drain and
-in-flight phases). Tempo keeps blocks locally for 48 hours; for real traffic lower the sample rate first, since span
-volume (storage and exporter CPU) grows linearly with it.
+With Sentry active, 20% of root traces are kept (`TRACES_SAMPLE_RATE` in `src/modules/sentry/sentry.constants.ts`): by
+Sentry itself in the second mode, by a parent-based ratio sampler in the `NodeSDK` in the first, so Tempo receives the
+same share. Without Sentry every trace is sampled. Spans are batched and flushed on shutdown (`ShutdownService`, after
+the drain and in-flight phases). Tempo keeps blocks locally for 48 hours; for real traffic lower the sample rate first,
+since span volume (storage and exporter CPU) grows linearly with it.
 
 ## Observability Stack
 

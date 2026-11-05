@@ -204,8 +204,9 @@ All services share one `backend` network. Configs live in `observability/` (`pro
 pinned to the terraform monitoring host versions. `scripts/verify-observability.sh` checks the stack end to end.
 
 Tracing: `src/tracing.ts` (`startTracing`, called from `src/instrument.ts`) starts the OpenTelemetry `NodeSDK` only when
-`OTEL_EXPORTER_OTLP_ENDPOINT` is set; with Sentry active it owns the single TracerProvider and Sentry is initialised with
-`skipOpenTelemetrySetup`. `shutdownTracing()` flushes spans from `ShutdownService.onApplicationShutdown`.
+`OTEL_EXPORTER_OTLP_ENDPOINT` is set; it then owns tracing, exports to Tempo and, with Sentry active, to Sentry over OTLP,
+and Sentry only links errors to its spans (`openTelemetryIntegration`). Without the endpoint Sentry traces on its own
+with `enableOpenTelemetrySetup: true`. `shutdownTracing()` flushes spans from `ShutdownService.onApplicationShutdown`.
 `traceIdMiddleware` prefers the active span's trace id.
 
 ---

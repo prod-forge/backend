@@ -11,12 +11,11 @@ import { isTracingEnabled, startTracing } from './tracing';
 // Same precedence as ConfigModule: .env wins over .env.common (dotenv never overrides existing values).
 config({ path: [join(process.cwd(), '.env'), join(process.cwd(), '.env.common')], quiet: true });
 
-let sentryClient: Sentry.NodeClient | undefined;
+const sentryDsn = isSentryEnabled(process.env) ? process.env.SENTRY_DSN : undefined;
 
-if (isSentryEnabled(process.env)) {
-  sentryClient = Sentry.init(
-    buildSentryOptions(process.env, process.env.APP_VERSION || packageJson.version, isTracingEnabled()),
-  );
+// OpenTelemetry owns tracing when an OTLP endpoint is set: start it first, Sentry then attaches errors to its spans
+startTracing(sentryDsn);
+
+if (sentryDsn) {
+  Sentry.init(buildSentryOptions(process.env, process.env.APP_VERSION || packageJson.version, isTracingEnabled()));
 }
-
-startTracing(sentryClient);

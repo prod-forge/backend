@@ -12,11 +12,11 @@
 - **Reason:** `npm audit` flagged a transitive dependency the direct dependency had not patched yet (`guide/code-quality.md`).
 - **Where:** `package.json` (`overrides`, empty since the NestJS 12 upgrade removed the `multer` pin); `roadmap.md` tracks any new one.
 
-## OpenTelemetry stays on the line Sentry accepts
+## Sentry and OpenTelemetry are upgraded together
 
-- **Rule:** upgrade `@sentry/node`, `@sentry/opentelemetry` and the `@opentelemetry/*` packages together; keep `@opentelemetry/core` on the major that `@sentry/node` accepts.
-- **Reason:** Sentry 10 and the app share one TracerProvider; mixing OpenTelemetry SDK majors breaks the shared context (`guide/logging-observability.md`, "Coexistence with Sentry").
-- **Where:** `package.json` (`@sentry/*` 10.78.0, `@opentelemetry/core` 2.12.0, `@opentelemetry/sdk-node` 0.223.0). See [../hacks/dependencies.md](../hacks/dependencies.md).
+- **Rule:** upgrade `@sentry/node`, `@sentry/profiling-node` and the `@opentelemetry/*` packages in one change, and check both tracing modes (with and without `OTEL_EXPORTER_OTLP_ENDPOINT`) before merging.
+- **Reason:** the `@opentelemetry/sdk-node` line pins one `@opentelemetry/api` minor, and `@sentry/node` declares its own `api` range; a partial bump fails to install or splits the trace between Sentry and Tempo (`guide/logging-observability.md`, "Coexistence with Sentry").
+- **Where:** `package.json` (`@sentry/*` 11.11.0, `@opentelemetry/api` 1.10.0, `@opentelemetry/core` 3.0.0, `@opentelemetry/sdk-node` 0.300.0). See [../hacks/dependencies.md](../hacks/dependencies.md).
 
 ## Node version
 

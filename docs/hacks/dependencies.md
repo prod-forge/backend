@@ -14,12 +14,12 @@
 - **Why:** the package still declares NestJS 11 peers and blocked the NestJS 12 upgrade. The script is the package's own (MIT, credited in the file), so the Redis keys and behaviour did not change.
 - **If cleaned up:** going back to the package needs a release that accepts NestJS 12 peers. The fallback must keep the same contract as the script: times in milliseconds in, remaining seconds out, or `Retry-After` breaks when Redis is down.
 
-## OpenTelemetry pinned to the line Sentry 10 accepts
+## Two tracing modes for Sentry 11
 
-- **What:** `@opentelemetry/core` is 2.12.0 and `@opentelemetry/sdk-node` / `exporter-trace-otlp-http` are 0.223.0, although newer lines exist; `@sentry/opentelemetry` has the same version as `@sentry/node` (10.78.0).
-- **Where:** `package.json` (`dependencies`); `guide/logging-observability.md`, "Coexistence with Sentry".
-- **Why:** Sentry and the app share one TracerProvider (`src/tracing.ts`, `src/instrument.ts`). Sentry 10 accepts `core` 2.x; the 0.300 SDK line moves to `core` 3, and mixing majors breaks the shared context.
-- **If cleaned up:** a Dependabot or `ncu -u` bump of only the OpenTelemetry packages compiles but loses or splits spans. `.github/dependabot.yml` has no ignore rule for this, so every such pull request needs a manual check (inference: not verified against an actual Dependabot pull request).
+- **What:** with `OTEL_EXPORTER_OTLP_ENDPOINT` the `NodeSDK` owns tracing and sends spans to Tempo and to Sentry's OTLP endpoint, and Sentry is initialised without `tracesSampleRate` but with `openTelemetryIntegration()`; without the endpoint Sentry traces itself with `enableOpenTelemetrySetup: true`.
+- **Where:** `src/instrument.ts`, `src/tracing.ts`, `src/modules/sentry/sentry-options.ts`; `guide/logging-observability.md`, "Coexistence with Sentry".
+- **Why:** Sentry 11 removed `SentrySpanProcessor`, `SentrySampler` and `SentryContextManager`, so it can no longer share a TracerProvider the app owns. `enableOpenTelemetrySetup` in the second mode keeps `X-Trace-Id` and log trace ids equal to the Sentry trace id, because `traceIdMiddleware` reads the active OpenTelemetry span.
+- **If cleaned up:** setting `tracesSampleRate` in the first mode makes Sentry record its own spans next to the OpenTelemetry ones; dropping `enableOpenTelemetrySetup` in the second makes `X-Trace-Id` a random UUID that no Sentry event carries.
 
 ## npm removed from the production image
 

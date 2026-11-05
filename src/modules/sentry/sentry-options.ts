@@ -1,7 +1,9 @@
 import type { ErrorEvent, NodeOptions } from '@sentry/node';
 
-import { httpIntegration } from '@sentry/node';
+import { httpIntegration, openTelemetryIntegration } from '@sentry/node';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
+
+import { TRACES_SAMPLE_RATE } from './sentry.constants';
 
 type SentryOptionsEnv = {
   readonly NODE_ENV?: string;
@@ -9,11 +11,11 @@ type SentryOptionsEnv = {
   readonly SENTRY_IGNORED_ERRORS?: string;
 };
 
-export const buildSentryOptions = (
-  env: SentryOptionsEnv,
-  release: string,
-  skipOpenTelemetrySetup: boolean,
-): NodeOptions => {
+/**
+ * Without an OTLP endpoint Sentry traces on its own. With one, OpenTelemetry owns tracing (src/tracing.ts) and sends
+ * spans to Sentry over OTLP; Sentry then records no spans itself and only links errors to the active OTel span.
+ */
+export const buildSentryOptions = (env: SentryOptionsEnv, release: string, otelOwnsTracing: boolean): NodeOptions => {
   const ignoredErrors = JSON.parse(env.SENTRY_IGNORED_ERRORS || '[]') as string[];
 
   return {
@@ -39,13 +41,18 @@ export const buildSentryOptions = (
       userInfo: false,
     },
     dsn: env.SENTRY_DSN,
+    // Without our NodeSDK, Sentry registers its tracer provider as the global OpenTelemetry one, so
+    // trace.getActiveSpan() in the trace id middleware sees Sentry's span and X-Trace-Id matches the Sentry trace
+    enableOpenTelemetrySetup: !otelOwnsTracing,
     environment: env.NODE_ENV,
     // GDPR: request bodies can hold personal data (the login body carries the email), so they are never attached
-    integrations: [httpIntegration({ maxIncomingRequestBodySize: 'none' }), nodeProfilingIntegration()],
+    integrations: [
+      httpIntegration({ maxRequestBodySize: 'none' }),
+      nodeProfilingIntegration(),
+      ...(otelOwnsTracing ? [openTelemetryIntegration()] : []),
+    ],
     propagateTraceparent: true,
     release,
-    // With an OTLP endpoint the NodeSDK in tracing.ts owns the single TracerProvider.
-    skipOpenTelemetrySetup,
-    tracesSampleRate: 0.2,
+    ...(!otelOwnsTracing && { tracesSampleRate: TRACES_SAMPLE_RATE }),
   };
 };

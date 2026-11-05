@@ -14,6 +14,11 @@ Deferred known problems, so they are not rediscovered (or silently "fixed") in e
 - [#22](https://github.com/prod-forge/backend/issues/22) — Route Prometheus alerts to SNS through Alertmanager.
 - [#23](https://github.com/prod-forge/backend/issues/23) — Add SLO burn-rate alerts for the API.
 
+## Without an issue
+
+- [main-branch-protection.md](main-branch-protection.md) — `main` has no branch protection, so failing CI checks do not block a merge.
+- [dev-cd-workflows.md](dev-cd-workflows.md) — CD deploys prod only; the dev environment of the terraform repository has no deploy workflow.
+
 ## Format
 
 One line per problem: the issue link, its title and, when the docs already describe it, a link to that note. A problem without an issue gets a short file in this folder: what is wrong, where, why it is deferred, and what a fix needs.

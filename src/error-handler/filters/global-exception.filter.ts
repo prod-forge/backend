@@ -47,10 +47,11 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       }
 
       Sentry.captureException(exception, {
-        // No request body: it can hold personal data (the login body carries the email)
+        // No request body and no query string: both can hold personal data (the login body carries the email,
+        // the todo search carries free text)
         extra: {
           params: req.params,
-          query: req.query,
+          path: req.path,
           traceId,
         },
       });
@@ -63,7 +64,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       details: infraError ? exception.getResponse() : error.details,
       method: req.method,
       msg: error.message,
-      path: req.url,
+      path: req.path,
       stack: exception instanceof Error ? exception.stack : undefined,
     });
 

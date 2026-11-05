@@ -162,6 +162,22 @@ describe('GlobalExceptionFilter', () => {
       expect(Sentry.captureException).not.toHaveBeenCalled();
     });
 
+    it('never sends the query string to Sentry', () => {
+      filter = new GlobalExceptionFilter(logger as unknown as LoggerService, {
+        sentryDsn: '',
+        sentryEnabled: true,
+        sentryIgnoredErrors: [],
+      });
+      const { host } = makeHost({ route: { path: '/api/v1/todos' }, url: '/api/v1/todos?search=private' });
+
+      filter.catch(new InternalServerError(), host);
+
+      const [, context] = jest.mocked(Sentry.captureException).mock.calls[0] as [unknown, { extra: object }];
+      expect(context.extra).not.toHaveProperty('query');
+      expect(context.extra).toHaveProperty('path', '/api/v1/todos');
+      expect(JSON.stringify(context)).not.toContain('search=private');
+    });
+
     it('does not capture domain 4xx errors in Sentry', () => {
       filter = new GlobalExceptionFilter(logger as unknown as LoggerService, {
         sentryDsn: '',

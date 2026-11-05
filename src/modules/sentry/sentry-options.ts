@@ -11,6 +11,9 @@ type SentryOptionsEnv = {
   readonly SENTRY_IGNORED_ERRORS?: string;
 };
 
+// Removes the query string and the fragment: they can carry user-typed text
+const stripQueryAndHash = (url: string): string => url.split(/[?#]/, 1)[0];
+
 /**
  * Without an OTLP endpoint Sentry traces on its own. With one, OpenTelemetry owns tracing (src/tracing.ts) and sends
  * spans to Sentry over OTLP; Sentry then records no spans itself and only links errors to the active OTel span.
@@ -26,6 +29,15 @@ export const buildSentryOptions = (env: SentryOptionsEnv, release: string, otelO
 
       // ValidationError must be skipped from Sentry
       if (error?.name === 'ValidationError') return null;
+
+      // dataCollection already turns query params off; this also covers a URL set by hand
+      if (event.request) {
+        delete event.request.query_string;
+
+        if (event.request.url) {
+          event.request.url = stripQueryAndHash(event.request.url);
+        }
+      }
 
       return event;
     },

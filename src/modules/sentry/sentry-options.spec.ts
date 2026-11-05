@@ -43,6 +43,19 @@ describe('buildSentryOptions', () => {
       expect(send('IgnoredError')).toBeNull();
       expect(send('ValidationError')).toBeNull();
     });
+
+    it('strips the query string and the fragment from the request url', () => {
+      // Sentry's event field is snake_case
+      const request = Object.fromEntries([
+        ['query_string', 'search=private'],
+        ['url', 'https://api.example/api/v1/todos?search=private#top'],
+      ]) as { url: string };
+      const event = { request, type: undefined };
+
+      const result = buildSentryOptions(env, '1.0.0', false).beforeSend?.(event, { originalException: new Error('x') });
+
+      expect(result).toEqual({ request: { url: 'https://api.example/api/v1/todos' }, type: undefined });
+    });
   });
 
   describe('positive cases', () => {
@@ -68,6 +81,14 @@ describe('buildSentryOptions', () => {
       expect(options.tracesSampleRate).toBeUndefined();
       expect(options.enableOpenTelemetrySetup).toBe(false);
       expect(options.integrations).toContainEqual({ name: 'OpenTelemetry' });
+    });
+
+    it('keeps a request url without a query string as it is', () => {
+      const event = { request: { url: 'https://api.example/api/v1/todos' }, type: undefined };
+
+      const result = buildSentryOptions(env, '1.0.0', false).beforeSend?.(event, { originalException: new Error('x') });
+
+      expect(result).toEqual({ request: { url: 'https://api.example/api/v1/todos' }, type: undefined });
     });
 
     it('keeps other errors', () => {

@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 
-import Sentry from '@sentry/node';
+import * as Sentry from '@sentry/node';
 
 import { RequestContext } from '../../../logger/context/request-context';
 
@@ -10,9 +10,10 @@ export const sentryContextMiddleware =
     const traceId = RequestContext.getTraceId();
 
     Sentry.setTag('traceId', traceId);
+    // The path, never req.url: the query string can carry user-typed text
     Sentry.setContext('request', {
       method: req.method,
-      url: req.url,
+      path: req.path,
     });
 
     next();

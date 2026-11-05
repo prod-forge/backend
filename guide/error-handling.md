@@ -112,8 +112,12 @@ If a user can fix the problem, the error message should clearly explain how.
 ### Early initialization
 
 Sentry is initialized in `src/instrument.ts`, which `main.ts` imports on its first line, before NestJS and any
-application module. The SDK (through OpenTelemetry) instruments `http` and `pg` by patching them when they are first
-required, so initializing later, for example in a Nest `onModuleInit`, would leave requests and queries untraced.
+application module. `http` and `pg` are instrumented by patching them when they are first required, so initializing
+later, for example in a Nest `onModuleInit`, would leave requests and queries untraced. Who patches them depends on the
+tracing mode: without `OTEL_EXPORTER_OTLP_ENDPOINT` the Sentry SDK does it through its own OpenTelemetry setup; with it,
+the `NodeSDK` started by `src/tracing.ts` (also from `instrument.ts`, before `Sentry.init`) does, and Sentry only links
+errors to the active span. See
+[Coexistence with Sentry](logging-observability.md#coexistence-with-sentry).
 Because it runs before `ConfigModule`, `instrument.ts` reads `SENTRY_DSN`, `SENTRY_ENABLED`, `SENTRY_IGNORED_ERRORS`,
 `NODE_ENV` and `APP_VERSION` from the process environment (plus `.env` / `.env.common` locally) itself. `SENTRY_DSN` is
 optional. The SDK is initialized only when `SENTRY_DSN` is set
@@ -140,21 +144,25 @@ Sentry.captureException(exception, {
   extra: {
     traceId,
     params: req.params,
-    query: req.query,
+    path: req.path,
   },
 });
 ```
 
-Providing request context helps reproduce and investigate errors.
+Providing request context helps reproduce and investigate errors. The path is sent without the query string: query
+values such as the todo `search` text are typed by the user.
 
 ### Personal data (GDPR)
 
 Sentry is a third-party processor, so the reports carry no personal data:
 
 - the request body is never sent: the filter leaves it out of `extra`, and the SDK's HTTP integration runs with
-  `maxIncomingRequestBodySize: 'none'` (by default it attaches incoming bodies up to 10 KB, and the login body carries
+  `maxRequestBodySize: 'none'` (by default it attaches incoming bodies up to 10 KB, and the login body carries
   the email)
 - `dataCollection` turns off user details, cookies, headers, request and response bodies, query params and database query values, so the SDK attaches none of them by default
+- the query string never leaves the app: the filter sends `req.path`, the Sentry context middleware sets the request
+  context with `req.path` instead of `req.url`, and `beforeSend` strips the query string and the fragment from the
+  event's request URL
 - the only user context is the internal user id set by the filter (`Sentry.setUser({ userId })`)
 
 The options are built by `buildSentryOptions` in `src/modules/sentry/sentry-options.ts`, which `instrument.ts` calls.

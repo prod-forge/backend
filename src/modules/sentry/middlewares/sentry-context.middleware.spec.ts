@@ -5,14 +5,28 @@ jest.mock('@sentry/node', () => ({
   setTag: jest.fn(),
 }));
 
-import Sentry from '@sentry/node';
+import * as Sentry from '@sentry/node';
 
 import { sentryContextMiddleware } from './sentry-context.middleware';
 
 describe('sentryContextMiddleware', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('negative cases', () => {
+    it('never sends the query string to Sentry', () => {
+      const req = { method: 'GET', path: '/api/v1/todos', url: '/api/v1/todos?search=private' } as Request;
+
+      sentryContextMiddleware()(req, {} as Response, jest.fn() as NextFunction);
+
+      expect(JSON.stringify(jest.mocked(Sentry.setContext).mock.calls)).not.toContain('search=private');
+    });
+  });
+
   describe('positive cases', () => {
-    it('sets traceId tag and request context', () => {
-      const req = { method: 'GET', url: '/api/todos' } as Request;
+    it('sets traceId tag and request context with the path', () => {
+      const req = { method: 'GET', path: '/api/todos', url: '/api/todos' } as Request;
       const next = jest.fn() as NextFunction;
 
       sentryContextMiddleware()(req, {} as Response, next);
@@ -20,12 +34,12 @@ describe('sentryContextMiddleware', () => {
       expect(Sentry.setTag).toHaveBeenCalledWith('traceId', expect.any(String));
       expect(Sentry.setContext).toHaveBeenCalledWith('request', {
         method: 'GET',
-        url: '/api/todos',
+        path: '/api/todos',
       });
     });
 
     it('calls next', () => {
-      const req = { method: 'POST', url: '/api' } as Request;
+      const req = { method: 'POST', path: '/api', url: '/api' } as Request;
       const next = jest.fn() as NextFunction;
 
       sentryContextMiddleware()(req, {} as Response, next);

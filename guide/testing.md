@@ -85,6 +85,27 @@ Tasks include:
 - shutting down Testcontainers
 - releasing system resources
 
+#### "Could not find a working container runtime strategy"
+
+Testcontainers does not read Docker contexts. It looks for Docker in `DOCKER_HOST`, then in
+`~/.testcontainers.properties`, then at `/var/run/docker.sock`. When that symlink points to a runtime that is not running
+(for example, Docker Desktop took it over while OrbStack is the one running), global setup fails with this error even
+though `docker ps` works.
+
+Point Testcontainers at the running runtime, once:
+
+```shell
+DOCKER_HOST=unix://$HOME/.orbstack/run/docker.sock npm run test:e2e
+```
+
+or permanently, for Testcontainers only:
+
+```shell
+echo "docker.host=unix://$HOME/.orbstack/run/docker.sock" >> ~/.testcontainers.properties
+```
+
+`docker context ls` shows the socket path of each runtime; use the one marked with `*`.
+
 ### Writing Effective E2E Tests
 
 E2E tests should treat the application as a black box.

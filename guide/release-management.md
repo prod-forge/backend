@@ -224,7 +224,7 @@ Once AWS replaces the running containers with the new version, the deployment is
 `cd.yml`, `rollback.yml` and `show-ecs-revisions.yml` hard-code no AWS names. They run in the `prod` GitHub environment
 and read every name from GitHub variables that are filled from `terraform output` of the
 [terraform](https://github.com/prod-forge/terraform) environment root (see
-[Deploy workflow variables](https://github.com/prod-forge/terraform/blob/main/docs/workflow.md#deploy-workflow-variables)).
+[Deploy workflow variables](https://github.com/prod-forge/terraform/blob/main/guide/workflow.md#deploy-workflow-variables)).
 The publish job fails before pushing an image when one of them is empty.
 
 | Variable                    | Terraform output                       | prod value                                                                 |

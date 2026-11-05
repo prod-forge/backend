@@ -1,14 +1,11 @@
-import type { ThrottlerStorageRecord } from '@nestjs/throttler/dist/throttler-storage-record.interface';
-
-import type { ThrottlerRedisStorage } from './throttler-redis.storage';
+import type { ThrottlerRedisStorage, ThrottlerStorageRecord } from './throttler-redis.storage';
 
 import { ThrottlerStorage } from './throttler.storage';
 
-const makeRedisStorage = (): jest.Mocked<ThrottlerRedisStorage> & { redis: jest.Mock } =>
+const makeRedisStorage = (): jest.Mocked<ThrottlerRedisStorage> =>
   ({
     increment: jest.fn(),
-    redis: jest.fn() as never,
-  }) as unknown as jest.Mocked<ThrottlerRedisStorage> & { redis: jest.Mock };
+  }) as unknown as jest.Mocked<ThrottlerRedisStorage>;
 
 const makeRecord = (overrides: Partial<ThrottlerStorageRecord> = {}): ThrottlerStorageRecord => ({
   isBlocked: false,

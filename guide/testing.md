@@ -155,7 +155,7 @@ Unit and e2e tests share the same threshold: 80% for branches, functions, lines 
 
 Both measure the same files: everything in `src/` except entry points, modules, configuration, DTOs, entities,
 interfaces, enums and constants. The entry points are `main.ts` and `instrument.ts`: both run once at process start and
-only call helpers that have their own specs (`startTracing`, `buildSentryOptions`, `isSentryEnabled`). The `pre-push` hook and the CI unit job run `npm run test:cov`, so a change that drops
+only call helpers that have their own specs (`startTracing`, `buildSentryOptions`, `isSentryEnabled`). The `pre-push` hook and the unit jobs of CI and CD run `npm run test:cov`, so a change that drops
 unit coverage below the line is rejected. E2E needs a database and Redis, so it is not part of the hook: CI runs `npm run test:e2e`, and
 `npm run test:e2e:cov` checks the e2e threshold.
 

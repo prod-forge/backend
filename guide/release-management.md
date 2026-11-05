@@ -193,7 +193,8 @@ Some teams also include additional checks such as:
 - static analysis (SonarQube); this project runs CodeQL on pull requests, on `main` and weekly
 - dependency vulnerability scanning; this project runs `npm audit --omit=dev --audit-level=high` in the lint job and
   Dependabot (npm, GitHub Actions, Docker) weekly
-- code coverage thresholds
+- code coverage thresholds; this project enforces 80% for branches, functions, lines and statements in the unit job
+  of CI and CD and in the `pre-push` hook (see [Testing](testing.md#coverage-thresholds))
 
 These checks help maintain long-term code quality.
 
@@ -205,7 +206,14 @@ These checks help maintain long-term code quality.
 
 Continuous Deployment is responsible for delivering the new version to production infrastructure.
 
-The CD pipeline extends the CI pipeline with deployment steps.
+The CD pipeline (`.github/workflows/cd.yml`, started by a `v*` tag) deploys to the `prod` environment only; there is no
+CD workflow for a dev environment yet ([open issue](../docs/open-issues/dev-cd-workflows.md)).
+
+It first runs the same verification jobs as CI: lint with the OpenAPI check and `npm audit`, unit tests with the
+coverage threshold (`npm run test:cov`), e2e tests, and the build with the migration render test and the Trivy scan. CI
+skips the release commit on `main` (`chore(release)`), so these jobs are the only gate for the commit that is deployed.
+The deployment steps follow. Tags pushed close together run one after another (a `concurrency` group that never cancels
+a running deployment), so two migrations or deploys never overlap.
 
 Typical deployment workflow:
 
@@ -221,8 +229,8 @@ Once AWS replaces the running containers with the new version, the deployment is
 
 ### GitHub Variables
 
-`cd.yml`, `rollback.yml` and `show-ecs-revisions.yml` hard-code no AWS names. They run in the `prod` GitHub environment
-and read every name from GitHub variables that are filled from `terraform output` of the
+`cd.yml`, `rollback.yml` and `show-ecs-revisions.yml` hard-code no AWS names. Their AWS jobs run in the `prod` GitHub
+environment and read every name from GitHub variables that are filled from `terraform output` of the
 [terraform](https://github.com/prod-forge/terraform) environment root (see
 [Deploy workflow variables](https://github.com/prod-forge/terraform/blob/main/guide/workflow.md#deploy-workflow-variables)).
 The publish job fails before pushing an image when one of them is empty.
@@ -239,8 +247,10 @@ The publish job fails before pushing an image when one of them is empty.
 | `PRIVATE_SUBNET_IDS`        | `private_subnet_ids`, comma-joined     | `subnet-0aaa,subnet-0bbb,subnet-0ccc`                                      |
 | `ECS_SECURITY_GROUP_ID`     | `ecs_security_group_id`                | `sg-0123456789abcdef0`                                                     |
 
-The role trusts only jobs of this repository that declare the `prod` environment, so every AWS job sets
-`environment: prod`. The image contains no `.env` files: in ECS the configuration comes from the task definition (see
+The role trusts only jobs of this repository that declare the `prod` environment, so only the jobs that call AWS set
+`environment: prod` and `permissions: id-token: write`: `publish`, `migrations`, `deploy` and `cleanup` in `cd.yml`, and
+the single jobs of `rollback.yml` and `show-ecs-revisions.yml`. The CD verification jobs run `npm ci` and build
+third-party code, so they get only `contents: read` and cannot request a token the role trusts. The image contains no `.env` files: in ECS the configuration comes from the task definition (see
 [Configuration Management](configuration-management.md#variable-reference-and-production-values)).
 
 ### Database Migration Step

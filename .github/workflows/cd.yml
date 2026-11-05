@@ -19,13 +19,17 @@ env:
   ECS_SECURITY_GROUP_ID: ${{ vars.ECS_SECURITY_GROUP_ID }}
   KEEP: 3
 
+# Only the jobs that talk to AWS get an OIDC token and the prod environment the deploy role trusts (see below).
 permissions:
-  id-token: write
   contents: read
+
+# Tags pushed close together deploy one after another; a running migration or deploy is never cancelled.
+concurrency:
+  group: cd-${{ github.workflow }}
+  cancel-in-progress: false
 
 jobs:
   lint:
-    environment: prod
     runs-on: ubuntu-latest
     name: Linting
 
@@ -54,9 +58,14 @@ jobs:
       - name: Run Nestjs-doctor
         run: npm run doctor
 
+      - name: Check OpenAPI contract
+        run: npm run openapi:check
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+
   unit-tests:
     needs: lint
-    environment: prod
     runs-on: ubuntu-latest
     name: Unit Tests
 
@@ -77,11 +86,10 @@ jobs:
         run: npm run db:generate
 
       - name: Unit Tests
-        run: npm test
+        run: npm run test:cov
 
   e2e-tests:
     needs: unit-tests
-    environment: prod
     runs-on: ubuntu-latest
     name: E2E Tests
 
@@ -112,7 +120,6 @@ jobs:
 
   build:
     needs: e2e-tests
-    environment: prod
     runs-on: ubuntu-latest
     name: Build Application
 
@@ -126,12 +133,26 @@ jobs:
           DATABASE_SSL: true
           LOG_PRETTY: false
 
-      - name: Set up Docker Compose
-        run: docker compose -f docker-compose.yml build production
+      - name: Check the migration task definition render
+        run: scripts/render-migration-task.test.sh
+
+      - name: Build production image
+        run: docker build --target production -t prod-forge-todolist:ci .
+
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: prod-forge-todolist:ci
+          severity: HIGH,CRITICAL
+          exit-code: 1
+          ignore-unfixed: true
 
   publish:
     needs: build
     environment: prod
+    permissions:
+      id-token: write
+      contents: read
     runs-on: ubuntu-latest
     name: Publish to ECR
 
@@ -212,6 +233,9 @@ jobs:
   migrations:
     needs: publish
     environment: prod
+    permissions:
+      id-token: write
+      contents: read
     runs-on: ubuntu-latest
     name: Run Migrations
 
@@ -299,6 +323,9 @@ jobs:
       - publish
       - migrations
     environment: prod
+    permissions:
+      id-token: write
+      contents: read
     runs-on: ubuntu-latest
     name: Deploy ECS
 
@@ -361,6 +388,9 @@ jobs:
   cleanup:
     needs: deploy
     environment: prod
+    permissions:
+      id-token: write
+      contents: read
     runs-on: ubuntu-latest
     name: Clean outdated revisions
 

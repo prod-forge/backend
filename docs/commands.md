@@ -1,4 +1,6 @@
-# Developer Guide
+# Commands
+
+Commands for working with the project. How to add code is in [architecture/patterns.md](architecture/patterns.md).
 
 ## Prerequisites
 
@@ -10,9 +12,11 @@
 | PostgreSQL | 18        | Or via docker-compose                  |
 | Redis      | 8         | Or via docker-compose                  |
 
+CI and the Docker image use Node.js 24.21.0 (`NODE_VERSION` in the workflows, `node:24.21.0-alpine` in the `Dockerfile`).
+
 ---
 
-## Local Setup
+## Setup
 
 ### 1. Install dependencies
 
@@ -157,6 +161,7 @@ npm run start:prod         # Run compiled output
 npm run db:generate        # Regenerate Prisma client
 npm run db:init            # Deploy migrations + generate
 npm run db:migrate -- name # Create a new migration
+npm run db:migration:deploy # Deploy existing migrations
 npm run db:migration:apply # Wait for the DB, then deploy migrations
 npm run db:seed            # Run seed script
 
@@ -174,6 +179,7 @@ npm run openapi:check      # Fail if docs/openapi.json is out of date
 npm test                   # Unit tests
 npm run test:cov           # Unit tests with coverage
 npm run test:watch         # Unit tests in watch mode
+npm run test:debug         # Unit tests in band with the Node inspector
 npm run test:e2e           # E2E tests (Testcontainers)
 npm run test:e2e:cov       # E2E with coverage
 npm run test:load          # k6 smoke test (load/k6-smoke.js; needs k6)
@@ -209,7 +215,17 @@ Located in `test/`. Use `@testcontainers/postgresql` and `@testcontainers/redis`
 npm run test:e2e
 ```
 
-### Coverage exclusions
+### Load tests
+
+```bash
+npm run test:load          # k6 run load/k6-smoke.js; needs k6 and a migrated, seeded database
+```
+
+`load/docker-compose.load.yml` and `guide/testing.md` ("Load Testing") describe the setup.
+
+### Coverage
+
+`jest.coverageThreshold` in `package.json` requires 80% for branches, functions, lines and statements; `npm run test:cov` fails below it.
 
 The following are excluded from coverage (see `jest.collectCoverageFrom` in `package.json`):
 
@@ -220,138 +236,11 @@ The following are excluded from coverage (see `jest.collectCoverageFrom` in `pac
 
 ---
 
-## Adding a New Feature
-
-Follow this sequence to stay consistent with existing patterns.
-
-### 1. Domain errors
-
-Create `src/error-handler/errors/<feature>.errors.ts`:
-
-```ts
-export class FeatureNotFoundError extends BaseError<{ id: string }> {
-  static code = ErrorCodes.FEATURE_NOT_FOUND;
-  static domain = ErrorCategory.DOMAIN;
-  static message = 'Feature not found';
-  static status = HttpStatus.NOT_FOUND;
-
-  constructor(id: string) {
-    super(
-      FeatureNotFoundError.message,
-      FeatureNotFoundError.code,
-      FeatureNotFoundError.domain,
-      FeatureNotFoundError.status,
-      { id },
-    );
-  }
-}
-```
-
-Add `FEATURE_NOT_FOUND` to `ErrorCodes` enum.
-
-### 2. DTOs
-
-Create under `src/api/<feature>/dtos/`:
-
-- `requests/create-<feature>.dto.ts` — `class-validator` + `@ApiProperty`
-- `requests/update-<feature>.dto.ts` — all fields optional
-- `responses/<feature>-response.dto.ts` — `@Expose()` + `@ApiProperty`
-
-### 3. Entity and mapper
-
-`src/features/<feature>/entities/<feature>.entity.ts`:
-
-```ts
-export class FeatureEntity {
-  id: string;
-  // ... alphabetical
-
-  constructor(partial: Partial<FeatureEntity>) {
-    Object.assign(this, partial);
-  }
-}
-```
-
-`src/features/<feature>/mappers/<feature>.mapper.ts`:
-
-```ts
-export const FeatureMapper = {
-  toEntity(row: PrismaFeature): FeatureEntity {
-    return new FeatureEntity({ ... });
-  },
-};
-```
-
-### 4. Repository
-
-`src/features/<feature>/<feature>.repository.ts` — inject `PrismaService`, return entities via mapper, return `void` for not-found.
-
-### 5. Service
-
-`src/features/<feature>/<feature>.service.ts` — inject repository (and `CacheStorage` if caching applies), throw domain errors, coordinate cache invalidation.
-
-### 6. Cache keys (if caching)
-
-`src/features/<feature>/cache-queries/<feature>.cache-queries.ts`:
-
-```ts
-const CACHE_VERSION = 'v1'; // bump when the cached shape changes
-
-export const FeatureCacheKeys = {
-  item(id: string): string {
-    return `${CACHE_VERSION}:feature:${id}`;
-  },
-};
-```
-
-### 7. Controller
-
-`src/api/<feature>/<feature>.controller.ts`:
-
-```ts
-@ApiTags('Feature')
-@Controller({ path: 'feature', version: '1' })
-export class FeatureController {
-  constructor(private readonly featureService: FeatureService) {}
-
-  @ApiErrors(...)
-  @ApiOk(FeatureResponseDto, { ... })
-  @Get(':id')
-  @UseGuards(AuthGuard)
-  async findOne(@Param('id') id: string): Promise<FeatureResponseDto> {
-    const item = await this.featureService.findOne(id);
-    return plainToInstance(FeatureResponseDto, item, { excludeExtraneousValues: true });
-  }
-}
-```
-
-### 8. Module
-
-`src/features/<feature>/<feature>.module.ts` — wire controller, service, repository, and required imports.
-
-### 9. Register module
-
-Import the new `FeatureModule` in `src/app.module.ts`.
-
----
-
-## Database Changes
-
-```bash
-# Make changes to database-manager/schema.prisma, then:
-npm run db:migrate -- describe-your-change
-# This creates a migration file and regenerates the Prisma client.
-```
-
-Never edit files in `database-manager/generated/` manually.
-
----
-
 ## Code Quality Gates
 
 Husky hooks run these automatically.
 
-On every commit (`pre-commit`, via lint-staged):
+On every commit (`pre-commit`, `npm run pre-commit`, which runs lint-staged with `.lintstagedrc.cjs`):
 
 - `prettier --write` on staged `*.md`, `*.ts` and `*.json`
 - `eslint --fix` on staged `*.ts` and `*.json` (includes import-order, perfectionist, sonarjs, unicorn, check-file rules)
@@ -359,7 +248,7 @@ On every commit (`pre-commit`, via lint-staged):
 
 On the commit message (`commit-msg`): `commitlint` enforces Conventional Commits, and AI attribution trailers are rejected.
 
-On push (`pre-push`): `npm run knip && npm run doctor && npm test`.
+On push (`pre-push`): `npm run knip && npm run doctor && npm run test:cov` (unit tests with the 80% coverage threshold).
 
 To run all checks manually:
 
@@ -377,10 +266,7 @@ npm run lint && npm run format
 docker-compose up --build production
 ```
 
-The `Dockerfile` uses a two-stage build:
-
-1. **builder** — installs all deps, generates Prisma client, compiles TypeScript
-2. **production** — copies only compiled output and prod deps, adds the AWS RDS CA bundle (`NODE_EXTRA_CA_CERTS`, so `pg` can verify RDS certificates), removes the bundled npm (nothing runs through it: the app starts with `node`, the ECS migration task runs `node_modules/.bin/prisma migrate deploy`), runs as unprivileged `nodeuser`
+The image build is described in [architecture/overview.md](architecture/overview.md#docker-image).
 
 ### Full observability stack
 
@@ -405,29 +291,40 @@ Check alert rules after editing: `docker run --rm --entrypoint promtool -v "$PWD
 
 ---
 
-## Logging
+## Commit Convention
 
-The app uses structured JSON logging via pino. In development, `LOG_PRETTY=true` enables human-readable output.
+Commits follow [Conventional Commits](https://www.conventionalcommits.org/). Allowed types (`.commitlintrc.cjs`): `ci`, `chore`, `docs`, `feat`, `fix`, `perf`, `refactor`, `revert`, `style`.
 
-Every log entry includes:
+```
+feat: add pagination to todo list
+fix: return 404 for a todo of another user
+docs: update architecture overview
+chore: bump prisma
+```
 
-- `timestamp` — ISO 8601
-- `level` — trace/debug/info/warn/error
-- `traceId` — from the request context (active trace id, else the incoming `X-Trace-Id`, else a UUID)
-- `ctx` — the class name that produced the log
-- `msg` — log message
-- `appName`, `env`, `pid` — process metadata
-
-Sensitive fields automatically redacted (`src/logger/log-redact.ts`): `req.headers.authorization`, `req.headers.cookie`, `req.body.password`, `req.body.email`, `req.body.token`, top-level `password` and `token`.
+`commitlint` enforces this on every commit. The `release` script uses commit history to auto-generate changelogs.
 
 ---
 
 ## Release
 
-Releases follow Conventional Commits and are managed with `release-it`:
-
 ```bash
 npm run release
 ```
 
-This bumps the version, generates a changelog, and tags the commit.
+Runs `release/before-release.ts` (an interactive checklist), then `release-it` (must run on a clean `main`) with:
+
+- `npm run lint` before the bump
+- `npm run build` and `npm run openapi:export` (staging `docs/openapi.json`) after the bump
+- Conventional changelog generation (`CHANGELOG.md`, never edited by hand)
+- Release commit `chore(release): v<version>`, git tag `v<version>` and push
+- GitHub release (no npm publish)
+
+The pushed `v*` tag starts `.github/workflows/cd.yml`, which deploys to AWS (`guide/release-management.md`).
+
+---
+
+## Rules
+
+- For an isolated change, run only the affected spec file (`npx jest <path>`); do not run the full suite for a single file change.
+- Never run `npm run release` or push a `v*` tag without an explicit request.

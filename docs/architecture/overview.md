@@ -219,3 +219,31 @@ Tracing: `src/tracing.ts` (`startTracing`, called from `src/instrument.ts`) star
 | `test`        | Redis retry disabled, throttle limits relaxed via `.env.test`     |
 
 CORS is on in every mode: only origins in `API_ALLOWED_ORIGINS` are accepted, plus requests without an `Origin` header when `API_ALLOWED_NON_BROWSER_ORIGINS=true`. `X-Trace-Id` is exposed to browsers.
+
+---
+
+## Logging
+
+The app uses structured JSON logging via pino. In development, `LOG_PRETTY=true` enables human-readable output.
+
+Every log entry includes:
+
+- `timestamp` — ISO 8601
+- `level` — trace/debug/info/warn/error
+- `traceId` — from the request context (active trace id, else the incoming `X-Trace-Id`, else a UUID)
+- `ctx` — the class name that produced the log
+- `msg` — log message
+- `appName`, `env`, `pid` — process metadata
+
+Sensitive fields automatically redacted (`src/logger/log-redact.ts`): `req.headers.authorization`, `req.headers.cookie`, `req.body.password`, `req.body.email`, `req.body.token`, top-level `password` and `token`.
+
+---
+
+## Docker Image
+
+The `Dockerfile` uses a two-stage build:
+
+1. **builder** — installs all deps, generates Prisma client, compiles TypeScript
+2. **production** — copies only compiled output and prod deps, adds the AWS RDS CA bundle (`NODE_EXTRA_CA_CERTS`, so `pg` can verify RDS certificates), removes the bundled npm (nothing runs through it: the app starts with `node`, the ECS migration task runs `node_modules/.bin/prisma migrate deploy`), runs as unprivileged `nodeuser`
+
+How to build and run it locally is in [../commands.md](../commands.md#docker).

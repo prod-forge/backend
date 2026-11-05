@@ -14,12 +14,29 @@ type SentryOptionsEnv = {
 // Removes the query string and the fragment: they can carry user-typed text
 const stripQueryAndHash = (url: string): string => url.split(/[?#]/, 1)[0];
 
+// Runs before config validation (instrument.ts), so a bad value needs its own clear message
+const parseIgnoredErrors = (raw: string | undefined): string[] => {
+  let parsed: unknown;
+
+  try {
+    parsed = JSON.parse(raw || '[]');
+  } catch {
+    throw new Error(`SENTRY_IGNORED_ERRORS must be a JSON array of error names, got: ${raw}`);
+  }
+
+  if (!Array.isArray(parsed) || !parsed.every((item) => typeof item === 'string')) {
+    throw new Error(`SENTRY_IGNORED_ERRORS must be a JSON array of error names, got: ${raw}`);
+  }
+
+  return parsed;
+};
+
 /**
  * Without an OTLP endpoint Sentry traces on its own. With one, OpenTelemetry owns tracing (src/tracing.ts) and sends
  * spans to Sentry over OTLP; Sentry then records no spans itself and only links errors to the active OTel span.
  */
 export const buildSentryOptions = (env: SentryOptionsEnv, release: string, otelOwnsTracing: boolean): NodeOptions => {
-  const ignoredErrors = JSON.parse(env.SENTRY_IGNORED_ERRORS || '[]') as string[];
+  const ignoredErrors = parseIgnoredErrors(env.SENTRY_IGNORED_ERRORS);
 
   return {
     beforeSend(event, hint): ErrorEvent | null {

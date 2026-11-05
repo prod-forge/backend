@@ -17,6 +17,15 @@ const env = {
 
 describe('buildSentryOptions', () => {
   describe('negative cases', () => {
+    it.each(['not json', '{"name":"Ignored"}', '[1]'])(
+      'fails with a clear message when SENTRY_IGNORED_ERRORS is %s',
+      (raw) => {
+        expect(() => buildSentryOptions({ ...env, SENTRY_IGNORED_ERRORS: raw }, '1.0.0', false)).toThrow(
+          'SENTRY_IGNORED_ERRORS must be a JSON array of error names',
+        );
+      },
+    );
+
     it('does not collect PII (user, cookies, headers, bodies, query params, query values)', () => {
       expect(buildSentryOptions(env, '1.0.0', false).dataCollection).toEqual({
         cookies: false,

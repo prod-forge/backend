@@ -4,7 +4,7 @@
 
 - **What:** `test`, `test:cov` and `test:watch` set `NODE_OPTIONS="$NODE_OPTIONS --experimental-vm-modules"`, and `test:debug` passes the flag to `node`, like the e2e scripts already did.
 - **Where:** `package.json` (`scripts`).
-- **Why:** NestJS 12 ships as ES modules only (`"type": "module"`) while the app compiles to CommonJS. Node 24 loads them with `require()` at runtime, but Jest's module loader does that only with the VM modules flag; without it every suite that imports `@nestjs/*` fails with "Must use import to load ES Module".
+- **Why:** NestJS 12 ships as ES modules only (`"type": "module"`) while the app compiles to CommonJS. Node 24 and 26 load them with `require()` at runtime, but Jest's module loader does that only with the VM modules flag; without it every suite that imports `@nestjs/*` fails with "Must use import to load ES Module".
 - **If cleaned up:** removing the flag breaks almost every unit suite. Moving the app to ESM output would make it unnecessary.
 
 ## Own Redis storage for the throttler

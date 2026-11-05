@@ -6,7 +6,7 @@ on:
       - 'v*'
 
 env:
-  NODE_VERSION: 24.21.0
+  NODE_VERSION: 26.13.0
   AWS_REGION: eu-central-1
   # Names and network ids are terraform outputs, stored as GitHub variables (guide/release-management.md).
   ECR_REPO: ${{ vars.ECR_REPOSITORY }}

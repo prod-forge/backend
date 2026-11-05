@@ -20,5 +20,5 @@
 
 ## Node version
 
-- **Rule:** Node.js 24 (`engines`: `>=24.15.0`, npm `>=11.0.0`); CI and the image use 24.21.0.
-- **Where:** `package.json` (`engines`); `NODE_VERSION: 24.21.0` in `.github/workflows/ci.yml` and `.github/workflows/cd.yml`; `node:24.21.0-alpine` in the `Dockerfile`.
+- **Rule:** CI and the image run Node.js 26.13.0 (LTS); `engines` keeps `>=24.15.0` (npm `>=11.0.0`), so local machines on Node 24 LTS still install and run the project. Bump the image and both workflows together.
+- **Where:** `package.json` (`engines`); `NODE_VERSION: 26.13.0` in `.github/workflows/ci.yml` and `.github/workflows/cd.yml`; `node:26.13.0-alpine` in the `Dockerfile`.

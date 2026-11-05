@@ -5,7 +5,7 @@
 `prod-forge-todolist-backend` is a production-grade NestJS REST API demonstrating real-world backend patterns:
 layered architecture, caching, structured logging, observability, error handling, and graceful shutdown.
 
-**Stack:** Node.js 24 · NestJS 12 · TypeScript 6 · PostgreSQL 18 · Redis 8 · Prisma 7 · @prometheus-io/client · pino · Sentry
+**Stack:** Node.js 26 · NestJS 12 · TypeScript 6 · PostgreSQL 18 · Redis 8 · Prisma 7 · @prometheus-io/client · pino · Sentry
 
 ---
 

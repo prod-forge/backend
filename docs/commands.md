@@ -14,7 +14,7 @@ Commands for working with the project. How to add code is in [architecture/patte
 | PostgreSQL | 18        | Or via docker-compose                  |
 | Redis      | 8         | Or via docker-compose                  |
 
-CI and the Docker image use Node.js 24.21.0 (`NODE_VERSION` in the workflows, `node:24.21.0-alpine` in the `Dockerfile`).
+CI and the Docker image use Node.js 26.13.0, the current LTS (`NODE_VERSION` in the workflows, `node:26.13.0-alpine` in the `Dockerfile`). Local development on Node 24.15 or newer still works.
 
 ---
 

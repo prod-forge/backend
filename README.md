@@ -21,7 +21,7 @@ The full stack table is on the organization page: https://github.com/prod-forge
 
 ## Getting started
 
-Requires Node 24, Docker with Compose >= 2.24 (`env_file` with `required: false`) and `jq`.
+Requires Node 24.15 or newer (CI and the image run Node 26), Docker with Compose >= 2.24 (`env_file` with `required: false`) and `jq`.
 
 ```shell
 npm install

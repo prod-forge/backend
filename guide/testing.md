@@ -144,6 +144,22 @@ It does not cover:
 - graceful shutdown with in-flight requests, and real AWS or deployment behaviour
 - the browser clients
 
+## Coverage Thresholds
+
+Unit and e2e tests share the same threshold: 80% for branches, functions, lines and statements.
+
+| Suite | Command                | Where                                             |
+| ----- | ---------------------- | ------------------------------------------------- |
+| Unit  | `npm run test:cov`     | `jest.coverageThreshold` in `package.json`        |
+| E2E   | `npm run test:e2e:cov` | `coverageThreshold` in `test/setup/jest-e2e.json` |
+
+Both measure the same files: everything in `src/` except entry points, modules, configuration, DTOs, entities,
+interfaces, enums and constants. The `pre-push` hook and the CI unit job run `npm run test:cov`, so a change that drops
+unit coverage below the line is rejected. E2E needs a database and Redis, so it is not part of the hook: CI runs `npm run test:e2e`, and
+`npm run test:e2e:cov` checks the e2e threshold.
+
+A threshold is a floor, not a target. It stops a decline; it does not say whether the right things are tested.
+
 ## Load Testing
 
 `load/k6-smoke.js` is a smoke load test with [k6](https://k6.io): 10 virtual users for 30 seconds, each iteration runs

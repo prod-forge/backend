@@ -211,6 +211,7 @@ Grafana runs on `http://localhost:3001` (`admin` / `admin`). Details:
     - [Writing Effective E2E Tests](guide/testing.md#writing-effective-e2e-tests)
   - [Test Specs Design Style](guide/testing.md#test-specs-design-style)
   - [What E2E Covers](guide/testing.md#what-e2e-covers)
+  - [Coverage Thresholds](guide/testing.md#coverage-thresholds)
   - [Load Testing](guide/testing.md#load-testing)
 
 <!-- -->

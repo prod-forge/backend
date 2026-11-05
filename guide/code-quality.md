@@ -59,7 +59,7 @@ Before each commit (`.husky/pre-commit` runs `lint-staged`):
 - the whole project is type-checked (`npm run lint:ts`) when a `*.ts` file is staged
 
 The `commit-msg` hook runs commitlint and rejects AI attribution trailers. Before each push, `.husky/pre-push` runs
-`npm run knip`, `npm run doctor` and `npm test`.
+`npm run knip`, `npm run doctor` and `npm run test:cov`, so a push that drops unit test coverage below 80% fails.
 
 This ensures that commits do not break the CI pipeline or introduce formatting issues.
 

@@ -148,7 +148,7 @@ Never edit generated code manually.
 
 ## Documentation Rules
 
-After every change, update any affected agent documentation in `docs/`:
+Agent reference docs live in `docs/`; the human guide lives in `guide/`. After every change, update any affected agent documentation in `docs/`:
 
 - **`docs/architecture.md`** — update when modules are added/removed, middleware/interceptor/filter wiring changes, or request lifecycle changes
 - **`docs/api.md`** — update when endpoints are added/removed/modified, request/response shapes change, new error codes are introduced, or auth behavior changes

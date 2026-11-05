@@ -220,6 +220,7 @@ Grafana runs on `http://localhost:3001` (`admin` / `admin`). Details:
     - [Mocking Dependencies](guide/testing.md#mocking-dependencies)
   - [End-to-End Tests (E2E)](guide/testing.md#end-to-end-tests-e2e)
     - [Test Environment Setup](guide/testing.md#test-environment-setup)
+      - ["Could not find a working container runtime strategy"](guide/testing.md#could-not-find-a-working-container-runtime-strategy)
     - [Writing Effective E2E Tests](guide/testing.md#writing-effective-e2e-tests)
   - [Test Specs Design Style](guide/testing.md#test-specs-design-style)
   - [What E2E Covers](guide/testing.md#what-e2e-covers)

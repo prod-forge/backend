@@ -4,8 +4,22 @@ describe('RequestTrackingService', () => {
   let service: RequestTrackingService;
 
   beforeEach(() => {
+    jest.useFakeTimers();
     service = new RequestTrackingService();
   });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  const track = (promise: Promise<void>): { isDone: () => boolean } => {
+    let done = false;
+    void promise.then(() => {
+      done = true;
+    });
+
+    return { isDone: () => done };
+  };
 
   describe('negative cases', () => {
     it('decrement below zero', () => {
@@ -18,18 +32,31 @@ describe('RequestTrackingService', () => {
       await expect(service.waitForRequestsToFinish(1000)).resolves.toBeUndefined();
     });
 
-    it('waitForRequestsToFinish uses default timeout when called without arguments', async () => {
-      await expect(service.waitForRequestsToFinish()).resolves.toBeUndefined();
-    });
-
-    it('waitForRequestsToFinish times out when requests remain', async () => {
+    it('waitForRequestsToFinish gives up after the default 30 s when requests remain', async () => {
       service.increment();
 
-      const start = Date.now();
-      await service.waitForRequestsToFinish(150);
-      const elapsed = Date.now() - start;
+      const wait = track(service.waitForRequestsToFinish());
+      await jest.advanceTimersByTimeAsync(30000);
 
-      expect(elapsed).toBeGreaterThanOrEqual(150);
+      expect(wait.isDone()).toBe(false);
+
+      await jest.advanceTimersByTimeAsync(100);
+
+      expect(wait.isDone()).toBe(true);
+      expect(service.getActiveRequests()).toBe(1);
+    });
+
+    it('waitForRequestsToFinish gives up after the given timeout when requests remain', async () => {
+      service.increment();
+
+      const wait = track(service.waitForRequestsToFinish(150));
+      await jest.advanceTimersByTimeAsync(100);
+
+      expect(wait.isDone()).toBe(false);
+
+      await jest.advanceTimersByTimeAsync(100);
+
+      expect(wait.isDone()).toBe(true);
     });
   });
 
@@ -60,12 +87,14 @@ describe('RequestTrackingService', () => {
       expect(service.getActiveRequests()).toBe(3);
     });
 
-    it('waitForRequestsToFinish resolves when requests finish', async () => {
+    it('waitForRequestsToFinish resolves on the next poll after requests finish', async () => {
       service.increment();
-
       setTimeout(() => service.decrement(), 50);
 
-      await expect(service.waitForRequestsToFinish(1000)).resolves.toBeUndefined();
+      const wait = track(service.waitForRequestsToFinish(1000));
+      await jest.advanceTimersByTimeAsync(100);
+
+      expect(wait.isDone()).toBe(true);
     });
   });
 });

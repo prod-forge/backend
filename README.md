@@ -66,7 +66,7 @@ Grafana runs on `http://localhost:3001` (`admin` / `admin`). Details:
   - [Code Review](guide/development-workflow.md#code-review)
   - [Squash Merge Strategy](guide/development-workflow.md#squash-merge-strategy)
   - [Squash Merge Workflow](guide/development-workflow.md#squash-merge-workflow)
-  - [Why This Matters](guide/development-workflow.md#why-this-matters)
+  - [Why this matters](guide/development-workflow.md#why-this-matters)
 
 <!-- -->
 
@@ -74,18 +74,18 @@ Grafana runs on `http://localhost:3001` (`admin` / `admin`). Details:
   - [Quality Gates First](guide/ai-development.md#quality-gates-first)
   - [Architecture Before Generation](guide/ai-development.md#architecture-before-generation)
   - [Workflow](guide/ai-development.md#workflow)
-    - [Context Belongs to the Repository](guide/ai-development.md#context-belongs-to-the-repository)
-    - [What Goes into AGENTS.md](guide/ai-development.md#what-goes-into-agentsmd)
-    - [The docs/ Folder](guide/ai-development.md#the-docs-folder)
-    - [Tune Your Harness](guide/ai-development.md#tune-your-harness)
+    - [Context belongs to the repository](guide/ai-development.md#context-belongs-to-the-repository)
+    - [What goes into AGENTS.md](guide/ai-development.md#what-goes-into-agentsmd)
+    - [The docs/ folder](guide/ai-development.md#the-docs-folder)
+    - [Tune your harness](guide/ai-development.md#tune-your-harness)
     - [Superpowers](guide/ai-development.md#superpowers)
   - [Pre-Hooks](guide/ai-development.md#pre-hooks)
   - [Task Decomposition](guide/ai-development.md#task-decomposition)
-    - [1. State the Task at a High Level](guide/ai-development.md#1-state-the-task-at-a-high-level)
-    - [2. Let the Agent Write the Plan](guide/ai-development.md#2-let-the-agent-write-the-plan)
-    - [3. Answer the Questions](guide/ai-development.md#3-answer-the-questions)
-    - [4. Validate and Approve](guide/ai-development.md#4-validate-and-approve)
-    - [5. Close with Conclusions](guide/ai-development.md#5-close-with-conclusions)
+    - [1. State the task at a high level](guide/ai-development.md#1-state-the-task-at-a-high-level)
+    - [2. Let the agent write the plan](guide/ai-development.md#2-let-the-agent-write-the-plan)
+    - [3. Answer the questions](guide/ai-development.md#3-answer-the-questions)
+    - [4. Validate and approve](guide/ai-development.md#4-validate-and-approve)
+    - [5. Close with conclusions](guide/ai-development.md#5-close-with-conclusions)
   - [Legacy Projects](guide/ai-development.md#legacy-projects)
   - [Common AI Problems](guide/ai-development.md#common-ai-problems)
   - [Cost Optimization](guide/ai-development.md#cost-optimization)
@@ -111,6 +111,7 @@ Grafana runs on `http://localhost:3001` (`admin` / `admin`). Details:
 - [6. Documentation](guide/documentation.md)
   - [Recommended Documentation Structure](guide/documentation.md#recommended-documentation-structure)
     - [README.md](guide/documentation.md#readmemd)
+    - [AGENTS.md, CLAUDE.md, docs/ and guide/](guide/documentation.md#agentsmd-claudemd-docs-and-guide)
     - [Swagger / OpenAPI](guide/documentation.md#swagger--openapi) (committed contract: [docs/openapi.json](docs/openapi.json))
   - [Additional Useful Documents](guide/documentation.md#additional-useful-documents)
     - [CHANGELOG.md](guide/documentation.md#changelogmd)
@@ -122,12 +123,15 @@ Grafana runs on `http://localhost:3001` (`admin` / `admin`). Details:
 
 - [7. Configuration Management](guide/configuration-management.md)
   - [Environment Configuration Strategy](guide/configuration-management.md#environment-configuration-strategy)
-  - [Secret Management](guide/configuration-management.md#secret-management)
   - [Test Environment Overrides](guide/configuration-management.md#test-environment-overrides)
+  - [Secret Management](guide/configuration-management.md#secret-management)
   - [NestJS Configuration Setup](guide/configuration-management.md#nestjs-configuration-setup)
   - [Structured Configuration Modules](guide/configuration-management.md#structured-configuration-modules)
   - [Accessing Configuration](guide/configuration-management.md#accessing-configuration)
   - [Why This Approach Works Well](guide/configuration-management.md#why-this-approach-works-well)
+  - [Variable Reference and Production Values](guide/configuration-management.md#variable-reference-and-production-values)
+  - [Database TLS](guide/configuration-management.md#database-tls)
+  - [Redis TLS and AUTH](guide/configuration-management.md#redis-tls-and-auth)
 
 <!-- -->
 
@@ -137,6 +141,8 @@ Grafana runs on `http://localhost:3001` (`admin` / `admin`). Details:
   - [Why Not a Separate Database Service?](guide/database-management.md#why-not-a-separate-database-service)
   - [Working with Migrations](guide/database-management.md#working-with-migrations)
     - [Running Migrations in CI/CD](guide/database-management.md#running-migrations-in-cicd)
+  - [Seeds](guide/database-management.md#seeds)
+  - [Slow Query Metrics (pg_stat_statements)](guide/database-management.md#slow-query-metrics-pg_stat_statements)
 
 <!-- -->
 
@@ -158,6 +164,7 @@ Grafana runs on `http://localhost:3001` (`admin` / `admin`). Details:
     - [High Availability](guide/fault-tolerance.md#high-availability)
     - [Graceful Degradation](guide/fault-tolerance.md#graceful-degradation)
   - [In-Flight Requests Handling](guide/fault-tolerance.md#in-flight-requests-handling)
+    - [Manual Check](guide/fault-tolerance.md#manual-check)
   - [Critical Dependency](guide/fault-tolerance.md#critical-dependency)
 
 <!-- -->
@@ -171,6 +178,10 @@ Grafana runs on `http://localhost:3001` (`admin` / `admin`). Details:
   - [Global Exception Handling](guide/error-handling.md#global-exception-handling)
   - [User-Friendly Error Responses](guide/error-handling.md#user-friendly-error-responses)
   - [Error Monitoring (Sentry)](guide/error-handling.md#error-monitoring-sentry)
+    - [Early initialization](guide/error-handling.md#early-initialization)
+    - [One capture point](guide/error-handling.md#one-capture-point)
+    - [What is an incident](guide/error-handling.md#what-is-an-incident)
+    - [Personal data (GDPR)](guide/error-handling.md#personal-data-gdpr)
     - [Trace ID](guide/error-handling.md#trace-id)
     - [User Context](guide/error-handling.md#user-context)
   - [Logging and Metrics](guide/error-handling.md#logging-and-metrics)
@@ -196,9 +207,9 @@ Grafana runs on `http://localhost:3001` (`admin` / `admin`). Details:
   - [Why Observability Matters](guide/logging-observability.md#why-observability-matters)
   - [Health Checks and Terminus](guide/logging-observability.md#health-checks-and-terminus)
     - [Critical vs Optional Dependencies](guide/logging-observability.md#critical-vs-optional-dependencies)
+    - [/health/live (Liveness)](guide/logging-observability.md#healthlive-liveness)
     - [/health (Critical)](guide/logging-observability.md#health-critical)
       - [Readiness](guide/logging-observability.md#readiness)
-    - [/health/live (Liveness)](guide/logging-observability.md#healthlive-liveness)
     - [/health/deps (All)](guide/logging-observability.md#healthdeps-all)
       - [Optional Dependencies Handling](guide/logging-observability.md#optional-dependencies-handling)
 
@@ -220,17 +231,28 @@ Grafana runs on `http://localhost:3001` (`admin` / `admin`). Details:
 - [14. Performance](guide/performance.md)
   - [Avoid Returning Unnecessary Data](guide/performance.md#avoid-returning-unnecessary-data)
   - [Use Pagination for Collections](guide/performance.md#use-pagination-for-collections)
+    - [Pagination semantics](guide/performance.md#pagination-semantics)
+    - [Offset vs cursor pagination](guide/performance.md#offset-vs-cursor-pagination)
   - [Use Database Indexes (When Needed)](guide/performance.md#use-database-indexes-when-needed)
+  - [Connection Pool and Timeouts](guide/performance.md#connection-pool-and-timeouts)
   - [Response Compression](guide/performance.md#response-compression)
+  - [Cache Invalidation Without KEYS](guide/performance.md#cache-invalidation-without-keys)
 
 <!-- -->
 
 - [15. Security](guide/security.md)
+  - [Authentication and Authorization](guide/security.md#authentication-and-authorization)
+    - [Resource Ownership](guide/security.md#resource-ownership)
   - [Request Validation](guide/security.md#request-validation)
   - [Response Data Sanitization](guide/security.md#response-data-sanitization)
   - [Security Headers](guide/security.md#security-headers)
   - [CORS Configuration](guide/security.md#cors-configuration)
   - [Rate Limiting](guide/security.md#rate-limiting)
+    - [Behind ALB: `trust proxy`](guide/security.md#behind-alb-trust-proxy)
+    - [Tracker](guide/security.md#tracker)
+    - [Exempt routes](guide/security.md#exempt-routes)
+    - [Internal-only metrics](guide/security.md#internal-only-metrics)
+    - [Disabling](guide/security.md#disabling)
   - [File Upload Security](guide/security.md#file-upload-security)
 
 <!-- -->

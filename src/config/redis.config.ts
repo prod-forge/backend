@@ -8,10 +8,6 @@ import { validateConfig } from '../common/utils/validate-config.util';
 import { RedisConfigInterface } from './interfaces/redis-config.interface';
 
 class RedisConfig {
-  @IsBoolean()
-  @Transform(({ value }) => value === 'true')
-  REDIS_ENABLED = true;
-
   @IsString()
   REDIS_HOST = 'localhost';
 
@@ -41,7 +37,6 @@ export const redisConfig = registerAs<RedisConfig, ConfigFactory<RedisConfigInte
     const config = validateConfig(RedisConfig);
 
     return {
-      redisEnabled: config.REDIS_ENABLED,
       redisHost: config.REDIS_HOST,
       redisPassword: config.REDIS_PASSWORD || undefined,
       redisPort: config.REDIS_PORT,

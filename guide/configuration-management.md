@@ -277,7 +277,6 @@ default.
 | `LOG_PRETTY`                                 | `true`              | no              | env, constant `false` (JSON for CloudWatch Logs)                               |
 | `LOG_EXCLUDE_ENDPOINTS`                      | `[]`                | no              | env, `backend_config.log_exclude_endpoints`                                    |
 | `HEALTH_CHECK_TRIGGER_MS`                    | `15000`             | no              | env, `backend_config.health_check_trigger_ms`                                  |
-| `REDIS_ENABLED`                              | `true`              | no              | env, constant `true`                                                           |
 | `REDIS_HOST`                                 | `localhost`         | no              | env, ElastiCache primary endpoint                                              |
 | `REDIS_PORT`                                 | `6379`              | no              | env, ElastiCache port                                                          |
 | `REDIS_TLS`                                  | `false`             | no              | env, constant `true`                                                           |

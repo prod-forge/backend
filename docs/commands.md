@@ -128,7 +128,6 @@ Defaults are the code defaults (`.env.common` sets local values for some). Produ
 | `DATABASE_POOL_MAX`               | `10`                   | Max connections in the Prisma pg pool             |
 | `DATABASE_CONNECT_TIMEOUT_MS`     | `5000`                 | Pool connection timeout                           |
 | `DATABASE_STATEMENT_TIMEOUT_MS`   | `5000`                 | Postgres `statement_timeout` per query            |
-| `REDIS_ENABLED`                   | `true`                 | Enable Redis (cache + throttler)                  |
 | `REDIS_HOST`                      | `localhost`            | Redis host                                        |
 | `REDIS_PORT`                      | `6379`                 | Redis port                                        |
 | `REDIS_TLS`                       | `false`                | `true`/`false` only; TLS with Node's default CAs  |

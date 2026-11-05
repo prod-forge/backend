@@ -46,8 +46,9 @@ The main entry point for developers. It should explain:
 ### AGENTS.md, CLAUDE.md, docs/ and guide/
 
 `AGENTS.md` holds the rules for any coding agent, and `CLAUDE.md` imports it with `@AGENTS.md`. `docs/` is the agent
-reference (architecture, API, data schema, developer guide, `openapi.json`), `guide/` is the human guide, and
-`.claude/settings.json` holds the Claude Code hooks.
+reference (goal, architecture, API, data schema, commands, restrictions, hacks, plans, `openapi.json`; see
+[AI-Assisted Development](ai-development.md#the-docs-folder)), `guide/` is the human guide, and `.claude/settings.json`
+holds the Claude Code hooks.
 
 ### Swagger / OpenAPI
 

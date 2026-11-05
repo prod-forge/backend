@@ -9,10 +9,10 @@
 
 ## Instrumentations disabled in tracing.ts
 
-- **What:** the `router` and `fs` auto-instrumentations are always off; `express`, `http`, `ioredis` and `pg` are off when Sentry is active.
-- **Where:** `src/tracing.ts` (`duplicateRoutingInstrumentation`, `sentryInstrumented`, comments in the file).
-- **Why:** Express 5 routes through `router`, which the express instrumentation already covers; the router instrumentation adds a `finish` listener per middleware layer and logs `MaxListenersExceededWarning` on every request. Sentry instruments the other four itself, so enabling them twice duplicates spans. The reason for `fs` is not commented (inference: span volume).
-- **If cleaned up:** duplicate spans and a warning on every request.
+- **What:** the `router` and `fs` auto-instrumentations are off; every other auto-instrumentation (`http`, `express`, `pg`, `ioredis`, ...) stays on, with or without Sentry.
+- **Where:** `src/tracing.ts` (`duplicateRoutingInstrumentation`, the `getNodeAutoInstrumentations` call in `startTracing`, comments in the file).
+- **Why:** Express 5 routes through `router`, which the express instrumentation already covers; the router instrumentation adds a `finish` listener per middleware layer and logs `MaxListenersExceededWarning` on every request. Nothing else is duplicated: with an OTLP endpoint the `NodeSDK` owns tracing, and Sentry 11 is initialised without `tracesSampleRate` and with `enableOpenTelemetrySetup: false`, so it records no spans of its own and only receives the OTel spans over OTLP (`src/modules/sentry/sentry-options.ts`, "Two tracing modes for Sentry 11" in [dependencies.md](dependencies.md)). The reason for `fs` is not commented (inference: span volume).
+- **If cleaned up:** a warning on every request (router), and many short spans (fs).
 
 ## Metrics hidden behind the ALB by a header
 

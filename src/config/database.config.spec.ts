@@ -22,6 +22,18 @@ describe('databaseConfig', () => {
   });
 
   describe('negative cases', () => {
+    it('throws when DATABASE_HOST is missing', () => {
+      delete process.env.DATABASE_HOST;
+
+      expect(() => databaseConfig()).toThrow('Please provide the valid ENVs mentioned above');
+    });
+
+    it('throws when DATABASE_HOST is empty', () => {
+      process.env.DATABASE_HOST = '';
+
+      expect(() => databaseConfig()).toThrow('Please provide the valid ENVs mentioned above');
+    });
+
     it('throws when DATABASE_POOL_MAX is not a number', () => {
       process.env.DATABASE_POOL_MAX = 'abc';
 
@@ -36,6 +48,15 @@ describe('databaseConfig', () => {
   });
 
   describe('positive cases', () => {
+    it.each(['localhost', 'database', 'db.example.internal', '10.0.0.5', '::1', '/var/run/postgresql'])(
+      'accepts DATABASE_HOST %s',
+      (host) => {
+        process.env.DATABASE_HOST = host;
+
+        expect(() => databaseConfig()).not.toThrow();
+      },
+    );
+
     it('applies the pool and timeout defaults', () => {
       expect(databaseConfig()).toMatchObject({
         databaseConnectTimeoutMs: 5000,

@@ -2,7 +2,7 @@ import type { ConfigFactory } from '@nestjs/config';
 
 import { registerAs } from '@nestjs/config';
 import { Transform, Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsIn, IsNumber, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsIn, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 import { getDatabaseUrl } from '../../database-manager/generate-url';
 import { LogLevel } from '../../database-manager/generated/internal/prismaNamespace';
@@ -17,6 +17,10 @@ class DatabaseConfig {
   @IsBoolean()
   @Transform(({ value }) => value === 'true')
   DATABASE_FAIL_FAST = true;
+
+  @IsNotEmpty()
+  @IsString()
+  DATABASE_HOST: string;
 
   @IsArray()
   @IsIn(['info', 'query', 'warn', 'error'], { each: true })

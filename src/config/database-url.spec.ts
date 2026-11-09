@@ -1,4 +1,4 @@
-import { getDatabaseUrl } from '../../database-manager/generate-url';
+import { assertDatabaseHost, getDatabaseUrl } from '../../database-manager/generate-url';
 
 describe('getDatabaseUrl', () => {
   const originalEnv = process.env;
@@ -42,6 +42,38 @@ describe('getDatabaseUrl', () => {
       expect(getDatabaseUrl('require')).toBe(
         'postgresql://app:p%40ss%2Fword@db.example.internal:5432/todolist?sslmode=require',
       );
+    });
+  });
+});
+
+describe('assertDatabaseHost', () => {
+  const originalEnv = process.env;
+
+  beforeEach(() => {
+    process.env = { ...originalEnv, DATABASE_HOST: 'db.example.internal' };
+  });
+
+  afterEach(() => {
+    process.env = originalEnv;
+  });
+
+  describe('negative cases', () => {
+    it('throws when DATABASE_HOST is missing', () => {
+      delete process.env.DATABASE_HOST;
+
+      expect(() => assertDatabaseHost()).toThrow('DATABASE_HOST is not set');
+    });
+
+    it('throws when DATABASE_HOST is blank', () => {
+      process.env.DATABASE_HOST = '  ';
+
+      expect(() => assertDatabaseHost()).toThrow('DATABASE_HOST is not set');
+    });
+  });
+
+  describe('positive cases', () => {
+    it('passes when DATABASE_HOST is set', () => {
+      expect(() => assertDatabaseHost()).not.toThrow();
     });
   });
 });

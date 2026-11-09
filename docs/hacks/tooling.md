@@ -1,5 +1,12 @@
 # Tooling hacks
 
+## No DATABASE_HOST check in prisma.config.ts
+
+- **What:** `prisma.config.ts` builds the URL with `getDatabaseUrl('require')` without `assertDatabaseHost()`; the app (`databaseConfig`) and the seed client (`database-manager/prisma.ts`) do check it.
+- **Where:** `prisma.config.ts`, `database-manager/generate-url.ts`.
+- **Why:** `prisma generate` loads the config too, and the Docker build runs it without any env file (`.env.common` is not copied into the image), so a check there would fail the image build. `migrate deploy` without a host still fails, with a connection error to `undefined`.
+- **If cleaned up:** adding the check to `prisma.config.ts` or inside `getDatabaseUrl` breaks `RUN npm run db:generate` in the Dockerfile.
+
 ## console output in config validation and scripts
 
 - **What:** `no-console` disabled on specific lines.

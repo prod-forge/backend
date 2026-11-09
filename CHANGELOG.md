@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.0.1](https://github.com/prod-forge/backend/compare/v1.0.0...v1.0.1) (2026-11-09)
+
+### Bug Fixes
+
+- accept only short token-like incoming trace ids ([6dac133](https://github.com/prod-forge/backend/commit/6dac1333aff12fb183cd169e5eff77939dda64aa))
+- **config:** validate database host before building connection URL ([c5ece6b](https://github.com/prod-forge/backend/commit/c5ece6b56d5184230780fb8aa1cb49cd8c6823e5))
+- **database:** check DATABASE_HOST in the seed client and drop untrue host cases ([cd0d513](https://github.com/prod-forge/backend/commit/cd0d513090f48aa0cc1945c04484cfbcfdb2a47c))
+- **docker:** drop npm from the production image, migration task calls the prisma cli ([9e3cb4a](https://github.com/prod-forge/backend/commit/9e3cb4a660074465ced049e5b8d1c010068dd41a))
+- **e2e:** patch of a missing todo answers TODO_NOT_FOUND since owner scoping ([b7d8618](https://github.com/prod-forge/backend/commit/b7d86180d1bc9cf023feaafbd46feeb0971ab648))
+- keep query strings out of Sentry reports ([9216c1c](https://github.com/prod-forge/backend/commit/9216c1c234522f73ac71cf213c35eaa223398056))
+- log the real Sentry status and drop a duplicated CORS comment ([2d852b9](https://github.com/prod-forge/backend/commit/2d852b9d3f12cbe3ae52505b626cfb52b0a7390e))
+- make the Claude deny hooks actually deny ([c6c8418](https://github.com/prod-forge/backend/commit/c6c84182812d4cc65ee1d406b3ab550c96b7484f))
+- make the in-memory throttler fallback follow the Redis script ([32ff448](https://github.com/prod-forge/backend/commit/32ff44832fd37dad92f0e98608e257d2f8200fff))
+- remove the unused REDIS_ENABLED variable ([4d95fa9](https://github.com/prod-forge/backend/commit/4d95fa9b3d5d76bd1917d7cfc22af6db2facaa84))
+- report an invalid SENTRY_IGNORED_ERRORS with a clear message ([6f55ac9](https://github.com/prod-forge/backend/commit/6f55ac9dd95f191eafa564606969fae4ebed9cf1))
+- return remaining seconds from the in-memory throttler fallback ([cc1b911](https://github.com/prod-forge/backend/commit/cc1b911fc751f7dddb53bb78f4c57665cea1d403))
+
 ## 1.0.0 (2026-11-04)
 
 First published version of the Prod Forge backend: a NestJS REST API for todos with the production practices the guide

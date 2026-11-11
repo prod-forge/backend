@@ -7,12 +7,12 @@
 - **Why:** `prisma generate` loads the config too, and the Docker build runs it without any env file (`.env.common` is not copied into the image), so a check there would fail the image build. `migrate deploy` without a host still fails, with a connection error to `undefined`.
 - **If cleaned up:** adding the check to `prisma.config.ts` or inside `getDatabaseUrl` breaks `RUN npm run db:generate` in the Dockerfile.
 
-## console output in config validation and scripts
+## console output in scripts
 
 - **What:** `no-console` disabled on specific lines.
-- **Where:** `src/common/utils/validate-config.util.ts`, `scripts/export-openapi.ts`, `scripts/issue-token.ts`, `test/openapi.e2e-spec.ts`.
-- **Why:** config validation runs before the logger exists; the scripts are CLI tools; the e2e test prints the `npm run openapi:export` hint next to the jest diff (comment in the file). Replacing the `console.log` in `validateConfig` is GitHub issue #15 ([../open-issues/README.md](../open-issues/README.md)).
-- **If cleaned up:** removing the disables fails lint; routing them through `LoggerService` does not work before the app starts.
+- **Where:** `scripts/export-openapi.ts`, `scripts/issue-token.ts`, `test/openapi.e2e-spec.ts`.
+- **Why:** the scripts are CLI tools; the e2e test prints the `npm run openapi:export` hint next to the jest diff (comment in the file). Config validation does not print: `validateConfig` throws an `Error` that lists each failed variable on its own line.
+- **If cleaned up:** removing the disables fails lint.
 
 ## Underscore file names
 

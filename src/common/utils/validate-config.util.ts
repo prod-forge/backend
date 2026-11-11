@@ -13,20 +13,18 @@ export function validateConfig<T extends object>(envVars: ClassConstructor<T>): 
     skipMissingProperties: false,
   });
 
-  let index = 0;
-
-  errors.forEach((err: ValidationError) => {
-    if (err.constraints) {
-      Object.values(err.constraints).forEach((str) => {
-        ++index;
-        // eslint-disable-next-line no-console
-        console.log(index, str);
-      });
-      // eslint-disable-next-line no-console
-      console.log('\n ***** \n');
-    }
-  });
-  if (errors.length) throw new Error('Please provide the valid ENVs mentioned above');
+  if (errors.length) throw new Error(formatConfigErrors(errors));
 
   return finalConfig;
+}
+
+function formatConfigErrors(errors: readonly ValidationError[]): string {
+  const lines = errors.map((err) => {
+    const constraints = err.constraints ? Object.values(err.constraints) : [];
+    const details = constraints.length ? constraints.join('; ') : 'is invalid';
+
+    return `- ${err.property}: ${details}`;
+  });
+
+  return ['Invalid environment variables:', ...lines].join('\n');
 }

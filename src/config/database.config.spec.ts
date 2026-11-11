@@ -2,7 +2,6 @@ import { databaseConfig } from './database.config';
 
 describe('databaseConfig', () => {
   const originalEnv = process.env;
-  let consoleSpy: jest.SpyInstance;
 
   beforeEach(() => {
     process.env = {
@@ -13,37 +12,35 @@ describe('databaseConfig', () => {
       DATABASE_PORT: '5432',
       DATABASE_USER: 'user',
     };
-    consoleSpy = jest.spyOn(console, 'log').mockImplementation();
   });
 
   afterEach(() => {
     process.env = originalEnv;
-    consoleSpy.mockRestore();
   });
 
   describe('negative cases', () => {
     it('throws when DATABASE_HOST is missing', () => {
       delete process.env.DATABASE_HOST;
 
-      expect(() => databaseConfig()).toThrow('Please provide the valid ENVs mentioned above');
+      expect(() => databaseConfig()).toThrow(/^- DATABASE_HOST: /m);
     });
 
     it('throws when DATABASE_HOST is empty', () => {
       process.env.DATABASE_HOST = '';
 
-      expect(() => databaseConfig()).toThrow('Please provide the valid ENVs mentioned above');
+      expect(() => databaseConfig()).toThrow(/^- DATABASE_HOST: /m);
     });
 
     it('throws when DATABASE_POOL_MAX is not a number', () => {
       process.env.DATABASE_POOL_MAX = 'abc';
 
-      expect(() => databaseConfig()).toThrow('Please provide the valid ENVs mentioned above');
+      expect(() => databaseConfig()).toThrow(/^- DATABASE_POOL_MAX: /m);
     });
 
     it('throws when DATABASE_STATEMENT_TIMEOUT_MS is not a number', () => {
       process.env.DATABASE_STATEMENT_TIMEOUT_MS = 'abc';
 
-      expect(() => databaseConfig()).toThrow('Please provide the valid ENVs mentioned above');
+      expect(() => databaseConfig()).toThrow(/^- DATABASE_STATEMENT_TIMEOUT_MS: /m);
     });
   });
 

@@ -11,7 +11,7 @@
 
 - **What:** `no-console` disabled on specific lines.
 - **Where:** `scripts/export-openapi.ts`, `scripts/issue-token.ts`, `test/openapi.e2e-spec.ts`.
-- **Why:** the scripts are CLI tools; the e2e test prints the `npm run openapi:export` hint next to the jest diff (comment in the file). Config validation does not print: `validateConfig` throws an `Error` that lists each failed variable on its own line.
+- **Why:** the scripts are CLI tools; the e2e test prints the `npm run openapi:export` hint next to the jest diff (comment in the file).
 - **If cleaned up:** removing the disables fails lint.
 
 ## Underscore file names

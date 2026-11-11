@@ -2,26 +2,23 @@ import { throttlerConfig } from './throttler.config';
 
 describe('throttlerConfig', () => {
   const originalEnv = process.env;
-  let consoleSpy: jest.SpyInstance;
 
   beforeEach(() => {
     process.env = { ...originalEnv };
     delete process.env.THROTTLE_LIMIT;
     delete process.env.THROTTLE_TTL;
     delete process.env.THROTTLE_ENABLED;
-    consoleSpy = jest.spyOn(console, 'log').mockImplementation();
   });
 
   afterEach(() => {
     process.env = originalEnv;
-    consoleSpy.mockRestore();
   });
 
   describe('negative cases', () => {
     it('throws when THROTTLE_LIMIT is not a number', () => {
       process.env.THROTTLE_LIMIT = 'many';
 
-      expect(() => throttlerConfig()).toThrow('Please provide the valid ENVs mentioned above');
+      expect(() => throttlerConfig()).toThrow(/^- THROTTLE_LIMIT: /m);
     });
   });
 

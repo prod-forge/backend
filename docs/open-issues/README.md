@@ -4,7 +4,6 @@ Deferred known problems, so they are not rediscovered (or silently "fixed") in e
 
 ## GitHub issues
 
-- [#15](https://github.com/prod-forge/backend/issues/15) — Replace `console.log` in `validateConfig` with a proper error report. See "console output in config validation and scripts" in [hacks/tooling.md](../hacks/tooling.md).
 - [#16](https://github.com/prod-forge/backend/issues/16) — Remove the dead `SWAGGER_USERNAME` and `SWAGGER_PASSWORD` entries from `.env.common`.
 - [#17](https://github.com/prod-forge/backend/issues/17) — Validate `DATABASE_HOST` in the database config.
 - [#18](https://github.com/prod-forge/backend/issues/18) — Order describe blocks negative-first in three spec files.

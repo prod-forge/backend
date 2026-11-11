@@ -1,8 +1,16 @@
 import 'reflect-metadata';
 import * as classValidator from 'class-validator';
-import { IsIn, IsString } from 'class-validator';
+import { IsIn, IsNumber, IsString } from 'class-validator';
 
 import { validateConfig } from './validate-config.util';
+
+class MultiConfig {
+  @IsNumber()
+  OTHER_VAR = 0;
+
+  @IsIn(['allowed'])
+  REQUIRED_VAR = 'not-allowed';
+}
 
 class StrictConfig {
   @IsIn(['allowed'])
@@ -30,7 +38,30 @@ describe('validateConfig', () => {
     it('throws when env var has invalid value', () => {
       process.env.REQUIRED_VAR = 'invalid-value';
 
-      expect(() => validateConfig(StrictConfig)).toThrow('Please provide the valid ENVs');
+      expect(() => validateConfig(StrictConfig)).toThrow(
+        'Invalid environment variables:\n- REQUIRED_VAR: REQUIRED_VAR must be one of the following values: allowed',
+      );
+    });
+
+    it('lists every failed variable on its own line', () => {
+      process.env.REQUIRED_VAR = 'invalid-value';
+      process.env.OTHER_VAR = 'abc';
+
+      expect(() => validateConfig(MultiConfig)).toThrow(
+        [
+          'Invalid environment variables:',
+          '- OTHER_VAR: OTHER_VAR must be a number conforming to the specified constraints',
+          '- REQUIRED_VAR: REQUIRED_VAR must be one of the following values: allowed',
+        ].join('\n'),
+      );
+    });
+
+    it('does not write to the console', () => {
+      const consoleSpy = jest.spyOn(console, 'log');
+      process.env.REQUIRED_VAR = 'invalid-value';
+
+      expect(() => validateConfig(StrictConfig)).toThrow();
+      expect(consoleSpy).not.toHaveBeenCalled();
     });
 
     it('still throws when ValidationError has no constraints', () => {
@@ -38,7 +69,7 @@ describe('validateConfig', () => {
         .spyOn(classValidator, 'validateSync')
         .mockReturnValueOnce([{ children: [], constraints: undefined, property: 'test' }]);
 
-      expect(() => validateConfig(ValidConfig)).toThrow('Please provide the valid ENVs');
+      expect(() => validateConfig(ValidConfig)).toThrow('Invalid environment variables:\n- test: is invalid');
     });
   });
 

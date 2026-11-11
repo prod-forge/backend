@@ -3,18 +3,15 @@ import { sentryConfig } from './sentry.config';
 
 describe('sentryConfig', () => {
   const originalEnv = process.env;
-  let consoleSpy: jest.SpyInstance;
 
   beforeEach(() => {
     process.env = { ...originalEnv };
     delete process.env.SENTRY_DSN;
     delete process.env.SENTRY_ENABLED;
-    consoleSpy = jest.spyOn(console, 'log').mockImplementation();
   });
 
   afterEach(() => {
     process.env = originalEnv;
-    consoleSpy.mockRestore();
   });
 
   describe('negative cases', () => {

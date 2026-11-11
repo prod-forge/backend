@@ -2,25 +2,22 @@ import { redisConfig } from './redis.config';
 
 describe('redisConfig', () => {
   const originalEnv = process.env;
-  let consoleSpy: jest.SpyInstance;
 
   beforeEach(() => {
     process.env = { ...originalEnv };
     delete process.env.REDIS_TLS;
     delete process.env.REDIS_PASSWORD;
-    consoleSpy = jest.spyOn(console, 'log').mockImplementation();
   });
 
   afterEach(() => {
     process.env = originalEnv;
-    consoleSpy.mockRestore();
   });
 
   describe('negative cases', () => {
     it('throws when REDIS_TLS is not a strict boolean string', () => {
       process.env.REDIS_TLS = 'maybe';
 
-      expect(() => redisConfig()).toThrow('Please provide the valid ENVs mentioned above');
+      expect(() => redisConfig()).toThrow(/^- REDIS_TLS: /m);
     });
   });
 

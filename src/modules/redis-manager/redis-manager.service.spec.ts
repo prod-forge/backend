@@ -38,6 +38,32 @@ describe('RedisManagerService', () => {
     service = module.get(RedisManagerService);
   });
 
+  describe('negative cases', () => {
+    it('destroy logs error when quit fails with an Error instance', async () => {
+      cacheMock.quit.mockRejectedValue(new Error('quit failed'));
+
+      await service.destroy();
+
+      expect(logger.error).toHaveBeenCalled();
+    });
+
+    it('destroy does not log error when quit fails with a non-Error value', async () => {
+      cacheMock.quit.mockRejectedValue('non-error string');
+
+      await service.destroy();
+
+      expect(logger.error).not.toHaveBeenCalled();
+    });
+
+    it('destroy still disconnects a client whose quit fails, so reconnecting stops', async () => {
+      cacheMock.quit.mockRejectedValue(new Error('Stream is not writeable'));
+
+      await service.destroy();
+
+      expect(cacheMock.disconnect).toHaveBeenCalled();
+    });
+  });
+
   describe('positive cases', () => {
     it('getCacheRedis returns cache redis client', () => {
       expect(service.getCacheRedis()).toBe(cacheMock);
@@ -62,30 +88,6 @@ describe('RedisManagerService', () => {
       expect(cacheMock.disconnect).toHaveBeenCalled();
       expect(throttlerMock.quit).toHaveBeenCalled();
       expect(throttlerMock.disconnect).toHaveBeenCalled();
-    });
-
-    it('destroy logs error when quit fails with an Error instance', async () => {
-      cacheMock.quit.mockRejectedValue(new Error('quit failed'));
-
-      await service.destroy();
-
-      expect(logger.error).toHaveBeenCalled();
-    });
-
-    it('destroy does not log error when quit fails with a non-Error value', async () => {
-      cacheMock.quit.mockRejectedValue('non-error string');
-
-      await service.destroy();
-
-      expect(logger.error).not.toHaveBeenCalled();
-    });
-
-    it('destroy still disconnects a client whose quit fails, so reconnecting stops', async () => {
-      cacheMock.quit.mockRejectedValue(new Error('Stream is not writeable'));
-
-      await service.destroy();
-
-      expect(cacheMock.disconnect).toHaveBeenCalled();
     });
   });
 });

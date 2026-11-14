@@ -33,17 +33,6 @@ const mobileLogDto = {
 };
 
 describe('ClientLogsController', () => {
-  describe('positive cases', () => {
-    it('is public so signed-out pages can send logs without a token', () => {
-      expect(Reflect.getMetadata(IS_PUBLIC_KEY, ClientLogsController)).toBe(true);
-    });
-
-    it('is throttled to 20 requests per minute on the default throttler', () => {
-      expect(Reflect.getMetadata('THROTTLER:LIMITdefault', ClientLogsController)).toBe(20);
-      expect(Reflect.getMetadata('THROTTLER:TTLdefault', ClientLogsController)).toBe(60000);
-    });
-  });
-
   let controller: ClientLogsController;
   let service: { processMobileLog: jest.Mock; processWebLog: jest.Mock };
 
@@ -109,6 +98,17 @@ describe('ClientLogsController', () => {
 
         expect(service.processMobileLog).toHaveBeenCalledWith(mobileLogDto);
       });
+    });
+  });
+
+  describe('positive cases', () => {
+    it('is public so signed-out pages can send logs without a token', () => {
+      expect(Reflect.getMetadata(IS_PUBLIC_KEY, ClientLogsController)).toBe(true);
+    });
+
+    it('is throttled to 20 requests per minute on the default throttler', () => {
+      expect(Reflect.getMetadata('THROTTLER:LIMITdefault', ClientLogsController)).toBe(20);
+      expect(Reflect.getMetadata('THROTTLER:TTLdefault', ClientLogsController)).toBe(60000);
     });
   });
 });

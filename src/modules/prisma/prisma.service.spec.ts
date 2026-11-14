@@ -55,6 +55,28 @@ describe('PrismaService', () => {
     jest.clearAllMocks();
   });
 
+  describe('negative cases', () => {
+    it('logs error when connect fails and databaseFailFast is false', async () => {
+      const [service, logger] = makeService(false);
+      jest.spyOn(service, '$connect').mockRejectedValue(new Error('connection refused'));
+
+      await service.onModuleInit();
+
+      expect(logger.error).toHaveBeenCalledWith(expect.objectContaining({ msg: 'Prisma failed' }));
+    });
+
+    it('calls process.exit(1) when connect fails and databaseFailFast is true', async () => {
+      const exitSpy = jest.spyOn(process, 'exit').mockImplementation(() => undefined as never);
+      const [service] = makeService(true);
+      jest.spyOn(service, '$connect').mockRejectedValue(new Error('connection refused'));
+
+      await service.onModuleInit();
+
+      expect(exitSpy).toHaveBeenCalledWith(1);
+      exitSpy.mockRestore();
+    });
+  });
+
   describe('positive cases', () => {
     it('passes pool size and timeouts to the pg adapter', () => {
       makeService();
@@ -104,28 +126,6 @@ describe('PrismaService', () => {
       const [service] = makeService();
 
       await expect(service.onModuleInit()).resolves.toBeUndefined();
-    });
-  });
-
-  describe('negative cases', () => {
-    it('logs error when connect fails and databaseFailFast is false', async () => {
-      const [service, logger] = makeService(false);
-      jest.spyOn(service, '$connect').mockRejectedValue(new Error('connection refused'));
-
-      await service.onModuleInit();
-
-      expect(logger.error).toHaveBeenCalledWith(expect.objectContaining({ msg: 'Prisma failed' }));
-    });
-
-    it('calls process.exit(1) when connect fails and databaseFailFast is true', async () => {
-      const exitSpy = jest.spyOn(process, 'exit').mockImplementation(() => undefined as never);
-      const [service] = makeService(true);
-      jest.spyOn(service, '$connect').mockRejectedValue(new Error('connection refused'));
-
-      await service.onModuleInit();
-
-      expect(exitSpy).toHaveBeenCalledWith(1);
-      exitSpy.mockRestore();
     });
   });
 });

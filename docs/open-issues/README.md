@@ -5,8 +5,6 @@ Deferred known problems, so they are not rediscovered (or silently "fixed") in e
 ## GitHub issues
 
 - [#16](https://github.com/prod-forge/backend/issues/16) — Remove the dead `SWAGGER_USERNAME` and `SWAGGER_PASSWORD` entries from `.env.common`.
-- [#17](https://github.com/prod-forge/backend/issues/17) — Validate `DATABASE_HOST` in the database config.
-- [#18](https://github.com/prod-forge/backend/issues/18) — Order describe blocks negative-first in three spec files.
 - [#19](https://github.com/prod-forge/backend/issues/19) — Write the pending Prisma migration for the `Todo` search and sort indexes. See "Indexes" under `Todo` in [data-schema.md](../architecture/data-schema.md): the schema and the migrations have drifted, and migration files are written by the owner ([restrictions/database.md](../restrictions/database.md)).
 - [#20](https://github.com/prod-forge/backend/issues/20) — Pin the RDS CA bundle in the `Dockerfile` with a checksum.
 - [#21](https://github.com/prod-forge/backend/issues/21) — Pin GitHub Actions to commit SHAs.

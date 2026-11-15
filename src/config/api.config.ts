@@ -4,6 +4,7 @@ import { registerAs } from '@nestjs/config';
 import { Transform } from 'class-transformer';
 import { IsArray, IsBoolean, IsNumber, IsString } from 'class-validator';
 
+import { parseJsonArray } from '../common/utils/parse-json-array.util';
 import { validateConfig } from '../common/utils/validate-config.util';
 import { ApiConfigInterface } from './interfaces/api-config.interface';
 
@@ -14,15 +15,7 @@ class ApiConfig {
 
   @IsArray()
   @IsString({ each: true })
-  @Transform(({ value }) => {
-    if (Array.isArray(value)) return value as string[];
-
-    if (typeof value === 'string') {
-      return JSON.parse(value) as string[];
-    }
-
-    return [];
-  })
+  @Transform(({ value }) => parseJsonArray(value))
   API_ALLOWED_ORIGINS: string[] = [];
 
   @IsString()

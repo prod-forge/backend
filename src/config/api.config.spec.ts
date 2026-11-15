@@ -24,6 +24,15 @@ describe('apiConfig', () => {
       expect(() => apiConfig()).toThrow(/^- API_ALLOWED_ORIGINS: /m);
     });
 
+    it.each(['{}', '"https://a.com"'])(
+      'names API_ALLOWED_ORIGINS when it is valid JSON but not an array (%s)',
+      (value) => {
+        process.env.API_ALLOWED_ORIGINS = value;
+
+        expect(() => apiConfig()).toThrow(/^- API_ALLOWED_ORIGINS: /m);
+      },
+    );
+
     it('does not throw a SyntaxError when API_ALLOWED_ORIGINS is malformed JSON', () => {
       process.env.API_ALLOWED_ORIGINS = '["https://a.com"';
 

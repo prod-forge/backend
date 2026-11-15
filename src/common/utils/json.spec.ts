@@ -1,4 +1,4 @@
-import { parseJsonArray } from './parse-json-array.util';
+import { parseJsonArray } from './json';
 
 describe('parseJsonArray', () => {
   describe('negative cases', () => {
@@ -18,8 +18,10 @@ describe('parseJsonArray', () => {
       expect(() => parseJsonArray('{not json')).not.toThrow();
     });
 
-    it('returns a parsed non-array value as is, so the array validator can reject it', () => {
+    it('returns valid JSON that is not an array as is, so the array validator can reject it', () => {
+      expect(parseJsonArray('{}')).toEqual({});
       expect(parseJsonArray('{"a":1}')).toEqual({ a: 1 });
+      expect(parseJsonArray('"a"')).toBe('a');
     });
   });
 

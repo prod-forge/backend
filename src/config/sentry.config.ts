@@ -4,7 +4,7 @@ import { registerAs } from '@nestjs/config';
 import { Transform } from 'class-transformer';
 import { IsArray, IsBoolean, IsString } from 'class-validator';
 
-import { parseJsonArray } from '../common/utils/parse-json-array.util';
+import { parseJsonArray } from '../common/utils/json';
 import { validateConfig } from '../common/utils/validate-config.util';
 import { isSentryEnabled } from '../modules/sentry/sentry-enabled';
 import { SentryConfigInterface } from './interfaces/sentry-config.interface';

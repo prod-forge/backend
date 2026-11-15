@@ -9,7 +9,13 @@ export class TodosQueryDto {
   @ApiPropertyOptional({ example: true })
   @IsBoolean()
   @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @Transform(({ value }: { value: unknown }) => {
+    if (value === 'true') return true;
+
+    if (value === 'false') return false;
+
+    return value;
+  })
   completed?: boolean;
 
   @ApiPropertyOptional({ default: 10, example: 10, maximum: TODOS_MAX_PAGE_SIZE, minimum: 1 })

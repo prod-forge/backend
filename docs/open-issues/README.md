@@ -10,6 +10,14 @@ Deferred known problems, so they are not rediscovered (or silently "fixed") in e
 - [#21](https://github.com/prod-forge/backend/issues/21) — Pin GitHub Actions to commit SHAs.
 - [#22](https://github.com/prod-forge/backend/issues/22) — Route Prometheus alerts to SNS through Alertmanager.
 - [#23](https://github.com/prod-forge/backend/issues/23) — Add SLO burn-rate alerts for the API.
+- [#33](https://github.com/prod-forge/backend/issues/33) — Reject invalid `completed` query values instead of reading them as `false`.
+- [#34](https://github.com/prod-forge/backend/issues/34) — Document `POST /api/v1/todos` as 201, not 200.
+- [#35](https://github.com/prod-forge/backend/issues/35) — Match `LOG_EXCLUDE_ENDPOINTS` against the path, not the URL with the query string.
+- [#36](https://github.com/prod-forge/backend/issues/36) — Count `delByPattern` in `cache_operations_total`.
+- [#37](https://github.com/prod-forge/backend/issues/37) — Report malformed JSON env arrays through `validateConfig` instead of a raw `SyntaxError`.
+- [#38](https://github.com/prod-forge/backend/issues/38) — URL-encode `DATABASE_USER` and `DATABASE_NAME` in `getDatabaseUrl`.
+- [#39](https://github.com/prod-forge/backend/issues/39) — Add a stable tiebreaker to the todo list order.
+- [#40](https://github.com/prod-forge/backend/issues/40) — Document the 429 throttling response in OpenAPI.
 
 ## Without an issue
 

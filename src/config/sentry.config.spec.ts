@@ -27,6 +27,12 @@ describe('sentryConfig', () => {
       expect(sentryConfig()).toMatchObject({ sentryEnabled: false });
       expect(isSentryEnabled(process.env)).toBe(false);
     });
+
+    it('names SENTRY_IGNORED_ERRORS when it is not a JSON array', () => {
+      process.env.SENTRY_IGNORED_ERRORS = 'TimeoutError';
+
+      expect(() => sentryConfig()).toThrow(/^- SENTRY_IGNORED_ERRORS: /m);
+    });
   });
 
   describe('positive cases', () => {
@@ -42,6 +48,12 @@ describe('sentryConfig', () => {
 
       expect(sentryConfig()).toMatchObject({ sentryEnabled: true });
       expect(isSentryEnabled(process.env)).toBe(true);
+    });
+
+    it('parses SENTRY_IGNORED_ERRORS from a JSON array', () => {
+      process.env.SENTRY_IGNORED_ERRORS = '["TimeoutError"]';
+
+      expect(sentryConfig()).toMatchObject({ sentryIgnoredErrors: ['TimeoutError'] });
     });
   });
 });

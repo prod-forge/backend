@@ -6,6 +6,7 @@ import { IsArray, IsBoolean, IsIn, IsNotEmpty, IsNumber, IsString } from 'class-
 
 import { getDatabaseUrl } from '../../database-manager/generate-url';
 import { LogLevel } from '../../database-manager/generated/internal/prismaNamespace';
+import { parseJsonArray } from '../common/utils/json';
 import { validateConfig } from '../common/utils/validate-config.util';
 import { DatabaseConfigInterface } from './interfaces/database-config.interface';
 
@@ -24,15 +25,7 @@ class DatabaseConfig {
 
   @IsArray()
   @IsIn(['info', 'query', 'warn', 'error'], { each: true })
-  @Transform(({ value }) => {
-    if (Array.isArray(value)) return value as LogLevel[];
-
-    if (typeof value === 'string') {
-      return JSON.parse(value) as LogLevel[];
-    }
-
-    return [];
-  })
+  @Transform(({ value }) => parseJsonArray(value))
   @Type(() => String)
   DATABASE_LOG_LEVELS: LogLevel[] = [];
 

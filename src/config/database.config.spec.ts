@@ -42,6 +42,12 @@ describe('databaseConfig', () => {
 
       expect(() => databaseConfig()).toThrow(/^- DATABASE_STATEMENT_TIMEOUT_MS: /m);
     });
+
+    it('names DATABASE_LOG_LEVELS when it is not a JSON array', () => {
+      process.env.DATABASE_LOG_LEVELS = 'warn';
+
+      expect(() => databaseConfig()).toThrow(/^- DATABASE_LOG_LEVELS: /m);
+    });
   });
 
   describe('positive cases', () => {
@@ -69,6 +75,12 @@ describe('databaseConfig', () => {
         databasePoolMax: 20,
         databaseStatementTimeoutMs: 2000,
       });
+    });
+
+    it('parses DATABASE_LOG_LEVELS from a JSON array', () => {
+      process.env.DATABASE_LOG_LEVELS = '["warn","error"]';
+
+      expect(databaseConfig()).toMatchObject({ databaseLogLevels: ['warn', 'error'] });
     });
   });
 });

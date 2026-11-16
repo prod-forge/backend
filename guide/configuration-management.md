@@ -264,7 +264,7 @@ default.
 | `JWT_TTL`                                    | `3600`              | no              | env, `backend_config.jwt_ttl`                                                  |
 | `DATABASE_HOST`                              | -                   | yes             | env, RDS endpoint                                                              |
 | `DATABASE_PORT`                              | -                   | yes             | env, RDS port                                                                  |
-| `DATABASE_NAME`                              | -                   | yes             | env, RDS database name                                                         |
+| `DATABASE_NAME`                              | -                   | yes             | env, RDS database name; must not contain `; / ? : @ & = + $ , #`               |
 | `DATABASE_USER`                              | -                   | yes             | env, RDS master user                                                           |
 | `DATABASE_PASSWORD`                          | -                   | yes             | secret, RDS-managed master secret (`password` key)                             |
 | `DATABASE_SSL`                               | `false`             | no              | env, constant `true`                                                           |

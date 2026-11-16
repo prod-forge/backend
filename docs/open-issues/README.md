@@ -15,7 +15,6 @@ Deferred known problems, so they are not rediscovered (or silently "fixed") in e
 - [#36](https://github.com/prod-forge/backend/issues/36) — Count `delByPattern` in `cache_operations_total`.
 - [#39](https://github.com/prod-forge/backend/issues/39) — Add a stable tiebreaker to the todo list order.
 - [#40](https://github.com/prod-forge/backend/issues/40) — Document the 429 throttling response in OpenAPI.
-- [#44](https://github.com/prod-forge/backend/issues/44) — Database names with reserved URL characters do not reach `pg` decoded.
 
 ## Without an issue
 

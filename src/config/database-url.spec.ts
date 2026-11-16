@@ -25,6 +25,15 @@ describe('getDatabaseUrl', () => {
 
       expect(getDatabaseUrl()).toBe('postgresql://app:p%40ss%2Fword@db.example.internal:5432/todolist');
     });
+
+    it.each(['todo/list', 'todo?archive', 'todo#1', 'todo@db', 'todo&admin'])(
+      'rejects the URL-reserved character in DATABASE_NAME %s',
+      (name) => {
+        process.env.DATABASE_NAME = name;
+
+        expect(() => getDatabaseUrl()).toThrow('DATABASE_NAME must not contain URL-reserved characters');
+      },
+    );
   });
 
   describe('positive cases', () => {
@@ -50,10 +59,10 @@ describe('getDatabaseUrl', () => {
       expect(getDatabaseUrl()).toBe('postgresql://app%40internal%3Aro:p%40ss%2Fword@db.example.internal:5432/todolist');
     });
 
-    it('encodes special characters in the database name', () => {
-      process.env.DATABASE_NAME = 'todo/list.db';
+    it('percent-encodes a database name with a character that is not URL-reserved', () => {
+      process.env.DATABASE_NAME = 'todo list.db';
 
-      expect(getDatabaseUrl()).toBe('postgresql://app:p%40ss%2Fword@db.example.internal:5432/todo%2Flist.db');
+      expect(getDatabaseUrl()).toBe('postgresql://app:p%40ss%2Fword@db.example.internal:5432/todo%20list.db');
     });
   });
 });

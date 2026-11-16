@@ -43,6 +43,18 @@ describe('getDatabaseUrl', () => {
         'postgresql://app:p%40ss%2Fword@db.example.internal:5432/todolist?sslmode=require',
       );
     });
+
+    it('encodes special characters in the user name', () => {
+      process.env.DATABASE_USER = 'app@internal:ro';
+
+      expect(getDatabaseUrl()).toBe('postgresql://app%40internal%3Aro:p%40ss%2Fword@db.example.internal:5432/todolist');
+    });
+
+    it('encodes special characters in the database name', () => {
+      process.env.DATABASE_NAME = 'todo/list.db';
+
+      expect(getDatabaseUrl()).toBe('postgresql://app:p%40ss%2Fword@db.example.internal:5432/todo%2Flist.db');
+    });
   });
 });
 

@@ -6,9 +6,7 @@
 
 1. [01-destructive-sql-check](./01-destructive-sql-check.md) — `scripts/check-migrations.sh` with its test, wired
    into `ci.yml` and `cd.yml`.
-2. [02-previous-release-check](./02-previous-release-check.md) — CI job: the latest released image against the pull
-   request's schema.
-3. [03-failed-migration-runbook](./03-failed-migration-runbook.md) — "Failed migration" in
+2. [02-failed-migration-runbook](./02-failed-migration-runbook.md) — "Failed migration" in
    `guide/release-management.md`.
 
 ## Conclusions

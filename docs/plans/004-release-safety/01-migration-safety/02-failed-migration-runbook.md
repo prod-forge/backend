@@ -1,6 +1,6 @@
 **Status:** 📝 draft · **Version:** — (docs only) · **Date:** 2026-11-17 · **Modules:** guide
 
-# 03 — Failed migration runbook
+# 02 — Failed migration runbook
 
 ## Files
 

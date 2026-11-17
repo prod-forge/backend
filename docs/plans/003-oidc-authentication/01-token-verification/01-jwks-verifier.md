@@ -1,4 +1,4 @@
-**Status:** ✅ approved · **Version:** 2.0.0 · **Date:** 2026-11-17 · **Modules:** modules/auth, config, error-handler
+**Status:** ⏸ hold · **Version:** 2.0.0 · **Date:** 2026-11-17 · **Modules:** modules/auth, config, error-handler
 
 # 01 — JWKS verifier
 

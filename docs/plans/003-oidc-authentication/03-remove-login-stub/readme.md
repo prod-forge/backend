@@ -1,4 +1,4 @@
-**Status:** ✅ approved · **Version:** 2.0.0 · **Date:** 2026-11-17 · **Modules:** api auth, modules/auth, config, docs/openapi.json, docs, guide
+**Status:** ⏸ hold · **Version:** 2.0.0 · **Date:** 2026-11-17 · **Modules:** api auth, modules/auth, config, docs/openapi.json, docs, guide
 
 # 03 — Remove the login stub
 

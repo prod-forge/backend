@@ -1,4 +1,4 @@
-**Status:** ✅ approved · **Version:** — (tests only, no release) · **Date:** 2026-11-17 · **Modules:** test (e2e), docs
+**Status:** ⏸ hold · **Version:** — (tests only, no release) · **Date:** 2026-11-17 · **Modules:** test (e2e), docs
 
 # Design: ownership tests for every todo route
 
@@ -59,7 +59,7 @@ None.
 
 - 2026-11-17 — Ownership tests ship first as their own plan; the auth replacement follows and re-runs them through real
   login. Both come before high-load work.
-- 2026-11-17 — The agent's calls below are confirmed. The plan is approved.
+- 2026-11-17 — The agent's calls below are confirmed. The plan is approved and put on hold: not implemented for now.
 
 ## Agent's calls (to check)
 

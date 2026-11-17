@@ -4,12 +4,12 @@
 
 ## Files
 
-- `database-manager/schema.prisma` — `User.subject String @unique`, `email String?` without `@unique`. The migration
-  SQL (add the column, backfill `subject` for the seeded users with the fixed Keycloak user ids from plan 02, then
-  `NOT NULL` + unique) goes in the PR description; the owner lands the migration file
+- `database-manager/schema.prisma` — `User.subject String @unique`; `email` and `name` removed. The migration SQL (add
+  the column, backfill `subject` for the seeded users with the fixed Keycloak user ids from plan 02, then `NOT NULL` +
+  unique, drop `email` and `name`) goes in the PR description; the owner lands the migration file
   (`docs/restrictions/database.md`).
-- `database-manager/seeds/create-users/create-users.seed.ts` — `subject` per user.
-- `src/features/users/users.service.ts` — `resolveBySubject({ subject, email })`: Redis lookup, then
+- `database-manager/seeds/create-users/create-users.seed.ts` — `subject` per user instead of `email` and `name`.
+- `src/features/users/users.service.ts` — `resolveBySubject(subject)`: Redis lookup, then
   `upsert` on `subject`, returns `User.id`.
 - `src/common/guards/auth.guard.ts` — `verifyAccessToken` → `resolveBySubject` → `req.userId`.
 

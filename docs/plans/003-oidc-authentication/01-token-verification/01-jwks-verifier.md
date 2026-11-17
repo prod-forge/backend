@@ -16,7 +16,7 @@
 ## Interfaces for later steps
 
 ```ts
-type VerifiedToken = { readonly subject: string; readonly email?: string };
+type VerifiedToken = { readonly subject: string };
 verifyAccessToken(token: string): Promise<VerifiedToken>;
 ```
 

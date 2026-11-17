@@ -49,10 +49,10 @@ high-load work, with a two-user test that also covers lists. 002 adds the test; 
   tokens have no `aud`). Any failure maps to the existing `UserIsNotAuthorizedError` (401); a JWKS fetch failure is
   logged and answered with 503 `AUTH_PROVIDER_UNAVAILABLE`, so a provider outage is not reported as a bad token.
 - `authConfig` gets `OIDC_ISSUER_URL` and `OIDC_AUDIENCE`, validated at startup like the other config.
-- `User` gets `subject String @unique` (the token `sub`) and `email` becomes optional and non-unique (the
-  provider owns it; it is stored for display only). The migration SQL is proposed in the PR and landed by the
-  owner (`docs/restrictions/database.md`); seeded users get the subjects of the Keycloak test users.
-- `UsersService.resolveBySubject(sub, claims)` returns `User.id`, creating the row on first sight (upsert on
+- `User` keeps only `id`, `subject String @unique` (the token `sub`) and timestamps: `email` and `name` are dropped,
+  the provider owns the profile and the clients read it from the ID token. The migration SQL is proposed in the PR
+  and landed by the owner (`docs/restrictions/database.md`); seeded users get the subjects of the Keycloak test users.
+- `UsersService.resolveBySubject(subject)` returns `User.id`, creating the row on first sight (upsert on
   `subject`), cached in Redis by subject so a request costs no extra query. The guard sets `req.userId` to this id,
   so nothing after the guard changes.
 
@@ -80,7 +80,7 @@ high-load work, with a two-user test that also covers lists. 002 adds the test; 
 
 A Cognito user pool, app clients for web and mobile (no secret, PKCE), the hosted domain, and the API task environment
 (`OIDC_ISSUER_URL`, `OIDC_AUDIENCE`) in the terraform repository, as its own plan. Written after this design is
-approved; the backend release does not wait for it, since nothing is deployed.
+the owner asks for it (decision 2026-11-17); the backend release does not wait for it, since nothing is deployed.
 
 ## Compatibility
 
@@ -89,15 +89,15 @@ old builds cannot log in. Hence a major version, released together with the fron
 
 ## Open questions
 
-1. Does the backend keep any user-facing data from the token (name, email) or only `sub`? The frontend shows the
-   email from its own session today; the token's `email` claim can replace it on the client side alone.
-2. Write the terraform Cognito plan now, or when 003 is approved?
+None.
 
 ## Decisions
 
 - 2026-11-17 — Replace the stub with generic OIDC: the API verifies tokens through the issuer's JWKS and stays
   provider-agnostic; Keycloak locally and in e2e, Cognito on AWS; clients use Authorization Code + PKCE.
 - 2026-11-17 — Order: 002 (ownership tests) first, then this plan; both before high-load work.
+- 2026-11-17 — The backend stores only the token `sub`; no email or name from the token.
+- 2026-11-17 — The terraform Cognito plan is written later, not with this plan.
 
 ## Agent's calls (to check)
 

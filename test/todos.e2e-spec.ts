@@ -97,6 +97,7 @@ describe('Todos API (e2e)', () => {
 
         expect(Array.isArray(body.data)).toBe(true);
         expect(body.meta).toMatchObject({
+          completed: expect.any(Number) as number,
           limit: expect.any(Number) as number,
           offset: expect.any(Number) as number,
           total: expect.any(Number) as number,
@@ -109,6 +110,7 @@ describe('Todos API (e2e)', () => {
 
         expect(body.data.length).toBeGreaterThanOrEqual(1);
         expect(body.data.every((t) => t.completed)).toBe(true);
+        expect(body.meta.completed).toBe(body.meta.total);
       });
 
       it('returns only incomplete todos when completed=false', async () => {
@@ -117,6 +119,16 @@ describe('Todos API (e2e)', () => {
 
         expect(body.data.length).toBeGreaterThanOrEqual(1);
         expect(body.data.every((t) => !t.completed)).toBe(true);
+        expect(body.meta.completed).toBe(0);
+      });
+
+      it('counts completed todos across all pages, not only the returned one', async () => {
+        const all = await request(server).get(`${TODOS_URL}?limit=100`).set(authHeaders).expect(200);
+        const allBody = all.body as ListBody<TodoItem>;
+        const page = await request(server).get(`${TODOS_URL}?limit=1`).set(authHeaders).expect(200);
+        const pageBody = page.body as ListBody<TodoItem>;
+
+        expect(pageBody.meta.completed).toBe(allBody.data.filter((t) => t.completed).length);
       });
 
       it('returns todos sorted by title ascending', async () => {

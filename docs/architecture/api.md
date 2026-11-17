@@ -196,6 +196,7 @@ Unknown properties are rejected with `DTO_VALIDATION_ERROR` 422 (`whitelist` + `
     }
   ],
   "meta": {
+    "completed": 0,
     "limit": 10,
     "offset": 0,
     "total": 1
@@ -203,9 +204,11 @@ Unknown properties are rejected with `DTO_VALIDATION_ERROR` 422 (`whitelist` + `
 }
 ```
 
+`meta.total` and `meta.completed` count all todos matching the filter, not only the returned page.
+
 **Errors:** `DTO_VALIDATION_ERROR` 422 · `USER_IS_NOT_AUTHORIZED` 401 · `INTERNAL_ERROR` 500
 
-**Caching:** Results cached in Redis for 30 s. Cache key is `v2:todos:<userId>:<base64(query)>`.
+**Caching:** Results cached in Redis for 30 s. Cache key is `v2:todos:<userId>:<base64(query)>`. A cached entry without `meta.completed` (written by an older version) is a miss.
 
 ---
 

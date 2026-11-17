@@ -5,10 +5,10 @@ import { CreateTodoDto } from '../../api/todos/dtos/requests/create-todo.dto';
 import { UpdateTodoDto } from '../../api/todos/dtos/requests/update-todo.dto';
 import { TodoNotFoundError } from '../../error-handler/errors/todo.errors';
 import { CacheStorage } from '../../modules/redis-manager/storages/cache.storage';
-import { PaginatedEntity } from '../../shared/entities/paginated.entity';
 import { TodosCacheKeys } from './cache-queries/todos.cache-queries';
 import { TODOS_MAX_PAGE_SIZE } from './constants/todos.constants';
 import { TodoEntity } from './entities/todo.entity';
+import { TodosPageEntity } from './entities/todos-page.entity';
 import { SortOrder, TodoSearchField, TodoSortField } from './interfaces/queries.enum';
 import { TodosRepository } from './todos.repository';
 import { TodoFilter, TodoPagination, TodoSort } from './types/todo.query';
@@ -28,12 +28,13 @@ export class TodosService {
     return todo;
   }
 
-  async findAll(userId: string, queryDto: TodosQueryDto): Promise<PaginatedEntity<TodoEntity>> {
+  async findAll(userId: string, queryDto: TodosQueryDto): Promise<TodosPageEntity> {
     const key = TodosCacheKeys.todos(userId, queryDto);
 
-    const cached = await this.cacheStorage.get<PaginatedEntity<TodoEntity>>(key);
+    const cached = await this.cacheStorage.get<TodosPageEntity>(key);
 
-    if (cached) return cached;
+    // An entry without meta.completed was written by an older version, so it counts as a miss
+    if (cached?.meta.completed !== undefined) return cached;
 
     const sortQuery = this.getSortQuery(queryDto);
     const filterQuery = this.getFilterQuery(queryDto);

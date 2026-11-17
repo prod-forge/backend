@@ -256,7 +256,7 @@
                     {
                       "properties": {
                         "data": { "items": { "$ref": "#/components/schemas/TodoResponseDto" }, "type": "array" },
-                        "meta": { "$ref": "#/components/schemas/PaginationMetaDto" }
+                        "meta": { "$ref": "#/components/schemas/TodosMetaDto" }
                       }
                     }
                   ]
@@ -1133,6 +1133,20 @@
           "title": { "type": "string" }
         },
         "required": ["completed", "id", "title"]
+      },
+      "TodosMetaDto": {
+        "type": "object",
+        "properties": {
+          "limit": { "type": "number", "example": 10 },
+          "offset": { "type": "number", "description": "Zero-based number of rows skipped", "example": 0 },
+          "total": { "type": "number", "example": 20 },
+          "completed": {
+            "type": "number",
+            "description": "Completed todos among all rows matching the filter, not only this page",
+            "example": 5
+          }
+        },
+        "required": ["limit", "offset", "total", "completed"]
       },
       "UpdateTodoDto": {
         "type": "object",

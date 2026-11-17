@@ -5,7 +5,7 @@ export class CreateTodoDto {
   @ApiPropertyOptional({ default: false })
   @IsBoolean()
   @IsOptional()
-  completed?: boolean = false;
+  completed?: boolean;
 
   @ApiPropertyOptional({ maxLength: 2000, required: false })
   @IsOptional()

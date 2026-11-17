@@ -1,4 +1,4 @@
-**Status:** 📝 draft · **Version:** 2.0.0 · **Date:** 2026-11-17 · **Modules:** api auth, modules/auth, config, database-manager (User), docker-compose, test (e2e), load, docs/openapi.json, docs, guide
+**Status:** ✅ approved · **Version:** 2.0.0 · **Date:** 2026-11-17 · **Modules:** api auth, modules/auth, config, database-manager (User), docker-compose, test (e2e), load, docs/openapi.json, docs, guide
 
 # Design: OIDC authentication
 
@@ -98,8 +98,11 @@ None.
 - 2026-11-17 — Order: 002 (ownership tests) first, then this plan; both before high-load work.
 - 2026-11-17 — The backend stores only the token `sub`; no email or name from the token.
 - 2026-11-17 — The terraform Cognito plan is written later, not with this plan.
+- 2026-11-17 — The agent's calls below are confirmed. The plan is approved.
 
 ## Agent's calls (to check)
+
+All confirmed by the owner on 2026-11-17.
 
 1. `jose` for verification instead of `passport-jwt` + `jwks-rsa`: one small dependency, no Passport, the guard
    stays as it is.

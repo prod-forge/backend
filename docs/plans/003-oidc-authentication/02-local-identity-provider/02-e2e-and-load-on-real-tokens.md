@@ -1,4 +1,4 @@
-**Status:** 📝 draft · **Version:** 2.0.0 · **Date:** 2026-11-17 · **Modules:** test (e2e), load
+**Status:** ✅ approved · **Version:** 2.0.0 · **Date:** 2026-11-17 · **Modules:** test (e2e), load
 
 # 02 — e2e and k6 on real tokens
 

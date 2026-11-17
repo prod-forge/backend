@@ -1,4 +1,4 @@
-**Status:** 📝 draft · **Version:** — (tests only, no release) · **Date:** 2026-11-17 · **Modules:** test (e2e), docs
+**Status:** ✅ approved · **Version:** — (tests only, no release) · **Date:** 2026-11-17 · **Modules:** test (e2e), docs
 
 # Design: ownership tests for every todo route
 
@@ -59,8 +59,11 @@ None.
 
 - 2026-11-17 — Ownership tests ship first as their own plan; the auth replacement follows and re-runs them through real
   login. Both come before high-load work.
+- 2026-11-17 — The agent's calls below are confirmed. The plan is approved.
 
 ## Agent's calls (to check)
+
+All confirmed by the owner on 2026-11-17.
 
 1. Ownership cases move to `test/todos-ownership.e2e-spec.ts` instead of growing `todos.e2e-spec.ts`.
 2. No release: the change is `test:` only. If a case finds a leak, the fix is a patch release (`1.0.2`).

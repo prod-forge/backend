@@ -1,4 +1,4 @@
-**Status:** 📝 draft · **Version:** — (tests only, no release) · **Date:** 2026-11-17 · **Modules:** test (e2e)
+**Status:** ✅ approved · **Version:** — (tests only, no release) · **Date:** 2026-11-17 · **Modules:** test (e2e)
 
 # 02 — List routes
 

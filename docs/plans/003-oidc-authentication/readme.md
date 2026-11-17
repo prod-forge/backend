@@ -1,4 +1,4 @@
-**Status:** 📝 draft · **Version:** 2.0.0 · **Date:** 2026-11-17 · **Modules:** api auth, modules/auth, config, database-manager (User), docker-compose, test (e2e), load, docs/openapi.json, docs, guide
+**Status:** ✅ approved · **Version:** 2.0.0 · **Date:** 2026-11-17 · **Modules:** api auth, modules/auth, config, database-manager (User), docker-compose, test (e2e), load, docs/openapi.json, docs, guide
 
 # 003 — OIDC authentication
 

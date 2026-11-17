@@ -1,4 +1,4 @@
-**Status:** 📝 draft · **Version:** 2.0.0 · **Date:** 2026-11-17 · **Modules:** docker-compose, keycloak, .env.example, docs
+**Status:** ✅ approved · **Version:** 2.0.0 · **Date:** 2026-11-17 · **Modules:** docker-compose, keycloak, .env.example, docs
 
 # 01 — Keycloak in docker-compose
 

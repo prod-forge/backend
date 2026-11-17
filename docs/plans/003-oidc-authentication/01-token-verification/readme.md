@@ -1,4 +1,4 @@
-**Status:** 📝 draft · **Version:** 2.0.0 · **Date:** 2026-11-17 · **Modules:** modules/auth, common/guards, config, features/users, database-manager
+**Status:** ✅ approved · **Version:** 2.0.0 · **Date:** 2026-11-17 · **Modules:** modules/auth, common/guards, config, features/users, database-manager
 
 # 01 — Token verification
 

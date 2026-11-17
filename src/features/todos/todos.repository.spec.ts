@@ -66,12 +66,12 @@ describe('TodosRepository', () => {
     const pagination = { limit: 10, offset: 0 };
 
     describe('negative cases', () => {
-      it('uses empty orderBy when sortBy is falsy', async () => {
+      it('orders by id only when sortBy is falsy', async () => {
         prismaMock.$transaction.mockResolvedValue([[], 0]);
 
         await repository.findAll('user-1', filter, { order: SortOrder.DESC, sortBy: undefined }, pagination);
 
-        expect(prismaMock.todo.findMany).toHaveBeenCalledWith(expect.objectContaining({ orderBy: {} }));
+        expect(prismaMock.todo.findMany).toHaveBeenCalledWith(expect.objectContaining({ orderBy: [{ id: 'asc' }] }));
       });
     });
 
@@ -100,7 +100,7 @@ describe('TodosRepository', () => {
         });
       });
 
-      it('applies correct orderBy from sort query', async () => {
+      it('applies orderBy from sort query with id as tiebreaker', async () => {
         prismaMock.$transaction.mockResolvedValue([[], 0]);
 
         await repository.findAll(
@@ -111,7 +111,7 @@ describe('TodosRepository', () => {
         );
 
         expect(prismaMock.todo.findMany).toHaveBeenCalledWith(
-          expect.objectContaining({ orderBy: { createdAt: SortOrder.ASC } }),
+          expect.objectContaining({ orderBy: [{ createdAt: SortOrder.ASC }, { id: 'asc' }] }),
         );
       });
 

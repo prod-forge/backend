@@ -26,11 +26,9 @@ export class TodosRepository {
     pagination: TodoPagination,
   ): Promise<PaginatedEntity<TodoEntity>> {
     const { limit, offset } = pagination;
-    const orderBy = sortBy
-      ? {
-          [sortBy]: order,
-        }
-      : {};
+    // id is unique, so rows that tie on sortBy keep the same order across offset pages.
+    const tiebreaker = { id: 'asc' as const };
+    const orderBy = sortBy ? [{ [sortBy]: order }, tiebreaker] : [tiebreaker];
     const where = { ...filter, userId };
 
     const [items, total] = await this.prisma.$transaction([

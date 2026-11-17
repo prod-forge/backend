@@ -1,4 +1,4 @@
-**Status:** 📝 draft · **Version:** — (CI only) · **Date:** 2026-11-17 · **Modules:** scripts, CI, docs
+**Status:** ⏸ hold · **Version:** — (CI only) · **Date:** 2026-11-17 · **Modules:** scripts, CI, docs
 
 # 01 — Destructive SQL check
 

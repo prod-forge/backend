@@ -1,4 +1,4 @@
-**Status:** 📝 draft · **Version:** — (CI and docs, no release) · **Date:** 2026-11-17 · **Modules:** scripts, CI, guide, docs
+**Status:** ⏸ hold · **Version:** — (CI and docs, no release) · **Date:** 2026-11-17 · **Modules:** scripts, CI, guide, docs
 
 # 01 — Migration safety
 

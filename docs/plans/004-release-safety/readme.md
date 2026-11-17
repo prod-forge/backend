@@ -1,4 +1,4 @@
-**Status:** 📝 draft · **Version:** — (CI, load script and docs, no release) · **Date:** 2026-11-17 · **Modules:** scripts, CI, load, docs, guide
+**Status:** ⏸ hold · **Version:** — (CI, load script and docs, no release) · **Date:** 2026-11-17 · **Modules:** scripts, CI, load, docs, guide
 
 # 004 — Release safety: prove what is already built
 

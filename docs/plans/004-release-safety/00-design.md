@@ -1,4 +1,4 @@
-**Status:** 📝 draft · **Version:** — (CI, load script and docs, no release) · **Date:** 2026-11-17 · **Modules:** scripts, CI, load, docs, guide
+**Status:** ⏸ hold · **Version:** — (CI, load script and docs, no release) · **Date:** 2026-11-17 · **Modules:** scripts, CI, load, docs, guide
 
 # Design: release safety
 
@@ -63,8 +63,11 @@ None.
 ## Decisions
 
 - 2026-11-17 — No deploys and no extra AWS spend: only checks that run in CI or locally. Keep the plan small.
+- 2026-11-17 — The agent's calls below are confirmed. The plan is approved and put on hold: not implemented for now.
 
 ## Agent's calls (to check)
+
+All confirmed by the owner on 2026-11-17.
 
 1. No release: CI, a load script and docs only.
 2. Own pattern list and opt-out comment instead of a third-party migration linter (squawk), to avoid a new dependency.

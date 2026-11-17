@@ -1,4 +1,4 @@
-**Status:** 📝 draft · **Version:** — (load script and docs) · **Date:** 2026-11-17 · **Modules:** load, guide
+**Status:** ⏸ hold · **Version:** — (load script and docs) · **Date:** 2026-11-17 · **Modules:** load, guide
 
 # 01 — Shutdown scenario
 

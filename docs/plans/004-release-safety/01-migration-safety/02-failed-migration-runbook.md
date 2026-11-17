@@ -1,4 +1,4 @@
-**Status:** 📝 draft · **Version:** — (docs only) · **Date:** 2026-11-17 · **Modules:** guide
+**Status:** ⏸ hold · **Version:** — (docs only) · **Date:** 2026-11-17 · **Modules:** guide
 
 # 02 — Failed migration runbook
 

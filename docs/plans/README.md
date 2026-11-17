@@ -15,7 +15,7 @@ Every plan of the repository lives here. Before writing a plan, read [goal.md](.
   **Status:** <status> · **Version:** <target version> · **Date:** YYYY-MM-DD · **Modules:** <what it touches>
   ```
 
-- Statuses: 📝 draft · ✅ approved · 🔨 in progress · ⏸ hold · ✔️ done · 🔒 closed (stopped, with the reason) ·
+- Statuses: ⏸ hold · ✅ approved · 🔨 in progress · ⏸ hold · ✔️ done · 🔒 closed (stopped, with the reason) ·
   ❌ failed (tried, did not work; linked to `../postmortem/`).
 - A step is small enough for one session and one commit: the files, the interfaces it produces for later steps, the
   tests that prove it is done.
@@ -40,4 +40,4 @@ Rows are in priority order: the order they are implemented in.
 | 1   | [002-ownership-tests](./002-ownership-tests/readme.md)               | ⏸ hold | — (tests only) | test (e2e), docs                                                                          |
 | 2   | [003-oidc-authentication](./003-oidc-authentication/readme.md)       | ⏸ hold | 2.0.0          | api auth, modules/auth, config, database-manager, docker-compose, test, load, docs, guide |
 | 3   | [001-api-contract-stability](./001-api-contract-stability/readme.md) | ⏸ hold | 1.0.2          | api DTOs, swagger decorators, docs/openapi.json, CI, docs, guide                          |
-| 4   | [004-release-safety](./004-release-safety/readme.md)                 | 📝 draft | — (CI, docs) | scripts, CI, load, docs, guide |
+| 4   | [004-release-safety](./004-release-safety/readme.md)                 | ⏸ hold | — (CI, docs) | scripts, CI, load, docs, guide |

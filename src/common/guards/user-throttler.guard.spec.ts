@@ -74,5 +74,14 @@ describe('UserThrottlerGuard', () => {
       expect(verifyToken).toHaveBeenCalledWith('good.token');
       expect(tracker).toBe('user:user-2');
     });
+
+    it('derives the user from a lowercase bearer token when the auth guard has not run yet', async () => {
+      verifyToken.mockResolvedValue({ userId: 'user-2' });
+
+      const tracker = await guard.track(makeRequest({ headers: { authorization: 'bearer good.token' } }));
+
+      expect(verifyToken).toHaveBeenCalledWith('good.token');
+      expect(tracker).toBe('user:user-2');
+    });
   });
 });

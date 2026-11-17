@@ -5,6 +5,7 @@ Raw, high-level ideas that are not ready for work. An idea can be a few lines: t
 - [high-load.md](high-load.md) — load testing beyond the smoke run, and scaling.
 - [feature-flags-and-ab-tests.md](feature-flags-and-ab-tests.md) — gradual rollouts and variant comparison.
 - [authentication.md](authentication.md) — replace the login stub with an identity provider.
+- [localization.md](localization.md) — stable codes for every user-facing text, localized server texts if ever needed.
 
 ## Format
 

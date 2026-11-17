@@ -34,7 +34,9 @@ Pagination also makes APIs easier to consume.
 
 `GET /api/v1/todos` accepts `limit` (default 10, min 1, max 100) and `offset` (default 0, min 0). `offset` is the number of rows
 to skip, so `offset=0` is the first row and the next page of `limit=10` starts at `offset=10`. The response `meta`
-echoes `limit`, `offset` and `total`. The default order is `createdAt DESC`. Free-text `search` is limited to 100
+echoes `limit`, `offset` and `total`. The default order is `createdAt DESC`. Every order ends with `id ASC` as a
+tiebreaker: many rows share a `title` or a `completed` value, and without a unique last key PostgreSQL may return ties
+in a different order on each query, so offset pages could repeat or skip todos. Free-text `search` is limited to 100
 characters, `title` to 200 and `description` to 2000, which bounds the work of a single query.
 
 ### Offset vs cursor pagination

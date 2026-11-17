@@ -6,30 +6,27 @@ import { UpdateTodoDto } from './update-todo.dto';
 
 describe('CreateTodoDto', () => {
   describe('negative cases', () => {
-    it.each(['title', 'completed'] as const)(
-      'rejects null for %s (would reach Prisma as a 500)',
-      async (field) => {
-        const dto = plainToInstance(CreateTodoDto, {
-          title: 'x',
-          ...(field === 'title' ? { title: null } : { completed: null }),
-        });
+    it.each(['title', 'completed'] as const)('rejects null for %s (would reach Prisma as a 500)', async (field) => {
+      const dto = plainToInstance(CreateTodoDto, {
+        completed: field === 'completed' ? null : false,
+        title: field === 'title' ? null : 'x',
+      });
 
-        expect(await validate(dto)).not.toHaveLength(0);
-      },
-    );
+      expect(await validate(dto)).not.toHaveLength(0);
+    });
   });
 
   describe('positive cases', () => {
     it('accepts a valid create body', async () => {
-      const dto = plainToInstance(CreateTodoDto, { title: 'x', completed: false });
+      const dto = plainToInstance(CreateTodoDto, { completed: false, title: 'x' });
 
       expect(await validate(dto)).toHaveLength(0);
     });
 
     it('accepts null for the nullable description', async () => {
       const dto = plainToInstance(CreateTodoDto, {
-        title: 'x',
         description: null,
+        title: 'x',
       });
 
       expect(await validate(dto)).toHaveLength(0);
@@ -39,14 +36,11 @@ describe('CreateTodoDto', () => {
 
 describe('UpdateTodoDto', () => {
   describe('negative cases', () => {
-    it.each(['title', 'completed'] as const)(
-      'rejects null for %s on PATCH',
-      async (field) => {
-        const dto = plainToInstance(UpdateTodoDto, { [field]: null });
+    it.each(['title', 'completed'] as const)('rejects null for %s on PATCH', async (field) => {
+      const dto = plainToInstance(UpdateTodoDto, { [field]: null });
 
-        expect(await validate(dto)).not.toHaveLength(0);
-      },
-    );
+      expect(await validate(dto)).not.toHaveLength(0);
+    });
   });
 
   describe('positive cases', () => {

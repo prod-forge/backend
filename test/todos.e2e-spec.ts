@@ -413,6 +413,24 @@ describe('Todos API (e2e)', () => {
         expect(body.data.completed).toBe(true);
       });
 
+      it('keeps completed when only the title is patched', async () => {
+        const createRes = await request(server)
+          .post(TODOS_URL)
+          .set(authHeaders)
+          .send({ completed: true, title: 'Completed Todo' });
+        const id = (createRes.body as DataBody<TodoItem>).data.id;
+
+        const res = await request(server)
+          .patch(`${TODOS_URL}/${id}`)
+          .set(authHeaders)
+          .send({ title: 'Renamed Completed Todo' })
+          .expect(200);
+        const body = res.body as DataBody<TodoItem>;
+
+        expect(body.data.title).toBe('Renamed Completed Todo');
+        expect(body.data.completed).toBe(true);
+      });
+
       it('updates the description field', async () => {
         const res = await request(server)
           .patch(`${TODOS_URL}/${patchTargetId}`)

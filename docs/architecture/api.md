@@ -262,6 +262,8 @@ Unknown properties are rejected with `DTO_VALIDATION_ERROR` 422 (`whitelist` + `
 | `description` | `string`  | no       | Optional detail (≤ 2000 chars) |
 | `completed`   | `boolean` | no       | Completion status              |
 
+Fields left out of the body keep their current value.
+
 **Response `200`**
 
 ```json

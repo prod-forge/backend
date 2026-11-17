@@ -40,3 +40,4 @@ Rows are in priority order: the order they are implemented in.
 | 1   | [002-ownership-tests](./002-ownership-tests/readme.md)               | ⏸ hold | — (tests only) | test (e2e), docs                                                                          |
 | 2   | [003-oidc-authentication](./003-oidc-authentication/readme.md)       | ⏸ hold | 2.0.0          | api auth, modules/auth, config, database-manager, docker-compose, test, load, docs, guide |
 | 3   | [001-api-contract-stability](./001-api-contract-stability/readme.md) | ⏸ hold | 1.0.2          | api DTOs, swagger decorators, docs/openapi.json, CI, docs, guide                          |
+| 4   | [004-release-safety](./004-release-safety/readme.md)                 | 📝 draft | — (CI, docs) | scripts, CI, load, docs, guide, terraform guide                                           |

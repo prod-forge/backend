@@ -5,12 +5,13 @@ import { Transform } from 'class-transformer';
 import { IsArray, IsBoolean, IsNumber, IsString } from 'class-validator';
 
 import { parseJsonArray } from '../common/utils/json';
+import { parseBooleanEnv } from '../common/utils/parse-boolean';
 import { validateConfig } from '../common/utils/validate-config.util';
 import { ApiConfigInterface } from './interfaces/api-config.interface';
 
 class ApiConfig {
   @IsBoolean()
-  @Transform(({ value }) => value === 'true')
+  @Transform(parseBooleanEnv)
   API_ALLOWED_NON_BROWSER_ORIGINS = true;
 
   @IsArray()

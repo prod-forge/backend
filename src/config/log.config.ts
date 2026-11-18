@@ -6,6 +6,7 @@ import { Transform } from 'class-transformer';
 import { IsArray, IsBoolean, IsEnum, IsString } from 'class-validator';
 
 import { parseJsonArray } from '../common/utils/json';
+import { parseBooleanEnv } from '../common/utils/parse-boolean';
 import { validateConfig } from '../common/utils/validate-config.util';
 import { LogLevelEnum } from './enums/log-level.enum';
 import { LogConfigInterface } from './interfaces/log-config.interface';
@@ -20,7 +21,7 @@ class LogConfig {
   LOG_LEVEL: Level = LogLevelEnum.info;
 
   @IsBoolean()
-  @Transform(({ value }) => value === 'true')
+  @Transform(parseBooleanEnv)
   LOG_PRETTY = true;
 }
 

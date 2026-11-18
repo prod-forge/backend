@@ -291,6 +291,10 @@ default.
 | `THROTTLE_TTL`                               | `60000`             | no              | env, `backend_config.throttle_ttl`                                             |
 | `OTEL_EXPORTER_OTLP_ENDPOINT`                | unset (tracing off) | no              | env, `backend_config.otel_exporter_otlp_endpoint`, omitted when empty          |
 
+Boolean variables accept only `true` or `false`. Any other value, including an empty one, stops the app at startup,
+so a typo like `THROTTLE_ENABLED=FALSE` cannot silently leave a feature on or off. Leave a variable unset to use its
+default.
+
 Sentry sends events only when `SENTRY_ENABLED=true` and `SENTRY_DSN` is non-empty; either one alone keeps it off.
 
 ## Database TLS

@@ -17,7 +17,6 @@ describe('sentryConfig', () => {
   describe('negative cases', () => {
     it.each([
       ['DSN set, flag missing', 'https://key@sentry.example/1', undefined],
-      ['DSN set, flag not exactly "true"', 'https://key@sentry.example/1', 'yes'],
       ['DSN set, flag false', 'https://key@sentry.example/1', 'false'],
       ['DSN empty, flag true', '', 'true'],
     ])('is disabled when %s, the same as instrument.ts decides', (_case, dsn, enabled) => {
@@ -27,6 +26,17 @@ describe('sentryConfig', () => {
       expect(sentryConfig()).toMatchObject({ sentryEnabled: false });
       expect(isSentryEnabled(process.env)).toBe(false);
     });
+
+    it.each(['TRUE', 'yes', '1', ''])(
+      'throws when SENTRY_ENABLED is %j, and instrument.ts keeps Sentry off',
+      (value) => {
+        process.env.SENTRY_DSN = 'https://key@sentry.example/1';
+        process.env.SENTRY_ENABLED = value;
+
+        expect(() => sentryConfig()).toThrow(/^- SENTRY_ENABLED: /m);
+        expect(isSentryEnabled(process.env)).toBe(false);
+      },
+    );
 
     it('names SENTRY_IGNORED_ERRORS when it is not a JSON array', () => {
       process.env.SENTRY_IGNORED_ERRORS = 'TimeoutError';

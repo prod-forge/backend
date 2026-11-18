@@ -132,7 +132,7 @@
           "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateTodoDto" } } }
         },
         "responses": {
-          "200": {
+          "201": {
             "description": "Create new todo item for user",
             "content": {
               "application/json": {

@@ -148,7 +148,7 @@ Code defaults: `THROTTLE_LIMIT=60` requests per `THROTTLE_TTL=60000` ms. `.env.c
 | `description` | `string`  | no       | —       | Optional detail (≤ 2000 chars) |
 | `completed`   | `boolean` | no       | `false` | Completion status              |
 
-**Response `200`**
+**Response `201`**
 
 ```json
 {
@@ -161,7 +161,7 @@ Code defaults: `THROTTLE_LIMIT=60` requests per `THROTTLE_TTL=60000` ms. `.env.c
 }
 ```
 
-Unknown properties are rejected with `DTO_VALIDATION_ERROR` 422 (`whitelist` + `forbidNonWhitelisted`). The status is `200`, not `201`.
+Unknown properties are rejected with `DTO_VALIDATION_ERROR` 422 (`whitelist` + `forbidNonWhitelisted`). The status is `201`, not `200`.
 
 **Errors:** `DTO_VALIDATION_ERROR` 422 · `USER_IS_NOT_AUTHORIZED` 401 · `INTERNAL_ERROR` 500
 

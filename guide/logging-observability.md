@@ -295,7 +295,7 @@ Custom metrics (default `@prometheus-io/client` process metrics, formerly `prom-
 | `prisma_queries_per_request`    | histogram | none                        | Queries executed during one HTTP request (N+1 detector)                                     |
 | `db_slow_query_mean_ms`         | gauge     | `queryid`                   | Mean time of the 10 slowest statements from `pg_stat_statements`, refreshed on every scrape |
 | `service_health_status`         | gauge     | `service`                   | 1 when a dependency check is up, 0 otherwise                                                |
-| `cache_operations_total`        | counter   | `operation`, `result`       | Cache `get`/`set`/`del` calls by outcome (`hit`, `miss`, `ok`, `error`)                     |
+| `cache_operations_total`        | counter   | `operation`, `result`       | Cache `get`/`set`/`del`/`del_pattern` calls by outcome (`hit`, `miss`, `ok`, `error`)       |
 
 The `route` label is the route template (for example `/api/v1/todos/:id`), never the raw URL, so cardinality stays bounded.
 

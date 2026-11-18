@@ -69,17 +69,21 @@ describe('CacheStorage', () => {
 
     it('delByPattern swallows redis error and logs warning', async () => {
       redisMock.scanStream.mockReturnValue(failingStream());
+      const before = await counterValue('del_pattern', 'error');
 
       await expect(storage.delByPattern('pattern*')).resolves.toBeUndefined();
       expect(logger.warn).toHaveBeenCalled();
+      expect(await counterValue('del_pattern', 'error')).toBe(before + 1);
     });
 
     it('delByPattern swallows unlink error and logs warning', async () => {
       redisMock.scanStream.mockReturnValue(Readable.from([['cache:key:1']]));
       redisMock.unlink.mockRejectedValue(new Error('redis error'));
+      const before = await counterValue('del_pattern', 'error');
 
       await expect(storage.delByPattern('key:*')).resolves.toBeUndefined();
       expect(logger.warn).toHaveBeenCalled();
+      expect(await counterValue('del_pattern', 'error')).toBe(before + 1);
     });
 
     it('get returns null when key does not exist', async () => {
@@ -143,6 +147,15 @@ describe('CacheStorage', () => {
 
       expect(redisMock.scanStream).toHaveBeenCalledWith({ count: 100, match: 'key:*' });
       expect(redisMock.unlink).toHaveBeenCalledWith('key:1');
+    });
+
+    it('delByPattern counts ok', async () => {
+      redisMock.scanStream.mockReturnValue(Readable.from([['cache:key:1']]));
+      const before = await counterValue('del_pattern', 'ok');
+
+      await storage.delByPattern('key:*');
+
+      expect(await counterValue('del_pattern', 'ok')).toBe(before + 1);
     });
 
     it('get counts a hit', async () => {

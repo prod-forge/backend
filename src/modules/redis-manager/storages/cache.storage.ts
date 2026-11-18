@@ -39,7 +39,10 @@ export class CacheStorage {
           await this.redis.unlink(...batch.map((key) => key.slice(prefix.length)));
         }
       }
+
+      cacheOperationsTotal.inc({ operation: 'del_pattern', result: 'ok' });
     } catch {
+      cacheOperationsTotal.inc({ operation: 'del_pattern', result: 'error' });
       this.loggerService.warn({ ctx: CacheStorage.name, msg: `Cache delByPattern failed for pattern "${pattern}"` });
     }
   }

@@ -145,6 +145,9 @@ Defaults are the code defaults (`.env.common` sets local values for some). Produ
 | `OTEL_EXPORTER_OTLP_ENDPOINT`     | —                      | OTLP/HTTP trace endpoint; tracing off when unset  |
 | `HEALTH_CHECK_TRIGGER_MS`         | `15000`                | Min interval between DB pings on /metrics scrapes |
 
+Boolean variables accept only `true` or `false`. Any other value, including an empty one, stops the app at startup;
+leave the variable unset to use its default.
+
 ---
 
 ## Scripts

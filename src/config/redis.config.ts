@@ -4,6 +4,7 @@ import { registerAs } from '@nestjs/config';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
 
+import { parseBooleanEnv } from '../common/utils/booleans';
 import { validateConfig } from '../common/utils/validate-config.util';
 import { RedisConfigInterface } from './interfaces/redis-config.interface';
 
@@ -20,14 +21,7 @@ class RedisConfig {
   REDIS_PORT = 6379;
 
   @IsBoolean()
-  @Transform(({ obj }: { obj: Record<string, unknown> }) => {
-    const raw = obj.REDIS_TLS;
-
-    if (raw === 'true') return true;
-    if (raw === 'false' || raw === undefined) return false;
-
-    return raw;
-  })
+  @Transform(parseBooleanEnv)
   REDIS_TLS = false;
 }
 

@@ -4,6 +4,7 @@ import { registerAs } from '@nestjs/config';
 import { Transform } from 'class-transformer';
 import { IsArray, IsBoolean, IsString } from 'class-validator';
 
+import { parseBooleanEnv } from '../common/utils/booleans';
 import { parseJsonArray } from '../common/utils/json';
 import { validateConfig } from '../common/utils/validate-config.util';
 import { isSentryEnabled } from '../modules/sentry/sentry-enabled';
@@ -14,7 +15,7 @@ class SentryConfig {
   SENTRY_DSN = '';
 
   @IsBoolean()
-  @Transform(({ value }) => value === 'true')
+  @Transform(parseBooleanEnv)
   SENTRY_ENABLED = false;
 
   @IsArray()

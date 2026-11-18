@@ -15,6 +15,12 @@ describe('throttlerConfig', () => {
   });
 
   describe('negative cases', () => {
+    it.each(['FALSE', '0', '1', '', 'maybe'])('throws when THROTTLE_ENABLED is %j', (value) => {
+      process.env.THROTTLE_ENABLED = value;
+
+      expect(() => throttlerConfig()).toThrow(/^- THROTTLE_ENABLED: /m);
+    });
+
     it('throws when THROTTLE_LIMIT is not a number', () => {
       process.env.THROTTLE_LIMIT = 'many';
 

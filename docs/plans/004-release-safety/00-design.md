@@ -64,6 +64,8 @@ None.
 
 - 2026-11-17 — No deploys and no extra AWS spend: only checks that run in CI or locally. Keep the plan small.
 - 2026-11-17 — The agent's calls below are confirmed. The plan is approved and put on hold: not implemented for now.
+- 2026-11-18 — An r/backend comment proposed the previous-release job (apply new migrations to a fresh database, run
+  the previous release's tests against it). Kept as a non-goal: the SQL check stays the only migration gate.
 
 ## Agent's calls (to check)
 

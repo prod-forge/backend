@@ -5,7 +5,14 @@ import { catchError, finalize } from 'rxjs/operators';
 
 import { resolveErrorStatus } from '../../../error-handler/mappers/resolve-error';
 import { RequestContext } from '../../../logger/context/request-context';
-import { httpInFlight, httpRequestDuration, httpRequestsTotal, queriesPerRequest } from './http.metrics';
+import {
+  httpInFlight,
+  httpRequestDuration,
+  httpRequestsTotal,
+  markHttpMetricsRecorded,
+  queriesPerRequest,
+  resolveHttpMetricsRoute,
+} from './http.metrics';
 
 @Injectable()
 export class HttpMetricsInterceptor implements NestInterceptor {
@@ -15,13 +22,15 @@ export class HttpMetricsInterceptor implements NestInterceptor {
     const res = httpContext.getResponse<Response>();
 
     const method = req.method;
-    const route = (req.route as undefined | { path?: string })?.path || req.baseUrl || 'unknown';
+    const route = resolveHttpMetricsRoute(req);
 
     const start = process.hrtime();
     let recorded = false;
     const record = (status: number): void => {
       if (recorded) return;
       recorded = true;
+      // The metrics middleware also records on res finish; mark this request so it skips it.
+      markHttpMetricsRecorded(req);
       this.recordMetrics(method, route, status, start);
     };
 

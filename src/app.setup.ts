@@ -28,6 +28,7 @@ import { useRequestLogging } from './logger/middlewares/request-logging.setup';
 import { traceIdMiddleware } from './logger/middlewares/trace-id.middleware';
 import { EnvironmentService } from './modules/environment/environment.service';
 import { HttpMetricsInterceptor } from './modules/metrics/interceptors/http-metrics.interceptor';
+import { httpMetricsMiddleware } from './modules/metrics/middlewares/http-metrics.middleware';
 import { metricsGateMiddleware } from './modules/metrics/middlewares/metrics-gate.middleware';
 import { sentryContextMiddleware } from './modules/sentry/middlewares/sentry-context.middleware';
 
@@ -49,6 +50,9 @@ export const appSetup = (app: INestApplication): void => {
 
   // First middleware: reject metrics requests that came through the ALB before any other work is done
   app.use(metricsGateMiddleware);
+
+  // Records guard-rejected requests (401, 429) the interceptor never sees; runs before the guards
+  app.use(httpMetricsMiddleware);
 
   // Context (express middleware)
   app.use(httpContext.middleware);

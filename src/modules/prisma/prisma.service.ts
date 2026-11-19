@@ -36,12 +36,43 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
       ],
     });
 
-    // The class extends PrismaClient without log generics, so $on is typed with never; narrow it to query events
-    (this as unknown as PrismaClient<'query'>).$on('query', (e) => {
+    // The class extends PrismaClient without log generics, so $on is typed with never; narrow it to log events
+    const client = this as unknown as PrismaClient<'error' | 'info' | 'query' | 'warn'>;
+
+    client.$on('query', (e) => {
       prismaQueryDuration.observe(e.duration / 1000);
       prismaQueriesTotal.inc();
       RequestContext.incrementQueryCount();
     });
+
+    // Forward each configured log level to the logger; query metrics above stay unconditional
+    if (config.databaseLogLevels.includes('error')) {
+      client.$on('error', (e) => {
+        this.logger.error({ ctx: PrismaService.name, details: { target: e.target }, msg: e.message });
+      });
+    }
+
+    if (config.databaseLogLevels.includes('warn')) {
+      client.$on('warn', (e) => {
+        this.logger.warn({ ctx: PrismaService.name, details: { target: e.target }, msg: e.message });
+      });
+    }
+
+    if (config.databaseLogLevels.includes('info')) {
+      client.$on('info', (e) => {
+        this.logger.log({ ctx: PrismaService.name, details: { target: e.target }, msg: e.message });
+      });
+    }
+
+    if (config.databaseLogLevels.includes('query')) {
+      client.$on('query', (e) => {
+        this.logger.debug({
+          ctx: PrismaService.name,
+          details: { durationMs: e.duration, target: e.target },
+          msg: e.query,
+        });
+      });
+    }
   }
 
   async onModuleInit(): Promise<void> {

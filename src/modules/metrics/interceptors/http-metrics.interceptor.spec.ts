@@ -1,4 +1,5 @@
 import type { CallHandler, ExecutionContext } from '@nestjs/common';
+import type { Request } from 'express';
 
 import { HttpException } from '@nestjs/common';
 import { lastValueFrom, of, throwError } from 'rxjs';
@@ -24,6 +25,7 @@ import { Prisma } from '../../../../database-manager/generated/client';
 import { TodoNotFoundError } from '../../../error-handler/errors/todo.errors';
 import { RequestContext } from '../../../logger/context/request-context';
 import { HttpMetricsInterceptor } from './http-metrics.interceptor';
+import { isHttpMetricsRecorded } from './http.metrics';
 
 const makeContext = (
   method = 'GET',
@@ -153,6 +155,16 @@ describe('HttpMetricsInterceptor', () => {
       await lastValueFrom(interceptor.intercept(makeContext(), handler));
 
       expect(mockCounterLabels).not.toHaveBeenCalledWith(expect.anything(), '/api/v1/todos/42', expect.anything());
+    });
+
+    it('marks the request as recorded so the metrics middleware does not count it again', async () => {
+      const ctx = makeContext();
+      const req = ctx.switchToHttp().getRequest<Request>();
+      const handler: CallHandler = { handle: jest.fn().mockReturnValue(of({ id: 1 })) };
+
+      await lastValueFrom(interceptor.intercept(ctx, handler));
+
+      expect(isHttpMetricsRecorded(req)).toBe(true);
     });
 
     it('observes the number of queries made during the request', async () => {

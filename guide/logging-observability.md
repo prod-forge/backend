@@ -284,18 +284,18 @@ which the ALB always appends. Prometheus and the compose stack scrape the task d
 
 Custom metrics (default `@prometheus-io/client` process metrics, formerly `prom-client`, are exposed as well):
 
-| Metric                          | Type      | Labels                      | Description                                                                                 |
-| ------------------------------- | --------- | --------------------------- | ------------------------------------------------------------------------------------------- |
-| `http_requests_total`           | counter   | `method`, `route`, `status` | Completed requests, recorded once per request (errors use the error status)                 |
-| `http_request_duration_seconds` | histogram | `method`, `route`, `status` | Request duration                                                                            |
-| `http_requests_in_flight`       | gauge     | none                        | Requests being processed; decremented exactly once, also when a handler throws              |
-| `http_errors_total`             | counter   | `method`, `route`, `status` | Requests that ended in an exception (recorded by the exception filter)                      |
-| `prisma_query_duration_seconds` | histogram | none                        | Duration of each Prisma query, from Prisma query events                                     |
-| `prisma_queries_total`          | counter   | none                        | Prisma queries executed                                                                     |
-| `prisma_queries_per_request`    | histogram | none                        | Queries executed during one HTTP request (N+1 detector)                                     |
-| `db_slow_query_mean_ms`         | gauge     | `queryid`                   | Mean time of the 10 slowest statements from `pg_stat_statements`, refreshed on every scrape |
-| `service_health_status`         | gauge     | `service`                   | 1 when a dependency check is up, 0 otherwise                                                |
-| `cache_operations_total`        | counter   | `operation`, `result`       | Cache `get`/`set`/`del` calls by outcome (`hit`, `miss`, `ok`, `error`)                     |
+| Metric                          | Type      | Labels                      | Description                                                                                                                                                                                                |
+| ------------------------------- | --------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `http_requests_total`           | counter   | `method`, `route`, `status` | Completed requests, recorded once per request (errors use the error status); guard rejections (401, 429) are recorded by the metrics middleware on response finish, since they never reach the interceptor |
+| `http_request_duration_seconds` | histogram | `method`, `route`, `status` | Request duration                                                                                                                                                                                           |
+| `http_requests_in_flight`       | gauge     | none                        | Requests being processed; decremented exactly once, also when a handler throws                                                                                                                             |
+| `http_errors_total`             | counter   | `method`, `route`, `status` | Requests that ended in an exception (recorded by the exception filter)                                                                                                                                     |
+| `prisma_query_duration_seconds` | histogram | none                        | Duration of each Prisma query, from Prisma query events                                                                                                                                                    |
+| `prisma_queries_total`          | counter   | none                        | Prisma queries executed                                                                                                                                                                                    |
+| `prisma_queries_per_request`    | histogram | none                        | Queries executed during one HTTP request (N+1 detector)                                                                                                                                                    |
+| `db_slow_query_mean_ms`         | gauge     | `queryid`                   | Mean time of the 10 slowest statements from `pg_stat_statements`, refreshed on every scrape                                                                                                                |
+| `service_health_status`         | gauge     | `service`                   | 1 when a dependency check is up, 0 otherwise                                                                                                                                                               |
+| `cache_operations_total`        | counter   | `operation`, `result`       | Cache `get`/`set`/`del` calls by outcome (`hit`, `miss`, `ok`, `error`)                                                                                                                                    |
 
 The `route` label is the route template (for example `/api/v1/todos/:id`), never the raw URL, so cardinality stays bounded.
 

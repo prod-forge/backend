@@ -12,7 +12,7 @@ export const loggingMiddleware =
       (endpoint) => req.path === `/${endpoint}` || req.path.startsWith(`/${endpoint}/`),
     );
 
-    if (isProbe || config.logExcludeEndpoints.includes(req.url)) {
+    if (isProbe || config.logExcludeEndpoints.includes(req.path)) {
       next();
 
       return;

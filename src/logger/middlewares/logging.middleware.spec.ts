@@ -56,6 +56,18 @@ describe('loggingMiddleware', () => {
       expect(logger.log).not.toHaveBeenCalled();
     });
 
+    it('skips logging for a custom excluded endpoint called with a query string', () => {
+      const logger = makeLogger();
+      const next = jest.fn() as NextFunction;
+      const middleware = loggingMiddleware(makeConfig(['/excluded']), logger as unknown as LoggerService);
+
+      middleware(makeReq('/excluded?x=1'), {} as Response, next);
+
+      expect(logger.log).not.toHaveBeenCalled();
+      expect(logger.debug).not.toHaveBeenCalled();
+      expect(next).toHaveBeenCalled();
+    });
+
     it('never puts the request body or query string in the info log', () => {
       const logger = makeLogger();
       const middleware = loggingMiddleware(makeConfig(), logger as unknown as LoggerService);

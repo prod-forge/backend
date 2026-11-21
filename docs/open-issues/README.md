@@ -15,7 +15,6 @@ Deferred known problems, so they are not rediscovered (or silently "fixed") in e
 - [#36](https://github.com/prod-forge/backend/issues/36) — Count `delByPattern` in `cache_operations_total`.
 - [#40](https://github.com/prod-forge/backend/issues/40) — Document the 429 throttling response in OpenAPI.
 - [#48](https://github.com/prod-forge/backend/issues/48) — Reject `null` for `title` and `completed` with a 422 instead of a 500.
-- [#49](https://github.com/prod-forge/backend/issues/49) — Reject invalid boolean env values instead of reading them as `true` or `false`.
 - [#50](https://github.com/prod-forge/backend/issues/50) — Require positive integers for numeric env values.
 - [#51](https://github.com/prod-forge/backend/issues/51) — Make `DATABASE_LOG_LEVELS` write Prisma log events to the logger.
 - [#52](https://github.com/prod-forge/backend/issues/52) — Count guard-rejected requests (401, 429) in `http_requests_total`.

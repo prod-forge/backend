@@ -204,6 +204,14 @@ This approach provides several benefits:
 - clear separation of concerns
 - predictable configuration access
 
+Boolean variables use the shared `parseStrictBoolean` transform (`src/common/utils/booleans.ts`): only `true` and `false` are accepted, unset keeps the default, and any other value (`1`, `0`, `TRUE`, `yes`) fails `validateConfig` at startup instead of being read silently as `true` or `false`.
+
+```typescript
+@IsBoolean()
+@Transform(({ value }) => parseStrictBoolean(value))
+SWAGGER_ENABLED = true;
+```
+
 ## Accessing Configuration
 
 Configuration values are accessed through NestJS ConfigService.

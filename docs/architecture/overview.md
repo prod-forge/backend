@@ -139,7 +139,7 @@ Prometheus metrics exposed at `/metrics` (default `@prometheus-io/client` metric
 - `prisma_query_duration_seconds`, `prisma_queries_total`, `prisma_queries_per_request` — fed by Prisma query events (`PrismaService`) and the per-request counter in `RequestContext`
 - `db_slow_query_mean_ms{queryid}` — gauge refreshed on each scrape from `pg_stat_statements` (top 10)
 - `service_health_status{service}` — gauge from the critical health checks
-- `cache_operations_total{operation, result}` — cache `get`/`set`/`del` outcomes (`ok`, `hit`, `miss`, `error`)
+- `cache_operations_total{operation, result}` — cache `get`/`set`/`del`/`del_pattern` outcomes (`ok`, `hit`, `miss`, `error`)
 - `HealthUpdateMiddleware` refreshes dependency health on `/metrics` at most once per `HEALTH_CHECK_TRIGGER_MS`
 - `/metrics` and `/metrics/database` sit outside the API prefix (`GLOBAL_PREFIX_EXCLUDE` in `src/constants/url.constants.ts`); `metricsGateMiddleware` returns 404 for them when `X-Forwarded-For` is present (request came through the ALB)
 

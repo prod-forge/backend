@@ -5,6 +5,7 @@ import { Request } from 'express';
 import { UserIsNotAuthorizedError } from '../../error-handler/errors/user.errors';
 import { AuthService } from '../../modules/auth/auth.service';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
+import { extractBearerToken } from '../utils/bearer-token';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -23,11 +24,8 @@ export class AuthGuard implements CanActivate {
 
     const req = context.switchToHttp().getRequest<Request & { userId?: string }>();
 
-    const auth = req.header('Authorization');
-    if (!auth) throw new UserIsNotAuthorizedError();
-
-    const [prefix, token] = auth.split(' ');
-    if (prefix !== 'Bearer' || !token) throw new UserIsNotAuthorizedError();
+    const token = extractBearerToken(req.header('Authorization'));
+    if (!token) throw new UserIsNotAuthorizedError();
 
     const { userId } = await this.authService.verifyToken(token);
     req.userId = userId;

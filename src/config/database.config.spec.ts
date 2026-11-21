@@ -31,6 +31,12 @@ describe('databaseConfig', () => {
       expect(() => databaseConfig()).toThrow(/^- DATABASE_HOST: /m);
     });
 
+    it('throws when DATABASE_FAIL_FAST is not a strict boolean string', () => {
+      process.env.DATABASE_FAIL_FAST = '1';
+
+      expect(() => databaseConfig()).toThrow(/^- DATABASE_FAIL_FAST: /m);
+    });
+
     it('throws when DATABASE_POOL_MAX is not a number', () => {
       process.env.DATABASE_POOL_MAX = 'abc';
 
@@ -75,6 +81,12 @@ describe('databaseConfig', () => {
         databasePoolMax: 20,
         databaseStatementTimeoutMs: 2000,
       });
+    });
+
+    it('maps DATABASE_FAIL_FAST=false to false', () => {
+      process.env.DATABASE_FAIL_FAST = 'false';
+
+      expect(databaseConfig()).toMatchObject({ databaseFailFast: false });
     });
 
     it('parses DATABASE_LOG_LEVELS from a JSON array', () => {

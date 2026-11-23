@@ -2,17 +2,18 @@ import type { ConfigFactory } from '@nestjs/config';
 
 import { registerAs } from '@nestjs/config';
 import { Transform, Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsIn, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsIn, IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
 
 import { getDatabaseUrl } from '../../database-manager/generate-url';
 import { LogLevel } from '../../database-manager/generated/internal/prismaNamespace';
 import { parseJsonArray } from '../common/utils/json';
-import { validateConfig } from '../common/utils/validate-config.util';
+import { toNumber, validateConfig } from '../common/utils/validate-config.util';
 import { DatabaseConfigInterface } from './interfaces/database-config.interface';
 
 class DatabaseConfig {
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
+  @IsInt()
+  @Min(1)
+  @Transform(toNumber)
   DATABASE_CONNECT_TIMEOUT_MS = 5000;
 
   @IsBoolean()
@@ -35,16 +36,20 @@ class DatabaseConfig {
   @IsString()
   DATABASE_PASSWORD: string;
 
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
+  @IsInt()
+  @Min(1)
+  @Transform(toNumber)
   DATABASE_POOL_MAX = 10;
 
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
+  @IsInt()
+  @Max(65535)
+  @Min(1)
+  @Transform(toNumber)
   DATABASE_PORT: number;
 
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
+  @IsInt()
+  @Min(1)
+  @Transform(toNumber)
   DATABASE_STATEMENT_TIMEOUT_MS = 5000;
 
   @IsString()

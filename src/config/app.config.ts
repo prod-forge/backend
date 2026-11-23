@@ -2,10 +2,10 @@ import type { ConfigFactory } from '@nestjs/config';
 
 import { registerAs } from '@nestjs/config';
 import { Transform } from 'class-transformer';
-import { IsNumber, IsString } from 'class-validator';
+import { IsInt, IsString, Max, Min } from 'class-validator';
 
 import packageJson from '../../package.json';
-import { validateConfig } from '../common/utils/validate-config.util';
+import { toNumber, validateConfig } from '../common/utils/validate-config.util';
 import { AppConfigInterface } from './interfaces/app-config.interface';
 
 class AppConfig {
@@ -18,19 +18,23 @@ class AppConfig {
   @IsString()
   APP_NAME = packageJson.name || 'App';
 
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
+  @IsInt()
+  @Max(65535)
+  @Min(1)
+  @Transform(toNumber)
   APP_PORT = 3000;
 
   @IsString()
   APP_VERSION = packageJson.version || '1.0.0';
 
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
+  @IsInt()
+  @Min(0)
+  @Transform(toNumber)
   SHUTDOWN_DRAIN_MS = 10000;
 
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
+  @IsInt()
+  @Min(0)
+  @Transform(toNumber)
   SHUTDOWN_INFLIGHT_TIMEOUT_MS = 20000;
 }
 

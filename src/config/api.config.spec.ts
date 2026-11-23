@@ -18,6 +18,12 @@ describe('apiConfig', () => {
       expect(() => apiConfig()).toThrow(/^- TRUST_PROXY: /m);
     });
 
+    it.each(['1.5', '-1', ''])('throws when TRUST_PROXY is not a non-negative integer (%s)', (value) => {
+      process.env.TRUST_PROXY = value;
+
+      expect(() => apiConfig()).toThrow(/^- TRUST_PROXY: /m);
+    });
+
     it('names API_ALLOWED_ORIGINS when it is not a JSON array', () => {
       process.env.API_ALLOWED_ORIGINS = 'https://a.com';
 
@@ -49,6 +55,12 @@ describe('apiConfig', () => {
 
     it('defaults TRUST_PROXY to 0', () => {
       delete process.env.TRUST_PROXY;
+
+      expect(apiConfig()).toMatchObject({ trustProxy: 0 });
+    });
+
+    it('accepts TRUST_PROXY 0 explicitly', () => {
+      process.env.TRUST_PROXY = '0';
 
       expect(apiConfig()).toMatchObject({ trustProxy: 0 });
     });

@@ -43,6 +43,39 @@ describe('databaseConfig', () => {
       expect(() => databaseConfig()).toThrow(/^- DATABASE_STATEMENT_TIMEOUT_MS: /m);
     });
 
+    it.each(['1.5', '0', '-1', ''])(
+      'throws when DATABASE_CONNECT_TIMEOUT_MS is not a positive integer (%s)',
+      (value) => {
+        process.env.DATABASE_CONNECT_TIMEOUT_MS = value;
+
+        expect(() => databaseConfig()).toThrow(/^- DATABASE_CONNECT_TIMEOUT_MS: /m);
+      },
+    );
+
+    it.each(['1.5', '0', '-1', ''])('throws when DATABASE_POOL_MAX is not a positive integer (%s)', (value) => {
+      process.env.DATABASE_POOL_MAX = value;
+
+      expect(() => databaseConfig()).toThrow(/^- DATABASE_POOL_MAX: /m);
+    });
+
+    it.each(['1.5', '0', '-1', '65536', ''])(
+      'throws when DATABASE_PORT is not a positive integer below 65536 (%s)',
+      (value) => {
+        process.env.DATABASE_PORT = value;
+
+        expect(() => databaseConfig()).toThrow(/^- DATABASE_PORT: /m);
+      },
+    );
+
+    it.each(['1.5', '0', '-1', ''])(
+      'throws when DATABASE_STATEMENT_TIMEOUT_MS is not a positive integer (%s)',
+      (value) => {
+        process.env.DATABASE_STATEMENT_TIMEOUT_MS = value;
+
+        expect(() => databaseConfig()).toThrow(/^- DATABASE_STATEMENT_TIMEOUT_MS: /m);
+      },
+    );
+
     it('names DATABASE_LOG_LEVELS when it is not a JSON array', () => {
       process.env.DATABASE_LOG_LEVELS = 'warn';
 
@@ -81,6 +114,12 @@ describe('databaseConfig', () => {
       process.env.DATABASE_LOG_LEVELS = '["warn","error"]';
 
       expect(databaseConfig()).toMatchObject({ databaseLogLevels: ['warn', 'error'] });
+    });
+
+    it('accepts the highest port number', () => {
+      process.env.DATABASE_PORT = '65535';
+
+      expect(() => databaseConfig()).not.toThrow();
     });
   });
 });

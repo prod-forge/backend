@@ -20,6 +20,18 @@ describe('throttlerConfig', () => {
 
       expect(() => throttlerConfig()).toThrow(/^- THROTTLE_LIMIT: /m);
     });
+
+    it.each(['1.5', '0', '-1', ''])('throws when THROTTLE_LIMIT is not a positive integer (%s)', (value) => {
+      process.env.THROTTLE_LIMIT = value;
+
+      expect(() => throttlerConfig()).toThrow(/^- THROTTLE_LIMIT: /m);
+    });
+
+    it.each(['1.5', '0', '-1', ''])('throws when THROTTLE_TTL is not a positive integer (%s)', (value) => {
+      process.env.THROTTLE_TTL = value;
+
+      expect(() => throttlerConfig()).toThrow(/^- THROTTLE_TTL: /m);
+    });
   });
 
   describe('positive cases', () => {

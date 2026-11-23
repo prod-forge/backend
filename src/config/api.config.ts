@@ -2,16 +2,16 @@ import type { ConfigFactory } from '@nestjs/config';
 
 import { registerAs } from '@nestjs/config';
 import { Transform } from 'class-transformer';
-import { IsArray, IsBoolean, IsNumber, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsInt, IsString, Min } from 'class-validator';
 
 import { parseJsonArray } from '../common/utils/json';
-import { validateConfig } from '../common/utils/validate-config.util';
+import { toNumber, validateConfig } from '../common/utils/validate-config.util';
 import { ApiConfigInterface } from './interfaces/api-config.interface';
 
 class ApiConfig {
   @IsBoolean()
   @Transform(({ value }) => value === 'true')
-  API_ALLOWED_NON_BROWSER_ORIGINS = true;
+  API_ALLOW_NON_BROWSER_ORIGINS = true;
 
   @IsArray()
   @IsString({ each: true })
@@ -21,8 +21,9 @@ class ApiConfig {
   @IsString()
   API_PREFIX = 'api';
 
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
+  @IsInt()
+  @Min(0)
+  @Transform(toNumber)
   TRUST_PROXY = 0;
 }
 
@@ -33,7 +34,7 @@ export const apiConfig = registerAs<ApiConfig, ConfigFactory<ApiConfigInterface>
 
     return {
       apiAllowedOrigins: config.API_ALLOWED_ORIGINS,
-      apiAllowNonBrowserOrigins: config.API_ALLOWED_NON_BROWSER_ORIGINS,
+      apiAllowNonBrowserOrigins: config.API_ALLOW_NON_BROWSER_ORIGINS,
       apiPrefix: config.API_PREFIX,
       trustProxy: config.TRUST_PROXY,
     };

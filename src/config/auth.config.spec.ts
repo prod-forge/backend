@@ -23,6 +23,13 @@ describe('authConfig', () => {
 
       expect(() => authConfig()).toThrow(/^- JWT_SECRET: /m);
     });
+
+    it.each(['1.5', '0', '-1', ''])('throws when JWT_TTL is not a positive integer (%s)', (value) => {
+      process.env.JWT_SECRET = 's'.repeat(32);
+      process.env.JWT_TTL = value;
+
+      expect(() => authConfig()).toThrow(/^- JWT_TTL: /m);
+    });
   });
 
   describe('positive cases', () => {

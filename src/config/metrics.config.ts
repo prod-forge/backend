@@ -2,14 +2,15 @@ import type { ConfigFactory } from '@nestjs/config';
 
 import { registerAs } from '@nestjs/config';
 import { Transform } from 'class-transformer';
-import { IsNumber } from 'class-validator';
+import { IsInt, Min } from 'class-validator';
 
-import { validateConfig } from '../common/utils/validate-config.util';
+import { toNumber, validateConfig } from '../common/utils/validate-config.util';
 import { MetricsConfigInterface } from './interfaces/metrics-config.interface';
 
 class MetricsConfig {
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
+  @IsInt()
+  @Min(1)
+  @Transform(toNumber)
   HEALTH_CHECK_TRIGGER_MS = 15000;
 }
 

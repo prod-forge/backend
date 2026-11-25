@@ -7,7 +7,7 @@ import type { authConfig } from '../../config/auth.config';
 
 import { Public } from '../../common/decorators/public.decorator';
 import { ApiErrors, ApiOk } from '../../common/decorators/swagger.decorators';
-import { InternalServerError } from '../../error-handler/errors/common.errors';
+import { InternalServerError, TooManyRequestsError } from '../../error-handler/errors/common.errors';
 import { DtoValidationErrors } from '../../error-handler/errors/dto-validation.errors';
 import { UserIsNotAuthorizedError } from '../../error-handler/errors/user.errors';
 import { UsersService } from '../../features/users/users.service';
@@ -26,7 +26,7 @@ export class AuthController {
     private readonly configService: ConfigService,
   ) {}
 
-  @ApiErrors(DtoValidationErrors, UserIsNotAuthorizedError, InternalServerError)
+  @ApiErrors(DtoValidationErrors, UserIsNotAuthorizedError, InternalServerError, TooManyRequestsError)
   @ApiOk(TokenResponseDto, {
     access: false,
     description: 'Exchange a registered email for a signed access token. Development stub: no password is checked.',

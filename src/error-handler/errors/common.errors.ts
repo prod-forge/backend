@@ -32,6 +32,29 @@ export class InternalServerError extends BaseError<void> {
   }
 }
 
+// Documented in OpenAPI for every throttled route; the runtime 429 still comes from ThrottlerException via HttpStatusError
+export class TooManyRequestsError extends BaseError<void> {
+  static code = ErrorCodes.TOO_MANY_REQUESTS;
+  static domain = ErrorCategory.APPLICATION;
+  static headers = {
+    'Retry-After': {
+      description: 'Seconds to wait before retrying the request.',
+      schema: { type: 'integer' },
+    },
+  };
+  static message = 'Too Many Requests';
+  static status = HttpStatus.TOO_MANY_REQUESTS;
+
+  constructor() {
+    super(
+      TooManyRequestsError.message,
+      TooManyRequestsError.code,
+      TooManyRequestsError.domain,
+      TooManyRequestsError.status,
+    );
+  }
+}
+
 const HTTP_STATUS_CODES: Readonly<Partial<Record<number, ErrorCodes>>> = {
   [HttpStatus.BAD_REQUEST]: ErrorCodes.BAD_REQUEST,
   [HttpStatus.NOT_FOUND]: ErrorCodes.NOT_FOUND,

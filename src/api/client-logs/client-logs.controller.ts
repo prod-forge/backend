@@ -4,7 +4,7 @@ import { Throttle } from '@nestjs/throttler';
 
 import { Public } from '../../common/decorators/public.decorator';
 import { ApiErrors } from '../../common/decorators/swagger.decorators';
-import { InternalServerError } from '../../error-handler/errors/common.errors';
+import { InternalServerError, TooManyRequestsError } from '../../error-handler/errors/common.errors';
 import { DtoValidationErrors } from '../../error-handler/errors/dto-validation.errors';
 import { ClientLogsService } from '../../features/client-logs/client-logs.service';
 import { MobileLogDto } from './dtos/mobile-log.dto';
@@ -21,7 +21,7 @@ export class ClientLogsController {
   constructor(private readonly clientLogsService: ClientLogsService) {}
 
   @ApiBody({ type: MobileLogDto })
-  @ApiErrors(DtoValidationErrors, InternalServerError)
+  @ApiErrors(DtoValidationErrors, InternalServerError, TooManyRequestsError)
   @ApiOperation({ summary: 'Ingest mobile client logs' })
   @ApiResponse({ description: 'Logs accepted', status: HttpStatus.NO_CONTENT })
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -31,7 +31,7 @@ export class ClientLogsController {
   }
 
   @ApiBody({ type: WebLogDto })
-  @ApiErrors(DtoValidationErrors, InternalServerError)
+  @ApiErrors(DtoValidationErrors, InternalServerError, TooManyRequestsError)
   @ApiOperation({ summary: 'Ingest web client logs' })
   @ApiResponse({ description: 'Logs accepted', status: HttpStatus.NO_CONTENT })
   @HttpCode(HttpStatus.NO_CONTENT)

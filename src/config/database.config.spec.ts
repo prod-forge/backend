@@ -19,6 +19,15 @@ describe('databaseConfig', () => {
   });
 
   describe('negative cases', () => {
+    it.each(['1', '0', 'TRUE', 'FALSE', 'yes'])(
+      'throws when DATABASE_FAIL_FAST is %j instead of true or false',
+      (value) => {
+        process.env.DATABASE_FAIL_FAST = value;
+
+        expect(() => databaseConfig()).toThrow(/^- DATABASE_FAIL_FAST: /m);
+      },
+    );
+
     it('throws when DATABASE_HOST is missing', () => {
       delete process.env.DATABASE_HOST;
 
@@ -43,6 +52,39 @@ describe('databaseConfig', () => {
       expect(() => databaseConfig()).toThrow(/^- DATABASE_STATEMENT_TIMEOUT_MS: /m);
     });
 
+    it.each(['1.5', '0', '-1', ''])(
+      'throws when DATABASE_CONNECT_TIMEOUT_MS is not a positive integer (%s)',
+      (value) => {
+        process.env.DATABASE_CONNECT_TIMEOUT_MS = value;
+
+        expect(() => databaseConfig()).toThrow(/^- DATABASE_CONNECT_TIMEOUT_MS: /m);
+      },
+    );
+
+    it.each(['1.5', '0', '-1', ''])('throws when DATABASE_POOL_MAX is not a positive integer (%s)', (value) => {
+      process.env.DATABASE_POOL_MAX = value;
+
+      expect(() => databaseConfig()).toThrow(/^- DATABASE_POOL_MAX: /m);
+    });
+
+    it.each(['1.5', '0', '-1', '65536', ''])(
+      'throws when DATABASE_PORT is not a positive integer below 65536 (%s)',
+      (value) => {
+        process.env.DATABASE_PORT = value;
+
+        expect(() => databaseConfig()).toThrow(/^- DATABASE_PORT: /m);
+      },
+    );
+
+    it.each(['1.5', '0', '-1', ''])(
+      'throws when DATABASE_STATEMENT_TIMEOUT_MS is not a positive integer (%s)',
+      (value) => {
+        process.env.DATABASE_STATEMENT_TIMEOUT_MS = value;
+
+        expect(() => databaseConfig()).toThrow(/^- DATABASE_STATEMENT_TIMEOUT_MS: /m);
+      },
+    );
+
     it('names DATABASE_LOG_LEVELS when it is not a JSON array', () => {
       process.env.DATABASE_LOG_LEVELS = 'warn';
 
@@ -51,6 +93,15 @@ describe('databaseConfig', () => {
   });
 
   describe('positive cases', () => {
+    it.each([
+      ['true', true],
+      ['false', false],
+    ])('maps DATABASE_FAIL_FAST=%s to %s', (value, expected) => {
+      process.env.DATABASE_FAIL_FAST = value;
+
+      expect(databaseConfig()).toMatchObject({ databaseFailFast: expected });
+    });
+
     it.each(['localhost', 'database', 'db.example.internal', '10.0.0.5'])('accepts DATABASE_HOST %s', (host) => {
       process.env.DATABASE_HOST = host;
 
@@ -81,6 +132,12 @@ describe('databaseConfig', () => {
       process.env.DATABASE_LOG_LEVELS = '["warn","error"]';
 
       expect(databaseConfig()).toMatchObject({ databaseLogLevels: ['warn', 'error'] });
+    });
+
+    it('accepts the highest port number', () => {
+      process.env.DATABASE_PORT = '65535';
+
+      expect(() => databaseConfig()).not.toThrow();
     });
   });
 });

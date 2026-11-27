@@ -2,15 +2,16 @@ import type { ConfigFactory } from '@nestjs/config';
 
 import { registerAs } from '@nestjs/config';
 import { Transform } from 'class-transformer';
-import { IsArray, IsBoolean, IsNumber, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsInt, IsString, Min } from 'class-validator';
 
+import { parseStrictBoolean } from '../common/utils/booleans';
 import { parseJsonArray } from '../common/utils/json';
-import { validateConfig } from '../common/utils/validate-config.util';
+import { toNumber, validateConfig } from '../common/utils/validate-config.util';
 import { ApiConfigInterface } from './interfaces/api-config.interface';
 
 class ApiConfig {
   @IsBoolean()
-  @Transform(({ value }) => value === 'true')
+  @Transform(({ value }) => parseStrictBoolean(value))
   API_ALLOWED_NON_BROWSER_ORIGINS = true;
 
   @IsArray()
@@ -21,8 +22,9 @@ class ApiConfig {
   @IsString()
   API_PREFIX = 'api';
 
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
+  @IsInt()
+  @Min(0)
+  @Transform(toNumber)
   TRUST_PROXY = 0;
 }
 

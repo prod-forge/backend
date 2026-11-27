@@ -15,10 +15,31 @@ describe('throttlerConfig', () => {
   });
 
   describe('negative cases', () => {
+    it.each(['1', '0', 'TRUE', 'FALSE', 'yes'])(
+      'throws when THROTTLE_ENABLED is %j instead of true or false',
+      (value) => {
+        process.env.THROTTLE_ENABLED = value;
+
+        expect(() => throttlerConfig()).toThrow(/^- THROTTLE_ENABLED: /m);
+      },
+    );
+
     it('throws when THROTTLE_LIMIT is not a number', () => {
       process.env.THROTTLE_LIMIT = 'many';
 
       expect(() => throttlerConfig()).toThrow(/^- THROTTLE_LIMIT: /m);
+    });
+
+    it.each(['1.5', '0', '-1', ''])('throws when THROTTLE_LIMIT is not a positive integer (%s)', (value) => {
+      process.env.THROTTLE_LIMIT = value;
+
+      expect(() => throttlerConfig()).toThrow(/^- THROTTLE_LIMIT: /m);
+    });
+
+    it.each(['1.5', '0', '-1', ''])('throws when THROTTLE_TTL is not a positive integer (%s)', (value) => {
+      process.env.THROTTLE_TTL = value;
+
+      expect(() => throttlerConfig()).toThrow(/^- THROTTLE_TTL: /m);
     });
   });
 

@@ -163,19 +163,23 @@ class AppConfig {
   @IsString()
   APP_NAME = packageJson.name || 'App';
 
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
+  @IsInt()
+  @Max(65535)
+  @Min(1)
+  @Transform(toNumber)
   APP_PORT = 3000;
 
   @IsString()
   APP_VERSION = packageJson.version || '1.0.0';
 
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
+  @IsInt()
+  @Min(0)
+  @Transform(toNumber)
   SHUTDOWN_DRAIN_MS = 10000;
 
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
+  @IsInt()
+  @Min(0)
+  @Transform(toNumber)
   SHUTDOWN_INFLIGHT_TIMEOUT_MS = 20000;
 }
 
@@ -203,6 +207,16 @@ This approach provides several benefits:
 - typed configuration
 - clear separation of concerns
 - predictable configuration access
+
+Boolean variables use the shared `parseStrictBoolean` transform (`src/common/utils/booleans.ts`): only `true` and `false` are accepted, unset keeps the default, and any other value (`1`, `0`, `TRUE`, `yes`) fails `validateConfig` at startup instead of being read silently as `true` or `false`.
+
+```typescript
+@IsBoolean()
+@Transform(({ value }) => parseStrictBoolean(value))
+SWAGGER_ENABLED = true;
+```
+
+Numeric variables use the shared `toNumber` transform (`src/common/utils/validate-config.util.ts`) with `@IsInt()` and a range: `@Min(1)` for ports, TTLs, limits, pool sizes and timeouts, `@Max(65535)` for ports, `@Min(0)` where 0 means "off" (`TRUST_PROXY`, the `SHUTDOWN_*` delays). An empty or blank value fails `validateConfig` instead of becoming `0`, as do fractions, negatives and out-of-range ports.
 
 ## Accessing Configuration
 

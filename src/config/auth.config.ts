@@ -2,9 +2,9 @@ import type { ConfigFactory } from '@nestjs/config';
 
 import { registerAs } from '@nestjs/config';
 import { Transform } from 'class-transformer';
-import { IsNumber, IsString, MinLength } from 'class-validator';
+import { IsInt, IsString, Min, MinLength } from 'class-validator';
 
-import { validateConfig } from '../common/utils/validate-config.util';
+import { toNumber, validateConfig } from '../common/utils/validate-config.util';
 import { AuthConfigInterface } from './interfaces/auth-config.interface';
 
 class AuthConfig {
@@ -12,8 +12,9 @@ class AuthConfig {
   @MinLength(32)
   JWT_SECRET: string;
 
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
+  @IsInt()
+  @Min(1)
+  @Transform(toNumber)
   JWT_TTL = 3600;
 }
 

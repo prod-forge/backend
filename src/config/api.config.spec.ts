@@ -12,8 +12,23 @@ describe('apiConfig', () => {
   });
 
   describe('negative cases', () => {
+    it.each(['1', '0', 'TRUE', 'FALSE', 'yes'])(
+      'throws when API_ALLOWED_NON_BROWSER_ORIGINS is %j instead of true or false',
+      (value) => {
+        process.env.API_ALLOWED_NON_BROWSER_ORIGINS = value;
+
+        expect(() => apiConfig()).toThrow(/^- API_ALLOWED_NON_BROWSER_ORIGINS: /m);
+      },
+    );
+
     it('throws when TRUST_PROXY is not a number', () => {
       process.env.TRUST_PROXY = 'abc';
+
+      expect(() => apiConfig()).toThrow(/^- TRUST_PROXY: /m);
+    });
+
+    it.each(['1.5', '-1', '', ' '])('throws when TRUST_PROXY is not a non-negative integer (%s)', (value) => {
+      process.env.TRUST_PROXY = value;
 
       expect(() => apiConfig()).toThrow(/^- TRUST_PROXY: /m);
     });
@@ -41,6 +56,15 @@ describe('apiConfig', () => {
   });
 
   describe('positive cases', () => {
+    it.each([
+      ['true', true],
+      ['false', false],
+    ])('maps API_ALLOWED_NON_BROWSER_ORIGINS=%s to %s', (value, expected) => {
+      process.env.API_ALLOWED_NON_BROWSER_ORIGINS = value;
+
+      expect(apiConfig()).toMatchObject({ apiAllowNonBrowserOrigins: expected });
+    });
+
     it('maps TRUST_PROXY to a number', () => {
       process.env.TRUST_PROXY = '1';
 
@@ -49,6 +73,12 @@ describe('apiConfig', () => {
 
     it('defaults TRUST_PROXY to 0', () => {
       delete process.env.TRUST_PROXY;
+
+      expect(apiConfig()).toMatchObject({ trustProxy: 0 });
+    });
+
+    it('accepts TRUST_PROXY 0 explicitly', () => {
+      process.env.TRUST_PROXY = '0';
 
       expect(apiConfig()).toMatchObject({ trustProxy: 0 });
     });

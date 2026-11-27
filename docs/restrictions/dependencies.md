@@ -10,7 +10,7 @@
 
 - **Rule:** an entry in `overrides` in `package.json` pins one patched transitive dependency under one named parent, and the roadmap tracks the upgrade that removes it. Do not add a global override.
 - **Reason:** `npm audit` flagged a transitive dependency the direct dependency had not patched yet (`guide/code-quality.md`).
-- **Where:** `package.json` (`overrides`, empty since the NestJS 12 upgrade removed the `multer` pin); `roadmap.md` tracks any new one.
+- **Where:** `package.json` (`overrides`: `effect` 3.22.5 under `@prisma/config`, because Prisma 7.10.1 pins `effect` 3.20.0); `roadmap.md` tracks its removal.
 
 ## Sentry and OpenTelemetry are upgraded together
 

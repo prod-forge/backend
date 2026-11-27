@@ -19,6 +19,21 @@ describe('redisConfig', () => {
 
       expect(() => redisConfig()).toThrow(/^- REDIS_TLS: /m);
     });
+
+    it.each(['1', '0', 'TRUE'])('throws when REDIS_TLS is %j', (value) => {
+      process.env.REDIS_TLS = value;
+
+      expect(() => redisConfig()).toThrow(/^- REDIS_TLS: /m);
+    });
+
+    it.each(['1.5', '0', '-1', '65536', ''])(
+      'throws when REDIS_PORT is not a positive integer below 65536 (%s)',
+      (value) => {
+        process.env.REDIS_PORT = value;
+
+        expect(() => redisConfig()).toThrow(/^- REDIS_PORT: /m);
+      },
+    );
   });
 
   describe('positive cases', () => {
@@ -37,6 +52,12 @@ describe('redisConfig', () => {
       process.env.REDIS_TLS = 'false';
 
       expect(redisConfig()).toMatchObject({ redisTls: false });
+    });
+
+    it('accepts the highest port number', () => {
+      process.env.REDIS_PORT = '65535';
+
+      expect(redisConfig()).toMatchObject({ redisPort: 65535 });
     });
   });
 });

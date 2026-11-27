@@ -31,6 +31,7 @@ type SwaggerOptions = {
   access: boolean;
   description: string;
   metaModel?: Type;
+  status?: HttpStatus;
   title: string;
 };
 
@@ -69,7 +70,7 @@ export const ApiPaginated = (
 
 export const ApiOk = (
   model: Type,
-  { access, description, metaModel, title }: SwaggerOptions,
+  { access, description, metaModel, status = HttpStatus.OK, title }: SwaggerOptions,
 ): ClassDecorator & MethodDecorator => {
   const summary = `${title}${access ? ' 🔒' : ''}`;
 
@@ -94,11 +95,12 @@ export const ApiOk = (
   return applyDecorators(
     access ? ApiBearerAuth('access-token') : ApiBearerAuth('none'),
     ApiOperation({ summary }),
-    ApiOkResponse({
+    ApiResponse({
       description,
       schema: {
         allOf,
       },
+      status,
     }),
   );
 };

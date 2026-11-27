@@ -80,6 +80,7 @@ describe('ClientLogsService', () => {
         {
           ctx: 'client-logs',
           details: {
+            clientTraceId: '9c226319-abcc-4d6c-a1b6-f5d1cf18b6ae',
             payload: { data: 'test' },
             platform: 'ios',
             source: 'mobile',

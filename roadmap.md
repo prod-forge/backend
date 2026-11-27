@@ -8,6 +8,7 @@ Open work only. Everything else is shipped; see the [prod-forge organization](ht
 - Development Workflow
   - Feature flags
   - Pin GitHub Actions to commit SHAs
+  - Drop the `effect` override under `@prisma/config` once Prisma ships `effect` >=3.22.1 (GHSA-7589-6fvf-x4pw)
 - Testing
   - A/B testing
 - Architecture Decisions

@@ -5,6 +5,7 @@ import { Reflector } from '@nestjs/core';
 import { InjectThrottlerOptions, InjectThrottlerStorage, ThrottlerGuard } from '@nestjs/throttler';
 
 import { AuthService } from '../../modules/auth/auth.service';
+import { extractBearerToken } from '../utils/bearer-token';
 
 type TrackedRequest = {
   headers: Record<string, string | string[] | undefined>;
@@ -37,8 +38,8 @@ export class UserThrottlerGuard extends ThrottlerGuard {
     const header = req.headers.authorization;
     if (typeof header !== 'string') return undefined;
 
-    const [prefix, token] = header.split(' ');
-    if (prefix !== 'Bearer' || !token) return undefined;
+    const token = extractBearerToken(header);
+    if (!token) return undefined;
 
     try {
       const { userId } = await this.authService.verifyToken(token);

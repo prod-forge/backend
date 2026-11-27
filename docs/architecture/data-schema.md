@@ -143,7 +143,7 @@ postgresql://<DATABASE_USER>:<DATABASE_PASSWORD>@<DATABASE_HOST>:<DATABASE_PORT>
 
 The user, password and database name are percent-encoded. `pg-connection-string` decodes the database path with `decodeURI`, which leaves `; / ? : @ & = + $ , #` encoded, so `getDatabaseUrl` throws when `DATABASE_NAME` contains one of them.
 
-SSL is controlled by `DATABASE_SSL` (`sslmode=verify-full` for `pg`, `sslmode=require` for the Prisma schema engine in `prisma.config.ts`; the production image trusts the RDS CA bundle through `NODE_EXTRA_CA_CERTS`). Log levels for Prisma query logging are set via `DATABASE_LOG_LEVELS`.
+SSL is controlled by `DATABASE_SSL` (`sslmode=verify-full` for `pg`, `sslmode=require` for the Prisma schema engine in `prisma.config.ts`; the production image trusts the RDS CA bundle through `NODE_EXTRA_CA_CERTS`). Log levels for Prisma logging are set via `DATABASE_LOG_LEVELS`: each configured level is forwarded to the logger with context `PrismaService` (`error` → error, `warn` → warn, `info` → log, `query` → debug), and query metrics are recorded whether or not `query` is configured.
 
 `DATABASE_FAIL_FAST` (default `true`) makes the app exit on startup if the database is unreachable.
 

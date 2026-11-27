@@ -1,12 +1,42 @@
 <p align="center">
-  <img alt="Prod Forge" src="https://raw.githubusercontent.com/prod-forge/.github/main/assets/prod-forge-logo.png" width="264px" height="243px">
+  <img alt="Prod Forge" src="https://raw.githubusercontent.com/prod-forge/.github/main/assets/prod-forge-logo.png" width="120px" height="110px">
 </p>
 
-_AI made writing the code easy. Running it in production is still hard._
+<p align="center">
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/github/license/prod-forge/backend?style=flat-square"></a>
+  <a href="https://github.com/prod-forge/backend/releases"><img alt="Release" src="https://img.shields.io/github/v/release/prod-forge/backend?style=flat-square"></a>
+  <a href="https://github.com/prod-forge/backend/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/prod-forge/backend/ci.yml?branch=main&style=flat-square&label=CI"></a>
+</p>
 
-This repository is the main guide: a NestJS Todo API taken from the first commit to production, covering quality gates, CI/CD, migrations, observability and rollback. It answers: how do I build and operate a production-ready API?
+A NestJS API taken from the first commit to production, with a 16-chapter guide that explains every decision: quality
+gates, CI/CD, migrations, observability, fault tolerance and rollback. The domain is a Todo app on purpose, so the
+production practices stay visible.
 
-Part of Prod Forge — start with the organization overview: https://github.com/prod-forge
+## What's inside
+
+- **Migrations before the deploy:** a one-off ECS task runs `prisma migrate deploy`; the new version does not start if
+  it fails. [Release Management](guide/release-management.md#database-migration-step)
+- **Rollback in one workflow:** the service switches to one of the last three task revisions.
+  [Rollback Strategy](guide/release-management.md#rollback-strategy)
+- **No dropped requests on deploy:** in-flight requests are tracked and drained on `SIGTERM` while `/health` returns
+  `503`. [In-Flight Requests Handling](guide/fault-tolerance.md#in-flight-requests-handling)
+- **Redis is optional:** cache and rate limiting fall back instead of failing when Redis is down.
+  [Fault Tolerance](guide/fault-tolerance.md#non-critical-dependency)
+- **One trace ID everywhere:** the same ID in logs, Sentry events and Tempo traces.
+  [Logging & Observability](guide/logging-observability.md#trace-id)
+- **The observability stack locally:** Prometheus, Grafana, Loki and Tempo with the app, checked end to end by one
+  script. [Running the Stack Locally](guide/logging-observability.md#running-the-stack-locally)
+- **Tests on real infrastructure:** 593 unit tests with coverage thresholds, and e2e tests against PostgreSQL and Redis
+  in Testcontainers. [Testing](guide/testing.md)
+- **A committed API contract:** [docs/openapi.json](docs/openapi.json), generated from the code.
+
+<p align="center">
+  <img alt="Grafana dashboard of the API" src="guide/assets/grafana-dashboard.jpeg" width="640px" height="397px">
+</p>
+
+This repository is the API. Prod Forge also has a [web and mobile client](https://github.com/prod-forge/frontend) and
+the [AWS infrastructure in Terraform](https://github.com/prod-forge/terraform); the
+[organization page](https://github.com/prod-forge) has the architecture diagram and the reading order.
 
 ## Stack
 
@@ -16,8 +46,6 @@ Part of Prod Forge — start with the organization overview: https://github.com/
 | Backend        | NestJS · Prisma · PostgreSQL · Redis · Docker    |
 | Observability  | Prometheus · Grafana · Loki · Promtail · Tempo   |
 | Quality        | ESLint · Prettier · Husky · Commitlint · CI/CD   |
-
-The full stack table is on the organization page: https://github.com/prod-forge
 
 ## Getting started
 
@@ -37,6 +65,26 @@ Grafana runs on `http://localhost:3001` (`admin` / `admin`). Details:
 [Running the Stack Locally](guide/logging-observability.md#running-the-stack-locally).
 
 # Table of contents
+
+- [1. Repository Strategy](guide/repository-strategy.md)
+- [2. Architecture Decisions](guide/architecture-decisions.md)
+- [3. Development Workflow](guide/development-workflow.md)
+- [4. AI-Assisted Development](guide/ai-development.md)
+- [5. Code Quality](guide/code-quality.md)
+- [6. Documentation](guide/documentation.md)
+- [7. Configuration Management](guide/configuration-management.md)
+- [8. Database Management](guide/database-management.md)
+- [9. Project Structure](guide/project-structure.md)
+- [10. Fault Tolerance](guide/fault-tolerance.md)
+- [11. Error Handling](guide/error-handling.md)
+- [12. Logging & Observability](guide/logging-observability.md)
+- [13. Testing](guide/testing.md)
+- [14. Performance](guide/performance.md)
+- [15. Security](guide/security.md)
+- [16. Release Management](guide/release-management.md)
+
+<details>
+<summary>Full table of contents</summary>
 
 - [1. Repository Strategy](guide/repository-strategy.md)
   - [When Monorepos Work Well](guide/repository-strategy.md#when-monorepos-work-well)
@@ -281,6 +329,8 @@ Grafana runs on `http://localhost:3001` (`admin` / `admin`). Details:
     - [Step 1 - Show Available Revisions](guide/release-management.md#step-1---show-available-revisions)
     - [Step 2 - Rollback](guide/release-management.md#step-2---rollback)
   - [Debugging in Production](guide/release-management.md#debugging-in-production)
+
+</details>
 
 # Conclusion
 

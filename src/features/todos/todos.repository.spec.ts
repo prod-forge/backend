@@ -67,28 +67,38 @@ describe('TodosRepository', () => {
 
     describe('negative cases', () => {
       it('orders by id only when sortBy is falsy', async () => {
-        prismaMock.$transaction.mockResolvedValue([[], 0]);
+        prismaMock.$transaction.mockResolvedValue([[], 0, 0]);
 
         await repository.findAll('user-1', filter, { order: SortOrder.DESC, sortBy: undefined }, pagination);
 
         expect(prismaMock.todo.findMany).toHaveBeenCalledWith(expect.objectContaining({ orderBy: [{ id: 'asc' }] }));
       });
+
+      it('keeps a completed=false filter when counting completed todos', async () => {
+        prismaMock.$transaction.mockResolvedValue([[], 0, 0]);
+
+        await repository.findAll('user-1', { completed: false }, sort, pagination);
+
+        expect(prismaMock.todo.count).toHaveBeenCalledWith({
+          where: { AND: [{ completed: false, userId: 'user-1' }, { completed: true }] },
+        });
+      });
     });
 
     describe('positive cases', () => {
       it('returns paginated entity with mapped todos', async () => {
-        prismaMock.$transaction.mockResolvedValue([[todoData], 1]);
+        prismaMock.$transaction.mockResolvedValue([[todoData], 1, 0]);
 
         const result = await repository.findAll('user-1', filter, sort, pagination);
 
         expect(result.data).toHaveLength(1);
         expect(result.data[0]).toBeInstanceOf(TodoEntity);
         expect(result.data[0].id).toBe('todo-1');
-        expect(result.meta).toEqual({ limit: 10, offset: 0, total: 1 });
+        expect(result.meta).toEqual({ completed: 0, limit: 10, offset: 0, total: 1 });
       });
 
       it('queries with correct where clause including userId and filter', async () => {
-        prismaMock.$transaction.mockResolvedValue([[], 0]);
+        prismaMock.$transaction.mockResolvedValue([[], 0, 0]);
 
         await repository.findAll('user-1', { completed: true }, sort, pagination);
 
@@ -101,7 +111,7 @@ describe('TodosRepository', () => {
       });
 
       it('applies orderBy from sort query with id as tiebreaker', async () => {
-        prismaMock.$transaction.mockResolvedValue([[], 0]);
+        prismaMock.$transaction.mockResolvedValue([[], 0, 0]);
 
         await repository.findAll(
           'user-1',
@@ -116,7 +126,7 @@ describe('TodosRepository', () => {
       });
 
       it('passes offset as skip without multiplying by limit', async () => {
-        prismaMock.$transaction.mockResolvedValue([[], 0]);
+        prismaMock.$transaction.mockResolvedValue([[], 0, 0]);
 
         await repository.findAll('user-1', filter, sort, { limit: 10, offset: 3 });
 
@@ -124,7 +134,7 @@ describe('TodosRepository', () => {
       });
 
       it('returns empty data when no todos match', async () => {
-        prismaMock.$transaction.mockResolvedValue([[], 0]);
+        prismaMock.$transaction.mockResolvedValue([[], 0, 0]);
 
         const result = await repository.findAll('user-1', filter, sort, pagination);
 
@@ -134,12 +144,24 @@ describe('TodosRepository', () => {
 
       it('maps multiple todos to entities', async () => {
         const second = { completed: true, description: 'desc', id: 'todo-2', title: 'Second' };
-        prismaMock.$transaction.mockResolvedValue([[todoData, second], 2]);
+        prismaMock.$transaction.mockResolvedValue([[todoData, second], 2, 1]);
 
         const result = await repository.findAll('user-1', filter, sort, pagination);
 
         expect(result.data).toHaveLength(2);
         expect(result.data[1].description).toBe('desc');
+      });
+
+      it('returns the completed count of the filtered rows in meta', async () => {
+        prismaMock.$transaction.mockResolvedValue([[todoData], 12, 5]);
+
+        const result = await repository.findAll('user-1', filter, sort, pagination);
+
+        expect(prismaMock.todo.count).toHaveBeenCalledWith({
+          where: { AND: [{ userId: 'user-1' }, { completed: true }] },
+        });
+        expect(result.meta.total).toBe(12);
+        expect(result.meta.completed).toBe(5);
       });
     });
   });

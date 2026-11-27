@@ -61,14 +61,14 @@ describe('TodosController', () => {
       it('returns paginated todos DTO', async () => {
         const paginatedResult = {
           data: [todoData],
-          meta: { limit: 10, offset: 0, total: 1 },
+          meta: { completed: 1, limit: 10, offset: 0, total: 1 },
         };
         service.findAll.mockResolvedValue(paginatedResult);
 
         const result = await controller.findAll(userInterface, {});
 
         expect(service.findAll).toHaveBeenCalledWith('user-1', {});
-        expect(result).toBeDefined();
+        expect(result.meta).toEqual({ completed: 1, limit: 10, offset: 0, total: 1 });
       });
     });
   });

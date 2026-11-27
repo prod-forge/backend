@@ -19,6 +19,15 @@ describe('databaseConfig', () => {
   });
 
   describe('negative cases', () => {
+    it.each(['1', '0', 'TRUE', 'FALSE', 'yes'])(
+      'throws when DATABASE_FAIL_FAST is %j instead of true or false',
+      (value) => {
+        process.env.DATABASE_FAIL_FAST = value;
+
+        expect(() => databaseConfig()).toThrow(/^- DATABASE_FAIL_FAST: /m);
+      },
+    );
+
     it('throws when DATABASE_HOST is missing', () => {
       delete process.env.DATABASE_HOST;
 
@@ -84,6 +93,15 @@ describe('databaseConfig', () => {
   });
 
   describe('positive cases', () => {
+    it.each([
+      ['true', true],
+      ['false', false],
+    ])('maps DATABASE_FAIL_FAST=%s to %s', (value, expected) => {
+      process.env.DATABASE_FAIL_FAST = value;
+
+      expect(databaseConfig()).toMatchObject({ databaseFailFast: expected });
+    });
+
     it.each(['localhost', 'database', 'db.example.internal', '10.0.0.5'])('accepts DATABASE_HOST %s', (host) => {
       process.env.DATABASE_HOST = host;
 

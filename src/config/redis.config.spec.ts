@@ -20,6 +20,12 @@ describe('redisConfig', () => {
       expect(() => redisConfig()).toThrow(/^- REDIS_TLS: /m);
     });
 
+    it.each(['1', '0', 'TRUE'])('throws when REDIS_TLS is %j', (value) => {
+      process.env.REDIS_TLS = value;
+
+      expect(() => redisConfig()).toThrow(/^- REDIS_TLS: /m);
+    });
+
     it.each(['1.5', '0', '-1', '65536', ''])(
       'throws when REDIS_PORT is not a positive integer below 65536 (%s)',
       (value) => {

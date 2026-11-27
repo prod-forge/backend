@@ -19,6 +19,12 @@ describe('UpdateTodoDto', () => {
 
       expect(errors).not.toHaveLength(0);
     });
+
+    it.each(['title', 'completed'])('rejects null for %s', async (field) => {
+      const errors = await validate(makeDto({ [field]: null }));
+
+      expect(errors.map((error) => error.property)).toEqual([field]);
+    });
   });
 
   describe('positive cases', () => {
@@ -34,6 +40,10 @@ describe('UpdateTodoDto', () => {
 
       expect(await validate(dto)).toHaveLength(0);
       expect(Object.keys(dto)).toEqual(['description']);
+    });
+
+    it('allows null for description, which is nullable', async () => {
+      expect(await validate(makeDto({ description: null }))).toHaveLength(0);
     });
   });
 });

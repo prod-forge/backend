@@ -27,7 +27,7 @@ describe('apiConfig', () => {
       expect(() => apiConfig()).toThrow(/^- TRUST_PROXY: /m);
     });
 
-    it.each(['1.5', '-1', ''])('throws when TRUST_PROXY is not a non-negative integer (%s)', (value) => {
+    it.each(['1.5', '-1', '', ' '])('throws when TRUST_PROXY is not a non-negative integer (%s)', (value) => {
       process.env.TRUST_PROXY = value;
 
       expect(() => apiConfig()).toThrow(/^- TRUST_PROXY: /m);

@@ -24,13 +24,13 @@ describe('appConfig', () => {
       },
     );
 
-    it.each(['1.5', '-1', ''])('throws when SHUTDOWN_DRAIN_MS is not a non-negative integer (%s)', (value) => {
+    it.each(['1.5', '-1', '', ' '])('throws when SHUTDOWN_DRAIN_MS is not a non-negative integer (%s)', (value) => {
       process.env.SHUTDOWN_DRAIN_MS = value;
 
       expect(() => appConfig()).toThrow(/^- SHUTDOWN_DRAIN_MS: /m);
     });
 
-    it.each(['1.5', '-1', ''])(
+    it.each(['1.5', '-1', '', ' '])(
       'throws when SHUTDOWN_INFLIGHT_TIMEOUT_MS is not a non-negative integer (%s)',
       (value) => {
         process.env.SHUTDOWN_INFLIGHT_TIMEOUT_MS = value;

@@ -113,15 +113,23 @@ describe('toNumber', () => {
     value,
   });
 
-  it('returns an empty string unchanged so validation rejects it instead of accepting 0', () => {
-    expect(toNumber(params(0, ''))).toBe('');
+  describe('negative cases', () => {
+    it('returns an empty string unchanged so validation rejects it instead of accepting 0', () => {
+      expect(toNumber(params(0, ''))).toBe('');
+    });
+
+    it('returns an empty string for a blank value so validation rejects it instead of accepting 0', () => {
+      expect(toNumber(params(0, '  '))).toBe('');
+    });
   });
 
-  it('converts a numeric string to a number', () => {
-    expect(toNumber(params('3000', '3000'))).toBe(3000);
-  });
+  describe('positive cases', () => {
+    it('converts a numeric string to a number', () => {
+      expect(toNumber(params('3000', '3000'))).toBe(3000);
+    });
 
-  it('leaves an already converted number unchanged', () => {
-    expect(toNumber(params(3000, '3000'))).toBe(3000);
+    it('leaves an already converted number unchanged', () => {
+      expect(toNumber(params(3000, '3000'))).toBe(3000);
+    });
   });
 });

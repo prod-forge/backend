@@ -18,8 +18,6 @@ Deferred known problems, so they are not rediscovered (or silently "fixed") in e
 - [#50](https://github.com/prod-forge/backend/issues/50) — Require positive integers for numeric env values.
 - [#51](https://github.com/prod-forge/backend/issues/51) — Make `DATABASE_LOG_LEVELS` write Prisma log events to the logger.
 - [#52](https://github.com/prod-forge/backend/issues/52) — Count guard-rejected requests (401, 429) in `http_requests_total`.
-- [#53](https://github.com/prod-forge/backend/issues/53) — Log the client trace id for mobile client logs, as for web logs.
-- [#54](https://github.com/prod-forge/backend/issues/54) — Accept the `Bearer` auth scheme case-insensitively.
 
 ## Without an issue
 

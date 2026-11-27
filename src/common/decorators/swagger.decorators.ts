@@ -1,4 +1,5 @@
 import type { Type } from '@nestjs/common';
+import type { ApiResponseOptions } from '@nestjs/swagger';
 
 import { applyDecorators, HttpStatus } from '@nestjs/common';
 import {
@@ -17,6 +18,7 @@ import { PaginatedResponseDto, PaginationMetaDto } from '../../shared/dtos/pagin
 
 type ErrorClass = Type<BaseError<unknown>> & {
   code: string;
+  headers?: ApiResponseOptions['headers'];
   message: string;
   status: number;
 };
@@ -124,6 +126,7 @@ export const ApiErrors = (...errors: ErrorClass[]): ClassDecorator & MethodDecor
 
     return ApiResponse({
       description: `${ErrorCtor.code}: ${ErrorCtor.message}`,
+      headers: ErrorCtor.headers,
       schema: {
         allOf: [
           { $ref: getSchemaPath(ApiErrorDto) },

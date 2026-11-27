@@ -19,7 +19,7 @@ import type { UserInterface } from '../../shared/interfaces/user.interface';
 import { ApiEmpty, ApiErrors, ApiOk, ApiPaginated } from '../../common/decorators/swagger.decorators';
 import { User } from '../../common/decorators/user.decorator';
 import { AuthGuard } from '../../common/guards';
-import { InternalServerError } from '../../error-handler/errors/common.errors';
+import { InternalServerError, TooManyRequestsError } from '../../error-handler/errors/common.errors';
 import { DtoValidationErrors } from '../../error-handler/errors/dto-validation.errors';
 import { TodoNotFoundError } from '../../error-handler/errors/todo.errors';
 import { UserIsNotAuthorizedError } from '../../error-handler/errors/user.errors';
@@ -43,7 +43,7 @@ const uuidPipe = new ParseUUIDPipe({
 export class TodosController {
   constructor(private readonly todoService: TodosService) {}
 
-  @ApiErrors(DtoValidationErrors, UserIsNotAuthorizedError, InternalServerError)
+  @ApiErrors(DtoValidationErrors, UserIsNotAuthorizedError, InternalServerError, TooManyRequestsError)
   @ApiOk(TodoResponseDto, {
     access: true,
     description: 'Create new todo item for user',
@@ -60,7 +60,7 @@ export class TodosController {
     });
   }
 
-  @ApiErrors(DtoValidationErrors, UserIsNotAuthorizedError, InternalServerError)
+  @ApiErrors(DtoValidationErrors, UserIsNotAuthorizedError, InternalServerError, TooManyRequestsError)
   @ApiPaginated(TodoResponseDto, {
     access: true,
     description: 'Get all todo items for user',
@@ -77,7 +77,13 @@ export class TodosController {
     });
   }
 
-  @ApiErrors(DtoValidationErrors, TodoNotFoundError, UserIsNotAuthorizedError, InternalServerError)
+  @ApiErrors(
+    DtoValidationErrors,
+    TodoNotFoundError,
+    UserIsNotAuthorizedError,
+    InternalServerError,
+    TooManyRequestsError,
+  )
   @ApiOk(TodoResponseDto, {
     access: true,
     description: 'Get todo item for user',
@@ -98,14 +104,26 @@ export class TodosController {
     description: 'Todo was successfully deleted',
     title: 'Remove Todo',
   })
-  @ApiErrors(DtoValidationErrors, TodoNotFoundError, UserIsNotAuthorizedError, InternalServerError)
+  @ApiErrors(
+    DtoValidationErrors,
+    TodoNotFoundError,
+    UserIsNotAuthorizedError,
+    InternalServerError,
+    TooManyRequestsError,
+  )
   @Delete(':id')
   @UseGuards(AuthGuard)
   async remove(@Param('id', uuidPipe) id: string, @User() { userId }: UserInterface): Promise<void> {
     await this.todoService.remove(userId, id);
   }
 
-  @ApiErrors(DtoValidationErrors, TodoNotFoundError, UserIsNotAuthorizedError, InternalServerError)
+  @ApiErrors(
+    DtoValidationErrors,
+    TodoNotFoundError,
+    UserIsNotAuthorizedError,
+    InternalServerError,
+    TooManyRequestsError,
+  )
   @ApiOk(TodoResponseDto, {
     access: true,
     description: 'Update todo item for user',

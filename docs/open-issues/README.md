@@ -9,7 +9,6 @@ Deferred known problems, so they are not rediscovered (or silently "fixed") in e
 - [#21](https://github.com/prod-forge/backend/issues/21) — Pin GitHub Actions to commit SHAs.
 - [#22](https://github.com/prod-forge/backend/issues/22) — Route Prometheus alerts to SNS through Alertmanager.
 - [#23](https://github.com/prod-forge/backend/issues/23) — Add SLO burn-rate alerts for the API.
-- [#40](https://github.com/prod-forge/backend/issues/40) — Document the 429 throttling response in OpenAPI.
 - [#52](https://github.com/prod-forge/backend/issues/52) — Count guard-rejected requests (401, 429) in `http_requests_total`.
 
 ## Without an issue

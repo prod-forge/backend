@@ -46,6 +46,31 @@
               }
             }
           },
+          "429": {
+            "description": "TOO_MANY_REQUESTS: Too Many Requests",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying the request.",
+                "schema": { "type": "integer" }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "TOO_MANY_REQUESTS" },
+                        "message": { "example": "Too Many Requests" },
+                        "status": { "example": 429 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
           "500": {
             "description": "INTERNAL_ERROR: Internal Server Error",
             "content": {
@@ -92,6 +117,31 @@
                         "code": { "example": "DTO_VALIDATION_ERROR" },
                         "message": { "example": "Validation Error" },
                         "status": { "example": 422 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "TOO_MANY_REQUESTS: Too Many Requests",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying the request.",
+                "schema": { "type": "integer" }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "TOO_MANY_REQUESTS" },
+                        "message": { "example": "Too Many Requests" },
+                        "status": { "example": 429 }
                       }
                     }
                   ]
@@ -173,6 +223,31 @@
                         "code": { "example": "DTO_VALIDATION_ERROR" },
                         "message": { "example": "Validation Error" },
                         "status": { "example": 422 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "TOO_MANY_REQUESTS: Too Many Requests",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying the request.",
+                "schema": { "type": "integer" }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "TOO_MANY_REQUESTS" },
+                        "message": { "example": "Too Many Requests" },
+                        "status": { "example": 429 }
                       }
                     }
                   ]
@@ -302,6 +377,31 @@
               }
             }
           },
+          "429": {
+            "description": "TOO_MANY_REQUESTS: Too Many Requests",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying the request.",
+                "schema": { "type": "integer" }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "TOO_MANY_REQUESTS" },
+                        "message": { "example": "Too Many Requests" },
+                        "status": { "example": 429 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
           "500": {
             "description": "INTERNAL_ERROR: Internal Server Error",
             "content": {
@@ -399,6 +499,31 @@
               }
             }
           },
+          "429": {
+            "description": "TOO_MANY_REQUESTS: Too Many Requests",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying the request.",
+                "schema": { "type": "integer" }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "TOO_MANY_REQUESTS" },
+                        "message": { "example": "Too Many Requests" },
+                        "status": { "example": 429 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
           "500": {
             "description": "INTERNAL_ERROR: Internal Server Error",
             "content": {
@@ -478,6 +603,31 @@
                         "code": { "example": "DTO_VALIDATION_ERROR" },
                         "message": { "example": "Validation Error" },
                         "status": { "example": 422 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "TOO_MANY_REQUESTS: Too Many Requests",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying the request.",
+                "schema": { "type": "integer" }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "TOO_MANY_REQUESTS" },
+                        "message": { "example": "Too Many Requests" },
+                        "status": { "example": 429 }
                       }
                     }
                   ]
@@ -577,6 +727,31 @@
                         "code": { "example": "DTO_VALIDATION_ERROR" },
                         "message": { "example": "Validation Error" },
                         "status": { "example": 422 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "TOO_MANY_REQUESTS: Too Many Requests",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying the request.",
+                "schema": { "type": "integer" }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "TOO_MANY_REQUESTS" },
+                        "message": { "example": "Too Many Requests" },
+                        "status": { "example": 429 }
                       }
                     }
                   ]
@@ -957,6 +1132,31 @@
                         "code": { "example": "DTO_VALIDATION_ERROR" },
                         "message": { "example": "Validation Error" },
                         "status": { "example": 422 }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "TOO_MANY_REQUESTS: Too Many Requests",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying the request.",
+                "schema": { "type": "integer" }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiErrorDto" },
+                    {
+                      "properties": {
+                        "code": { "example": "TOO_MANY_REQUESTS" },
+                        "message": { "example": "Too Many Requests" },
+                        "status": { "example": 429 }
                       }
                     }
                   ]

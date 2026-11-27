@@ -65,5 +65,14 @@ describe('AuthGuard', () => {
       expect(verifyToken).toHaveBeenCalledWith('valid.token');
       expect(req.userId).toBe('user-123');
     });
+
+    it('accepts a lowercase bearer scheme', async () => {
+      verifyToken.mockResolvedValue({ userId: 'user-123' });
+      const req = makeRequest('bearer valid.token');
+
+      await expect(guard.canActivate(makeContext(req))).resolves.toBe(true);
+      expect(verifyToken).toHaveBeenCalledWith('valid.token');
+      expect(req.userId).toBe('user-123');
+    });
   });
 });

@@ -25,9 +25,21 @@ describe('UpdateTodoDto', () => {
 
       expect(errors.map((error) => error.property)).toEqual([field]);
     });
+
+    it.each(['', '   '])('rejects empty or whitespace-only title %j', async (title) => {
+      const errors = await validate(makeDto({ title }));
+
+      expect(errors.map((error) => error.property)).toEqual(['title']);
+    });
   });
 
   describe('positive cases', () => {
+    it('trims surrounding whitespace on title', async () => {
+      const dto = makeDto({ title: '  Renamed  ' });
+
+      expect(await validate(dto)).toHaveLength(0);
+      expect(dto.title).toBe('Renamed');
+    });
     it('keeps completed when the body sets it', async () => {
       const dto = makeDto({ completed: true });
 

@@ -19,6 +19,12 @@ describe('redisConfig', () => {
 
       expect(() => redisConfig()).toThrow(/^- REDIS_TLS: /m);
     });
+
+    it.each(['1', '0', 'TRUE'])('throws when REDIS_TLS is %j', (value) => {
+      process.env.REDIS_TLS = value;
+
+      expect(() => redisConfig()).toThrow(/^- REDIS_TLS: /m);
+    });
   });
 
   describe('positive cases', () => {

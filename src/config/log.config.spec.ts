@@ -12,6 +12,12 @@ describe('logConfig', () => {
   });
 
   describe('negative cases', () => {
+    it.each(['1', '0', 'TRUE', 'FALSE', 'yes'])('throws when LOG_PRETTY is %j instead of true or false', (value) => {
+      process.env.LOG_PRETTY = value;
+
+      expect(() => logConfig()).toThrow(/^- LOG_PRETTY: /m);
+    });
+
     it('names LOG_EXCLUDE_ENDPOINTS when it is not a JSON array', () => {
       process.env.LOG_EXCLUDE_ENDPOINTS = '/health';
 
@@ -20,6 +26,15 @@ describe('logConfig', () => {
   });
 
   describe('positive cases', () => {
+    it.each([
+      ['true', true],
+      ['false', false],
+    ])('maps LOG_PRETTY=%s to %s', (value, expected) => {
+      process.env.LOG_PRETTY = value;
+
+      expect(logConfig()).toMatchObject({ logPretty: expected });
+    });
+
     it('parses LOG_EXCLUDE_ENDPOINTS from a JSON array', () => {
       process.env.LOG_EXCLUDE_ENDPOINTS = '["/health","/metrics"]';
 

@@ -6,6 +6,7 @@ import { IsArray, IsBoolean, IsIn, IsNotEmpty, IsNumber, IsString } from 'class-
 
 import { getDatabaseUrl } from '../../database-manager/generate-url';
 import { LogLevel } from '../../database-manager/generated/internal/prismaNamespace';
+import { parseStrictBoolean } from '../common/utils/booleans';
 import { parseJsonArray } from '../common/utils/json';
 import { validateConfig } from '../common/utils/validate-config.util';
 import { DatabaseConfigInterface } from './interfaces/database-config.interface';
@@ -16,7 +17,7 @@ class DatabaseConfig {
   DATABASE_CONNECT_TIMEOUT_MS = 5000;
 
   @IsBoolean()
-  @Transform(({ value }) => value === 'true')
+  @Transform(({ value }) => parseStrictBoolean(value))
   DATABASE_FAIL_FAST = true;
 
   @IsNotEmpty()

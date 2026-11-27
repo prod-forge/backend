@@ -10,7 +10,6 @@ Deferred known problems, so they are not rediscovered (or silently "fixed") in e
 - [#22](https://github.com/prod-forge/backend/issues/22) — Route Prometheus alerts to SNS through Alertmanager.
 - [#23](https://github.com/prod-forge/backend/issues/23) — Add SLO burn-rate alerts for the API.
 - [#40](https://github.com/prod-forge/backend/issues/40) — Document the 429 throttling response in OpenAPI.
-- [#49](https://github.com/prod-forge/backend/issues/49) — Reject invalid boolean env values instead of reading them as `true` or `false`.
 - [#50](https://github.com/prod-forge/backend/issues/50) — Require positive integers for numeric env values.
 - [#52](https://github.com/prod-forge/backend/issues/52) — Count guard-rejected requests (401, 429) in `http_requests_total`.
 

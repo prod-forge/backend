@@ -18,9 +18,21 @@ describe('CreateTodoDto', () => {
 
       expect(errors.map((error) => error.property)).toEqual(['completed']);
     });
+
+    it.each(['', '   '])('rejects empty or whitespace-only title %j', async (title) => {
+      const errors = await validate(makeDto({ title }));
+
+      expect(errors.map((error) => error.property)).toEqual(['title']);
+    });
   });
 
   describe('positive cases', () => {
+    it('trims surrounding whitespace on title', async () => {
+      const dto = makeDto({ title: '  Buy milk  ' });
+
+      expect(await validate(dto)).toHaveLength(0);
+      expect(dto.title).toBe('Buy milk');
+    });
     it('accepts a body without completed', async () => {
       expect(await validate(makeDto({ title: 'Buy milk' }))).toHaveLength(0);
     });

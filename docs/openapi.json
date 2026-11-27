@@ -1275,7 +1275,7 @@
         "properties": {
           "completed": { "type": "boolean", "default": false },
           "description": { "type": "string", "maxLength": 2000 },
-          "title": { "type": "string", "maxLength": 200 }
+          "title": { "type": "string", "maxLength": 200, "minLength": 1 }
         },
         "required": ["title"]
       },
@@ -1353,7 +1353,7 @@
         "properties": {
           "completed": { "type": "boolean", "default": false },
           "description": { "type": "string", "maxLength": 2000 },
-          "title": { "type": "string", "maxLength": 200 }
+          "title": { "type": "string", "maxLength": 200, "minLength": 1 }
         }
       },
       "LoginDto": {

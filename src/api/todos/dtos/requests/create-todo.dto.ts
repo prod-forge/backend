@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
 
 export class CreateTodoDto {
   @ApiPropertyOptional({ default: false })
@@ -13,8 +14,10 @@ export class CreateTodoDto {
   @MaxLength(2000)
   description?: string;
 
-  @ApiProperty({ maxLength: 200 })
+  @ApiProperty({ maxLength: 200, minLength: 1 })
+  @IsNotEmpty()
   @IsString()
   @MaxLength(200)
+  @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value))
   title: string;
 }

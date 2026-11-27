@@ -4,8 +4,8 @@ import { Todo } from '../../../database-manager/generated/client';
 import { CreateTodoDto } from '../../api/todos/dtos/requests/create-todo.dto';
 import { UpdateTodoDto } from '../../api/todos/dtos/requests/update-todo.dto';
 import { PrismaService } from '../../modules/prisma/prisma.service';
-import { PaginatedEntity } from '../../shared/entities/paginated.entity';
 import { TodoEntity } from './entities/todo.entity';
+import { TodosPageEntity } from './entities/todos-page.entity';
 import { TodoMapper } from './mappers/todo.mapper';
 import { TodoFilter, TodoPagination, TodoSort } from './types/todo.query';
 
@@ -24,14 +24,14 @@ export class TodosRepository {
     filter: TodoFilter,
     { order, sortBy }: TodoSort,
     pagination: TodoPagination,
-  ): Promise<PaginatedEntity<TodoEntity>> {
+  ): Promise<TodosPageEntity> {
     const { limit, offset } = pagination;
     // id is unique, so rows that tie on sortBy keep the same order across offset pages.
     const tiebreaker = { id: 'asc' as const };
     const orderBy = sortBy ? [{ [sortBy]: order }, tiebreaker] : [tiebreaker];
     const where = { ...filter, userId };
 
-    const [items, total] = await this.prisma.$transaction([
+    const [items, total, completed] = await this.prisma.$transaction([
       this.prisma.todo.findMany({
         orderBy: orderBy,
         skip: offset,
@@ -39,9 +39,12 @@ export class TodosRepository {
         where,
       }),
       this.prisma.todo.count({ where }),
+      // AND keeps a completed=false filter at 0 instead of overriding it
+      this.prisma.todo.count({ where: { AND: [where, { completed: true }] } }),
     ]);
 
-    return new PaginatedEntity<TodoEntity>({
+    return new TodosPageEntity({
+      completed,
       items: items.map((item) => TodoMapper.toEntity(item)),
       limit,
       offset,

@@ -9,6 +9,7 @@ import { PrismaService } from '../../modules/prisma/prisma.service';
 import { CacheStorage } from '../../modules/redis-manager/storages/cache.storage';
 import { PaginatedEntity } from '../../shared/entities/paginated.entity';
 import { TODOS_MAX_PAGE_SIZE } from './constants/todos.constants';
+import { TodosPageEntity } from './entities/todos-page.entity';
 import { SortOrder, TodoSearchField, TodoSortField } from './interfaces/queries.enum';
 import { TodosRepository } from './todos.repository';
 import { TodosService } from './todos.service';
@@ -82,9 +83,23 @@ describe('TodosService', () => {
   describe('findAll', () => {
     const query: TodosQueryDto = {};
 
+    describe('negative cases', () => {
+      it('treats a cached entry without meta.completed as a miss', async () => {
+        cacheStorageMock.get.mockResolvedValue(
+          new PaginatedEntity({ items: [todoData], limit: 10, offset: 0, total: 1 }),
+        );
+        prismaMock.$transaction.mockResolvedValue([[todoData], 1, 1]);
+
+        const result = await service.findAll('user-1', query);
+
+        expect(prismaMock.$transaction).toHaveBeenCalled();
+        expect(result.meta.completed).toBe(1);
+      });
+    });
+
     describe('positive cases', () => {
       it('returns cached result without hitting the repository', async () => {
-        const cached = new PaginatedEntity({ items: [todoData], limit: 10, offset: 0, total: 1 });
+        const cached = new TodosPageEntity({ completed: 0, items: [todoData], limit: 10, offset: 0, total: 1 });
         cacheStorageMock.get.mockResolvedValue(cached);
 
         const result = await service.findAll('user-1', query);
@@ -96,7 +111,7 @@ describe('TodosService', () => {
 
       it('fetches from repository on cache miss, stores in cache, and returns result', async () => {
         cacheStorageMock.get.mockResolvedValue(null);
-        prismaMock.$transaction.mockResolvedValue([[todoData], 1]);
+        prismaMock.$transaction.mockResolvedValue([[todoData], 1, 0]);
         cacheStorageMock.set.mockResolvedValue(undefined);
 
         const result = await service.findAll('user-1', query);
@@ -106,14 +121,14 @@ describe('TodosService', () => {
         expect(result.meta.total).toBe(1);
         expect(cacheStorageMock.set).toHaveBeenCalledWith(
           expect.stringContaining('v2:todos:user-1:'),
-          expect.any(PaginatedEntity),
+          expect.any(TodosPageEntity),
           30,
         );
       });
 
       it('returns empty paginated result when no todos exist', async () => {
         cacheStorageMock.get.mockResolvedValue(null);
-        prismaMock.$transaction.mockResolvedValue([[], 0]);
+        prismaMock.$transaction.mockResolvedValue([[], 0, 0]);
 
         const result = await service.findAll('user-1', query);
 

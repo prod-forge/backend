@@ -36,14 +36,14 @@ type SwaggerOptions = {
 
 export const ApiPaginated = (
   model: Type,
-  { access, description, title }: SwaggerOptions,
+  { access, description, metaModel = PaginationMetaDto, title }: SwaggerOptions,
 ): ClassDecorator & MethodDecorator => {
   const summary = `${title}${access ? ' 🔒' : ''}`;
 
   return applyDecorators(
     access ? ApiBearerAuth('access-token') : ApiBearerAuth('none'),
     ApiOperation({ summary }),
-    ApiExtraModels(PaginatedResponseDto, PaginationMetaDto, ApiErrorDto, model),
+    ApiExtraModels(PaginatedResponseDto, PaginationMetaDto, ApiErrorDto, model, metaModel),
     ApiOkResponse({
       description,
       schema: {
@@ -57,7 +57,7 @@ export const ApiPaginated = (
               },
 
               meta: {
-                $ref: getSchemaPath(PaginationMetaDto),
+                $ref: getSchemaPath(metaModel),
               },
             },
           },

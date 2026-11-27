@@ -16,6 +16,7 @@ import { TodosQueryDto } from './dtos/queries/todos-query.dto';
 import { CreateTodoDto } from './dtos/requests/create-todo.dto';
 import { UpdateTodoDto } from './dtos/requests/update-todo.dto';
 import { TodoResponseDto } from './dtos/responses/todo-response.dto';
+import { TodosMetaDto } from './dtos/responses/todos-meta.dto';
 import { TodosResponseDto } from './dtos/responses/todos-response.dto';
 
 const uuidPipe = new ParseUUIDPipe({
@@ -50,6 +51,7 @@ export class TodosController {
   @ApiPaginated(TodoResponseDto, {
     access: true,
     description: 'Get all todo items for user',
+    metaModel: TodosMetaDto,
     title: 'Find All Todos',
   })
   @Get()

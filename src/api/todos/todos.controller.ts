@@ -16,7 +16,7 @@ import { plainToInstance } from 'class-transformer';
 
 import type { UserInterface } from '../../shared/interfaces/user.interface';
 
-import { ApiEmpty, ApiErrors, ApiOk, ApiPaginated } from '../../common/decorators/swagger.decorators';
+import { ApiEmpty, ApiErrors, ApiOk, ApiPaginated, ApiUuidParam } from '../../common/decorators/swagger.decorators';
 import { User } from '../../common/decorators/user.decorator';
 import { AuthGuard } from '../../common/guards';
 import { InternalServerError, TooManyRequestsError } from '../../error-handler/errors/common.errors';
@@ -89,6 +89,7 @@ export class TodosController {
     description: 'Get todo item for user',
     title: 'Find One Todo',
   })
+  @ApiUuidParam()
   @Get(':id')
   @UseGuards(AuthGuard)
   async findOne(@Param('id', uuidPipe) id: string, @User() { userId }: UserInterface): Promise<TodoResponseDto> {
@@ -111,6 +112,7 @@ export class TodosController {
     InternalServerError,
     TooManyRequestsError,
   )
+  @ApiUuidParam()
   @Delete(':id')
   @UseGuards(AuthGuard)
   async remove(@Param('id', uuidPipe) id: string, @User() { userId }: UserInterface): Promise<void> {
@@ -129,6 +131,7 @@ export class TodosController {
     description: 'Update todo item for user',
     title: 'Update Todo',
   })
+  @ApiUuidParam()
   @Patch(':id')
   @UseGuards(AuthGuard)
   async update(

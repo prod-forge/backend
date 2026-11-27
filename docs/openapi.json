@@ -430,7 +430,15 @@
     "/api/v1/todos/{id}": {
       "get": {
         "operationId": "TodosController_findOne_v1",
-        "parameters": [{ "name": "id", "required": true, "in": "path", "schema": { "type": "string" } }],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "id must be a valid UUID. A malformed value returns DTO_VALIDATION_ERROR 422.",
+            "schema": { "format": "uuid", "type": "string" }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Get todo item for user",
@@ -550,7 +558,15 @@
       },
       "delete": {
         "operationId": "TodosController_remove_v1",
-        "parameters": [{ "name": "id", "required": true, "in": "path", "schema": { "type": "string" } }],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "id must be a valid UUID. A malformed value returns DTO_VALIDATION_ERROR 422.",
+            "schema": { "format": "uuid", "type": "string" }
+          }
+        ],
         "responses": {
           "204": { "description": "Todo was successfully deleted" },
           "401": {
@@ -661,7 +677,15 @@
       },
       "patch": {
         "operationId": "TodosController_update_v1",
-        "parameters": [{ "name": "id", "required": true, "in": "path", "schema": { "type": "string" } }],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "id must be a valid UUID. A malformed value returns DTO_VALIDATION_ERROR 422.",
+            "schema": { "format": "uuid", "type": "string" }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpdateTodoDto" } } }

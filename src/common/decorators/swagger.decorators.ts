@@ -7,6 +7,7 @@ import {
   ApiExtraModels,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiResponse,
   getSchemaPath,
 } from '@nestjs/swagger';
@@ -119,6 +120,15 @@ export const ApiEmpty = ({ access, description, title }: SwaggerOptions): ClassD
     }),
   );
 };
+
+export const ApiUuidParam = (name = 'id'): MethodDecorator =>
+  ApiParam({
+    description: `${name} must be a valid UUID. A malformed value returns DTO_VALIDATION_ERROR 422.`,
+    format: 'uuid',
+    name,
+    required: true,
+    type: String,
+  });
 
 export const ApiErrors = (...errors: ErrorClass[]): ClassDecorator & MethodDecorator => {
   const responses = errors.map((ErrorCtor) => {

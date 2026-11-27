@@ -2,10 +2,10 @@ import type { ConfigFactory } from '@nestjs/config';
 
 import { registerAs } from '@nestjs/config';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsNumber } from 'class-validator';
+import { IsBoolean, IsInt, Min } from 'class-validator';
 
 import { parseStrictBoolean } from '../common/utils/booleans';
-import { validateConfig } from '../common/utils/validate-config.util';
+import { toNumber, validateConfig } from '../common/utils/validate-config.util';
 import { ThrottlerConfigInterface } from './interfaces/throttler-config.interface';
 
 class ThrottlerConfig {
@@ -13,12 +13,14 @@ class ThrottlerConfig {
   @Transform(({ value }) => parseStrictBoolean(value))
   THROTTLE_ENABLED = true;
 
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
+  @IsInt()
+  @Min(1)
+  @Transform(toNumber)
   THROTTLE_LIMIT = 60;
 
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
+  @IsInt()
+  @Min(1)
+  @Transform(toNumber)
   THROTTLE_TTL = 60000;
 }
 

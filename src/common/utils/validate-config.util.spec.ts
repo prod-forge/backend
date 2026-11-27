@@ -1,8 +1,11 @@
 import 'reflect-metadata';
+import type { ClassTransformOptions } from 'class-transformer';
+
+import { TransformationType } from 'class-transformer';
 import * as classValidator from 'class-validator';
 import { IsIn, IsNumber, IsString } from 'class-validator';
 
-import { validateConfig } from './validate-config.util';
+import { toNumber, validateConfig } from './validate-config.util';
 
 class MultiConfig {
   @IsNumber()
@@ -88,6 +91,45 @@ describe('validateConfig', () => {
       const result = validateConfig(ValidConfig);
 
       expect(result).toBeInstanceOf(ValidConfig);
+    });
+  });
+});
+
+describe('toNumber', () => {
+  const params = (
+    value: unknown,
+    raw: unknown,
+  ): {
+    key: string;
+    obj: { APP_PORT: unknown };
+    options: ClassTransformOptions;
+    type: TransformationType;
+    value: unknown;
+  } => ({
+    key: 'APP_PORT',
+    obj: { APP_PORT: raw },
+    options: {},
+    type: TransformationType.PLAIN_TO_CLASS,
+    value,
+  });
+
+  describe('negative cases', () => {
+    it('returns an empty string unchanged so validation rejects it instead of accepting 0', () => {
+      expect(toNumber(params(0, ''))).toBe('');
+    });
+
+    it('returns an empty string for a blank value so validation rejects it instead of accepting 0', () => {
+      expect(toNumber(params(0, '  '))).toBe('');
+    });
+  });
+
+  describe('positive cases', () => {
+    it('converts a numeric string to a number', () => {
+      expect(toNumber(params('3000', '3000'))).toBe(3000);
+    });
+
+    it('leaves an already converted number unchanged', () => {
+      expect(toNumber(params(3000, '3000'))).toBe(3000);
     });
   });
 });

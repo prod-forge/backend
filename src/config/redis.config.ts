@@ -2,10 +2,10 @@ import type { ConfigFactory } from '@nestjs/config';
 
 import { registerAs } from '@nestjs/config';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 import { parseStrictBoolean } from '../common/utils/booleans';
-import { validateConfig } from '../common/utils/validate-config.util';
+import { toNumber, validateConfig } from '../common/utils/validate-config.util';
 import { RedisConfigInterface } from './interfaces/redis-config.interface';
 
 class RedisConfig {
@@ -16,8 +16,10 @@ class RedisConfig {
   @IsString()
   REDIS_PASSWORD?: string;
 
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
+  @IsInt()
+  @Max(65535)
+  @Min(1)
+  @Transform(toNumber)
   REDIS_PORT = 6379;
 
   @IsBoolean()

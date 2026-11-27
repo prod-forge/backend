@@ -36,7 +36,7 @@ POST /api/v1/auth/login
 -> 200 { "data": { "accessToken": "<jwt>", "expiresIn": 3600 } }
 ```
 
-`email` must be a valid address of at most 254 chars (otherwise `DTO_VALIDATION_ERROR` 422). An unknown email returns 401 `USER_IS_NOT_AUTHORIZED`. The endpoint is a development stub and checks no password. `AuthGuard` verifies the signature and expiry through `AuthService.verifyToken` and sets `req.userId` from `sub`; a missing header, a non-Bearer prefix, a bad signature or an expired token all return 401 `USER_IS_NOT_AUTHORIZED`. Tokens are signed with `JWT_SECRET` and live for `JWT_TTL` seconds. For a token without calling the API run `npm run token:issue -- <userId>`.
+`email` is trimmed and lowercased, then must be a valid address of at most 254 chars (otherwise `DTO_VALIDATION_ERROR` 422). An unknown email returns 401 `USER_IS_NOT_AUTHORIZED`. The endpoint is a development stub and checks no password. `AuthGuard` verifies the signature and expiry through `AuthService.verifyToken` and sets `req.userId` from `sub`; a missing header, a non-Bearer prefix, a bad signature or an expired token all return 401 `USER_IS_NOT_AUTHORIZED`. Tokens are signed with `JWT_SECRET` and live for `JWT_TTL` seconds. For a token without calling the API run `npm run token:issue -- <userId>`.
 
 Routes marked `@Public()` (login, client logs, health, metrics, version) do not require this header. Unprotected routes never inspect it.
 

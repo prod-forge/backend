@@ -48,5 +48,12 @@ describe('Auth API (e2e)', () => {
       expect(res.status).toBe(200);
       expect((res.body as ListBody<TodoItem>).data).toEqual(expect.any(Array));
     });
+
+    it('logs in with a mixed-case email padded with spaces', async () => {
+      const res = await request(server).post(LOGIN_URL).send({ email: ' User4@Example.COM ' });
+
+      expect(res.status).toBe(200);
+      expect((res.body as TokenBody).data.accessToken).toEqual(expect.any(String));
+    });
   });
 });

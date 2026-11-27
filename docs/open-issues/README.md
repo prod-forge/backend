@@ -12,7 +12,6 @@ Deferred known problems, so they are not rediscovered (or silently "fixed") in e
 - [#52](https://github.com/prod-forge/backend/issues/52) — Count guard-rejected requests (401, 429) in `http_requests_total`.
 - [#71](https://github.com/prod-forge/backend/issues/71) — Document todo path IDs as UUIDs in OpenAPI.
 - [#74](https://github.com/prod-forge/backend/issues/74) — Reject an empty or whitespace-only todo title with a 422.
-- [#75](https://github.com/prod-forge/backend/issues/75) — Match the login email case-insensitively.
 - [#76](https://github.com/prod-forge/backend/issues/76) — Type `searchField` in `TodosQueryDto` as `TodoSearchField`.
 
 ## Without an issue

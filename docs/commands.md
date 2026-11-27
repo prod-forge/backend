@@ -123,7 +123,7 @@ Defaults are the code defaults (`.env.common` sets local values for some). Produ
 | `DATABASE_PASSWORD`               | —                      | PostgreSQL password                               |
 | `DATABASE_NAME`                   | —                      | PostgreSQL database name                          |
 | `DATABASE_SSL`                    | `false`                | `sslmode=verify-full` (`require` for migrate)     |
-| `DATABASE_LOG_LEVELS`             | `[]`                   | Prisma log levels                                 |
+| `DATABASE_LOG_LEVELS`             | `[]`                   | Prisma log levels forwarded to the logger         |
 | `DATABASE_FAIL_FAST`              | `true`                 | Exit on DB connection failure at startup          |
 | `DATABASE_POOL_MAX`               | `10`                   | Max connections in the Prisma pg pool             |
 | `DATABASE_CONNECT_TIMEOUT_MS`     | `5000`                 | Pool connection timeout                           |

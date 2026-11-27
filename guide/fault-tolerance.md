@@ -85,7 +85,7 @@ Pattern invalidation uses `SCAN` (`scanStream` with `COUNT 100`) and `UNLINK` in
 
 Known limitation: there is no stampede protection. When a hot key expires or is invalidated, concurrent requests all miss and hit the database until one of them refills the cache. TTL jitter or request coalescing can be added if this becomes a measurable problem.
 
-Metrics: `cache_operations_total{operation="get|set|del", result="hit|miss|ok|error"}`. The "Cache hit ratio" panel in `observability/dashboards/metrics.dashboard.json` shows `hit / (hit + miss)` for `get`.
+Metrics: `cache_operations_total{operation="get|set|del|del_pattern", result="hit|miss|ok|error"}`. Pattern invalidations are counted under `del_pattern` (`ok` on a completed scan, `error` when the scan or unlink fails). The "Cache hit ratio" panel in `observability/dashboards/metrics.dashboard.json` shows `hit / (hit + miss)` for `get`.
 
 #### Throttling Strategy
 

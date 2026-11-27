@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
 
@@ -35,6 +47,7 @@ export class TodosController {
   @ApiOk(TodoResponseDto, {
     access: true,
     description: 'Create new todo item for user',
+    status: HttpStatus.CREATED,
     title: 'Create todo',
   })
   @Post()

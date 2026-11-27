@@ -16,7 +16,13 @@ export class ClientLogsService {
   processMobileLog(dto: MobileLogDto): void {
     this.loggerService.warn({
       ctx: CLIENT_LOGS_CTX,
-      details: { payload: dto.payload, platform: dto.platform, source: 'mobile', timestamp: dto.timestamp },
+      details: {
+        clientTraceId: dto.traceId,
+        payload: dto.payload,
+        platform: dto.platform,
+        source: 'mobile',
+        timestamp: dto.timestamp,
+      },
       msg: 'Mobile client log',
     });
   }

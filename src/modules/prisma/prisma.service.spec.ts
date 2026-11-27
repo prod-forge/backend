@@ -27,8 +27,11 @@ import type { LoggerService } from '../../logger/logger.service';
 import { RequestContext } from '../../logger/context/request-context';
 import { PrismaService } from './prisma.service';
 
-const makeService = (failFast = false, logLevels: string[] = []): [PrismaService, { error: jest.Mock }] => {
-  const logger = { error: jest.fn() };
+const makeService = (
+  failFast = false,
+  logLevels: string[] = [],
+): [PrismaService, { debug: jest.Mock; error: jest.Mock; log: jest.Mock; warn: jest.Mock }] => {
+  const logger = { debug: jest.fn(), error: jest.fn(), log: jest.fn(), warn: jest.fn() };
   const config = {
     databaseConnectTimeoutMs: 5000,
     databaseFailFast: failFast,
@@ -48,6 +51,14 @@ const getQueryHandler = (service: PrismaService): ((e: { duration: number }) => 
     .calls;
 
   return handler;
+};
+
+const getLogHandler = (service: PrismaService, level: string, occurrence = 0): ((e: unknown) => void) => {
+  const calls = (service.$on as unknown as jest.Mock<void, [string, (e: unknown) => void]>).mock.calls.filter(
+    ([event]) => event === level,
+  );
+
+  return calls[occurrence][1];
 };
 
 describe('PrismaService', () => {
@@ -74,6 +85,32 @@ describe('PrismaService', () => {
 
       expect(exitSpy).toHaveBeenCalledWith(1);
       exitSpy.mockRestore();
+    });
+
+    it('does not subscribe to error events when error is not configured', () => {
+      const [service] = makeService(false, ['warn']);
+
+      expect(service.$on).not.toHaveBeenCalledWith('error', expect.any(Function));
+    });
+
+    it('does not subscribe to warn events when warn is not configured', () => {
+      const [service] = makeService(false, ['error']);
+
+      expect(service.$on).not.toHaveBeenCalledWith('warn', expect.any(Function));
+    });
+
+    it('does not subscribe to info events when info is not configured', () => {
+      const [service] = makeService(false, ['error']);
+
+      expect(service.$on).not.toHaveBeenCalledWith('info', expect.any(Function));
+    });
+
+    it('does not add a query log handler when query is not configured', () => {
+      const [service] = makeService(false, ['error']);
+
+      const queryHandlers = (service.$on as unknown as jest.Mock).mock.calls.filter(([event]) => event === 'query');
+
+      expect(queryHandlers).toHaveLength(1);
     });
   });
 
@@ -126,6 +163,79 @@ describe('PrismaService', () => {
       const [service] = makeService();
 
       await expect(service.onModuleInit()).resolves.toBeUndefined();
+    });
+
+    it('subscribes once per configured log level', () => {
+      const [service] = makeService(false, ['info', 'query', 'warn', 'error']);
+
+      // Unconditional query-metrics handler plus one handler per configured level
+      expect(service.$on).toHaveBeenCalledTimes(5);
+      expect(service.$on).toHaveBeenCalledWith('error', expect.any(Function));
+      expect(service.$on).toHaveBeenCalledWith('warn', expect.any(Function));
+      expect(service.$on).toHaveBeenCalledWith('info', expect.any(Function));
+    });
+
+    it('forwards error events to logger.error', () => {
+      const [service, logger] = makeService(false, ['error']);
+      const onError = getLogHandler(service, 'error');
+
+      onError({ message: 'connection lost', target: 'prisma:client', timestamp: new Date() });
+
+      expect(logger.error).toHaveBeenCalledWith({
+        ctx: 'PrismaService',
+        details: { target: 'prisma:client' },
+        msg: 'connection lost',
+      });
+    });
+
+    it('forwards warn events to logger.warn', () => {
+      const [service, logger] = makeService(false, ['warn']);
+      const onWarn = getLogHandler(service, 'warn');
+
+      onWarn({ message: 'slow query', target: 'prisma:client', timestamp: new Date() });
+
+      expect(logger.warn).toHaveBeenCalledWith({
+        ctx: 'PrismaService',
+        details: { target: 'prisma:client' },
+        msg: 'slow query',
+      });
+    });
+
+    it('forwards info events to logger.log', () => {
+      const [service, logger] = makeService(false, ['info']);
+      const onInfo = getLogHandler(service, 'info');
+
+      onInfo({ message: 'connected', target: 'prisma:client', timestamp: new Date() });
+
+      expect(logger.log).toHaveBeenCalledWith({
+        ctx: 'PrismaService',
+        details: { target: 'prisma:client' },
+        msg: 'connected',
+      });
+    });
+
+    it('forwards query events to logger.debug when query is configured', () => {
+      const [service, logger] = makeService(false, ['query']);
+      // The first query handler records metrics; the second forwards to the logger
+      const onQuery = getLogHandler(service, 'query', 1);
+
+      onQuery({ duration: 25, params: '[]', query: 'SELECT 1', target: 'prisma:client' });
+
+      expect(logger.debug).toHaveBeenCalledWith({
+        ctx: 'PrismaService',
+        details: { durationMs: 25, target: 'prisma:client' },
+        msg: 'SELECT 1',
+      });
+    });
+
+    it('still records query metrics when query is configured', () => {
+      const [service] = makeService(false, ['query']);
+      const onQuery = getQueryHandler(service);
+
+      onQuery({ duration: 25 });
+
+      expect(mockObserve).toHaveBeenCalledWith(0.025);
+      expect(mockInc).toHaveBeenCalledTimes(1);
     });
   });
 });

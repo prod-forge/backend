@@ -1,5 +1,30 @@
 # Changelog
 
+# [1.1.0](https://github.com/prod-forge/backend/compare/v1.0.1...v1.1.0) (2026-11-27)
+
+### Bug Fixes
+
+- **auth:** accept the Bearer scheme case-insensitively ([#54](https://github.com/prod-forge/backend/issues/54)) ([#57](https://github.com/prod-forge/backend/issues/57)) ([2e7f67c](https://github.com/prod-forge/backend/commit/2e7f67cf30ef8649adee66c234354066c822b11b))
+- **cache:** count delByPattern in cache_operations_total ([#36](https://github.com/prod-forge/backend/issues/36)) ([#60](https://github.com/prod-forge/backend/issues/60)) ([d3bc4a8](https://github.com/prod-forge/backend/commit/d3bc4a8df7ab15620fc74c6991bfbe940bf7bf7a))
+- **client-logs:** log the client trace id for mobile client logs ([#53](https://github.com/prod-forge/backend/issues/53)) ([#56](https://github.com/prod-forge/backend/issues/56)) ([20c9c78](https://github.com/prod-forge/backend/commit/20c9c78517d56d85318d346a082c804d0d385bd3))
+- **config:** reject invalid boolean env values instead of reading them as true or false ([#69](https://github.com/prod-forge/backend/issues/69)) ([17c84cb](https://github.com/prod-forge/backend/commit/17c84cb1775de56828b957fb909d8b119aa6ef7a)), closes [#49](https://github.com/prod-forge/backend/issues/49)
+- **config:** report failed env variables in the validateConfig error ([1d2b489](https://github.com/prod-forge/backend/commit/1d2b489fa60fba64816145c2391405d3b34e9cb8)), closes [#15](https://github.com/prod-forge/backend/issues/15) [#15](https://github.com/prod-forge/backend/issues/15)
+- **config:** report malformed JSON array env variables through validateConfig ([#42](https://github.com/prod-forge/backend/issues/42)) ([4d3c175](https://github.com/prod-forge/backend/commit/4d3c175ebcbc065a3c55c5b5376bb49ffcf6a821))
+- **config:** require positive integers for numeric env values ([#50](https://github.com/prod-forge/backend/issues/50)) ([#70](https://github.com/prod-forge/backend/issues/70)) ([cf25e9f](https://github.com/prod-forge/backend/commit/cf25e9fd1efac0e3c6b147072393c14e3089ed6f))
+- **database-manager:** url-encode DATABASE_USER and DATABASE_NAME in getDatabaseUrl ([#43](https://github.com/prod-forge/backend/issues/43)) ([3bc9aa8](https://github.com/prod-forge/backend/commit/3bc9aa89cca5c4a01d82a235323524b806a17442)), closes [#38](https://github.com/prod-forge/backend/issues/38)
+- **deps:** override effect under @prisma/config to clear the high audit advisory ([#73](https://github.com/prod-forge/backend/issues/73)) ([bc4c498](https://github.com/prod-forge/backend/commit/bc4c4981137541bf8d8a979861fc6a4d63e0b81d))
+- **logger:** match LOG_EXCLUDE_ENDPOINTS against the path, not the URL ([#35](https://github.com/prod-forge/backend/issues/35)) ([#59](https://github.com/prod-forge/backend/issues/59)) ([3b22c07](https://github.com/prod-forge/backend/commit/3b22c0706f9ff193deace5d302897e4307acfd4d))
+- **prisma:** forward Prisma log events to the logger ([#51](https://github.com/prod-forge/backend/issues/51)) ([#65](https://github.com/prod-forge/backend/issues/65)) ([e55d5ca](https://github.com/prod-forge/backend/commit/e55d5ca61d57b6b386386ed57bec901aa4e4ab1e))
+- reject URL-reserved characters in DATABASE_NAME ([#45](https://github.com/prod-forge/backend/issues/45)) ([530d7a1](https://github.com/prod-forge/backend/commit/530d7a150412319286a31614dd3408f1c4c2889c))
+- **todos:** add id tiebreaker to the todo list order ([#46](https://github.com/prod-forge/backend/issues/46)) ([2b5719f](https://github.com/prod-forge/backend/commit/2b5719f91908969837e8caf2c8cf3d40974c631e)), closes [#39](https://github.com/prod-forge/backend/issues/39)
+- **todos:** keep completed when a PATCH body leaves it out ([#47](https://github.com/prod-forge/backend/issues/47)) ([b0862a3](https://github.com/prod-forge/backend/commit/b0862a3142b6a3fcf717530c1d3fcab1a4e102c3))
+- **todos:** reject invalid completed query values ([#41](https://github.com/prod-forge/backend/issues/41)) ([31879d7](https://github.com/prod-forge/backend/commit/31879d74b773c9be278ac82b74baa877d0725dcd)), closes [#33](https://github.com/prod-forge/backend/issues/33)
+- **todos:** reject null for title and completed with a 422 ([#68](https://github.com/prod-forge/backend/issues/68)) ([069f787](https://github.com/prod-forge/backend/commit/069f78774d45ede54092727ceb52a3ff30d9ae23)), closes [#48](https://github.com/prod-forge/backend/issues/48)
+
+### Features
+
+- **todos:** return the completed count of the filtered todos in the list meta ([#58](https://github.com/prod-forge/backend/issues/58)) ([832c429](https://github.com/prod-forge/backend/commit/832c429cbc12f42076fe5889bf7b736c9ac99819))
+
 ## [1.0.1](https://github.com/prod-forge/backend/compare/v1.0.0...v1.0.1) (2026-11-09)
 
 ### Bug Fixes

@@ -47,7 +47,7 @@ export class TodosQueryDto {
   @ApiPropertyOptional({ enum: TodoSearchField, example: TodoSearchField.TITLE })
   @IsEnum(TodoSearchField)
   @IsOptional()
-  searchField?: string;
+  searchField?: TodoSearchField;
 
   @ApiPropertyOptional({ enum: TodoSortField })
   @IsEnum(TodoSortField)

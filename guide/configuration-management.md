@@ -316,6 +316,9 @@ name are verified. (`pg` 8 currently treats `require` the same way but warns at 
 CA, which is not in Node's built-in CA store, so the production image downloads the AWS global RDS bundle
 (`https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem`) to `/etc/ssl/certs/rds-global-bundle.pem` and
 sets `NODE_EXTRA_CA_CERTS` to it. Node then trusts the RDS CA in addition to the public roots; verification stays on.
+
+The Dockerfile pins the bundle with `--checksum=sha256:…` so a changed bundle fails the build instead of being trusted silently. When AWS rotates the bundle, re-download it, recompute the hash with `curl -fsSL https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem | sha256sum`, update the flag, and rebuild.
+
 `prisma migrate deploy` (the migration task) reads `prisma.config.ts`, which asks for `sslmode=require`: Prisma's schema
 engine documents only `disable`, `prefer` and `require`, and with `require` it encrypts without verifying the
 certificate.
